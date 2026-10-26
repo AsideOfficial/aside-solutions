@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>단골노트</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 단골노트: 동네 가게의 고객 명부와 수신 동의 문자. 부드러운 파스텔 + 퍼플, 오른쪽에 휴대폰 미리보기. */
+  :root {
+    --bg: #FBF7FF; --panel: #fff; --line: #EDE6F7; --line-2: #DDD2EE; --soft: #F4EEFE;
+    --text: #1E1630; --text-2: #5A5170; --text-3: #968DA8;
+    --pu: #8B5CF6; --pu-2: #7C3AED; --pu-ink: #4C1D95; --pu-soft: #EFE7FF;
+    --mint: #0F9F7A; --mint-soft: #E2F7F0; --rose: #E0457B; --gray: #B4ADC0;
+  }
+  body { font: 400 13px/1.4 'Pretendard Variable', 'Segoe UI', sans-serif; color: var(--text); background: var(--bg); letter-spacing: -0.01em; }
+  .win { --bar: #F3ECFF; --bar-fg: #3E3456; background: var(--bg); }
+  .win-body { flex-direction: column; }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  .top { height: 54px; flex: none; display: flex; align-items: center; gap: 20px; padding: 0 20px; background: #fff; border-bottom: 1px solid var(--line); }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 800; font-size: 16px; letter-spacing: -0.03em; color: var(--pu-ink); }
+  .brand i { width: 28px; height: 28px; border-radius: 9px; background: linear-gradient(135deg, #A78BFA, #7C3AED); display: grid; place-items: center; }
+  .shop { display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 16px; background: var(--soft); font-size: 12.5px; font-weight: 600; color: var(--text-2); }
+  .shop b { width: 20px; height: 20px; border-radius: 50%; background: #FDE68A; display: grid; place-items: center; font-size: 11px; color: #7A4B00; }
+  .nav { display: flex; gap: 2px; align-self: stretch; }
+  .nav a { display: flex; align-items: center; gap: 7px; padding: 0 14px; font-size: 13px; font-weight: 600; color: var(--text-3); position: relative; }
+  .nav a.on { color: var(--pu-2); }
+  .nav a.on::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--pu); }
+  .top .sp { flex: 1; }
+  .conn { display: flex; align-items: center; gap: 14px; font-size: 12px; color: var(--text-2); }
+  .conn span { display: flex; align-items: center; gap: 6px; }
+  .conn i { width: 7px; height: 7px; border-radius: 50%; background: var(--mint); }
+
+  .content { flex: 1; min-height: 0; display: flex; gap: 14px; padding: 16px 16px 16px; position: relative; }
+  .panel { background: #fff; border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 1px 2px rgb(76 29 149 / .04); }
+
+  /* 고객 목록 */
+  .list { width: 300px; flex: none; display: flex; flex-direction: column; overflow: hidden; }
+  .l-head { padding: 14px 16px 10px; }
+  .l-head h3 { font-size: 14px; font-weight: 700; display: flex; justify-content: space-between; align-items: baseline; }
+  .l-head h3 span { font-size: 12px; font-weight: 500; color: var(--text-3); }
+  .seg { display: flex; margin-top: 10px; padding: 3px; border-radius: 10px; background: var(--soft); }
+  .seg b { flex: 1; height: 28px; display: grid; place-items: center; border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--text-3); }
+  .seg b.on { background: #fff; color: var(--pu-2); box-shadow: 0 1px 2px rgb(76 29 149 / .1); }
+  .search { margin-top: 8px; height: 32px; display: flex; align-items: center; gap: 7px; padding: 0 10px; border-radius: 9px; border: 1px solid var(--line-2); font-size: 12px; color: var(--text-3); }
+  .search svg { width: 14px; height: 14px; }
+  .rows { flex: 1; overflow: hidden; border-top: 1px solid var(--line); }
+  .row { display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 16px; border-bottom: 1px solid #F3EEF9; }
+  .av { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; flex: none; font-weight: 700; font-size: 12.5px; }
+  .who { flex: 1; min-width: 0; }
+  .who b { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; }
+  .who small { display: block; font-size: 11.5px; color: var(--text-3); margin-top: 1px; font-variant-numeric: tabular-nums; }
+  .tag { font-size: 10.5px; font-weight: 700; padding: 1px 6px; border-radius: 9px; letter-spacing: 0; }
+  .tag.vip { background: var(--pu); color: #fff; }
+  .tag.re { background: var(--pu-soft); color: var(--pu-2); }
+  .tag.new { background: var(--mint-soft); color: var(--mint); }
+  .ok { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .ok b { display: flex; align-items: center; gap: 3px; font-size: 11.5px; font-weight: 700; color: var(--mint); }
+  .ok b svg { width: 12px; height: 12px; stroke-width: 2.6; }
+  .row.out { background: #FAF9FB; }
+  .row.out .av { background: #ECEAEF !important; color: var(--gray) !important; }
+  .row.out .who b, .row.out .who small { color: var(--gray); }
+  .row.out .who b span.nm { text-decoration: line-through; text-decoration-color: #CFC9D8; }
+  .row.out .ok b { color: #9D96A9; background: #EEECF1; padding: 1px 6px; border-radius: 5px; }
+  .l-foot { height: 40px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--text-3); }
+  .l-foot b { color: var(--pu-2); font-weight: 700; }
+
+  /* 세그먼트 */
+  .segm { width: 284px; flex: none; display: flex; flex-direction: column; gap: 12px; }
+  .card { padding: 15px 16px; }
+  .card h3 { font-size: 14px; font-weight: 700; display: flex; justify-content: space-between; align-items: baseline; }
+  .card h3 span { font-size: 12px; font-weight: 600; color: var(--pu-2); }
+  .cond { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .cd { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border-radius: 11px; background: var(--soft); border: 1px solid var(--line); }
+  .cd .ic { width: 28px; height: 28px; border-radius: 8px; background: #fff; display: grid; place-items: center; color: var(--pu-2); flex: none; }
+  .cd p { flex: 1; font-size: 11.5px; color: var(--text-3); }
+  .cd p b { display: block; font-size: 13px; color: var(--text); font-weight: 700; margin-top: 1px; }
+  .cd em { font-style: normal; font-size: 10.5px; font-weight: 700; color: var(--pu-2); background: #fff; padding: 2px 6px; border-radius: 6px; display: flex; align-items: center; gap: 3px; }
+  .cd em svg { width: 11px; height: 11px; stroke-width: 2.4; }
+  .cd.join { justify-content: center; padding: 0; height: 18px; background: none; border: 0; font-size: 11px; font-weight: 700; color: var(--text-3); margin: -3px 0; }
+  .add { display: flex; align-items: center; justify-content: center; gap: 6px; height: 34px; border-radius: 10px; border: 1.5px dashed var(--line-2); font-size: 12.5px; font-weight: 600; color: var(--text-3); }
+  .groups { padding: 12px 16px 13px; flex: 1; min-height: 0; }
+  .groups h3 { font-size: 13px; }
+  .gchips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+  .gchips b { height: 26px; display: flex; align-items: center; gap: 5px; padding: 0 9px; border-radius: 13px; background: var(--soft); border: 1px solid var(--line); font-size: 12px; font-weight: 600; color: var(--text-2); }
+  .gchips b span { color: var(--pu-2); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .result { padding: 16px; background: linear-gradient(160deg, #F1E9FF, #fff 70%); border-color: #DCCBFB; }
+  .result p { font-size: 12px; color: var(--text-2); font-weight: 600; }
+  .result strong { display: block; margin-top: 4px; font-size: 44px; font-weight: 800; letter-spacing: -0.04em; color: var(--pu-2); line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .result strong small { font-size: 18px; font-weight: 700; margin-left: 2px; }
+  .fun { margin-top: 12px; display: flex; flex-direction: column; gap: 7px; }
+  .fun div { display: grid; grid-template-columns: 1fr 44px; gap: 8px; align-items: center; font-size: 12px; color: var(--text-2); }
+  .fun div span { position: relative; height: 22px; border-radius: 6px; display: flex; align-items: center; padding-left: 8px; font-weight: 600; white-space: nowrap; }
+  .fun div b { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .fun .m b { color: var(--rose); }
+
+  /* 작성기 */
+  .comp { width: 340px; flex: none; display: flex; flex-direction: column; padding: 15px 16px 16px; position: relative; z-index: 1; }
+  .tpl { margin-top: 10px; height: 34px; display: flex; align-items: center; gap: 8px; padding: 0 11px; border-radius: 10px; border: 1px solid var(--line-2); font-size: 12.5px; font-weight: 600; }
+  .tpl span { color: var(--text-3); font-weight: 500; }
+  .tpl i { margin-left: auto; width: 6px; height: 6px; border-right: 1.5px solid var(--text-3); border-bottom: 1.5px solid var(--text-3); rotate: 45deg; margin-top: -3px; }
+  .types { display: flex; gap: 6px; margin-top: 8px; }
+  .types b { height: 26px; display: grid; place-items: center; padding: 0 11px; border-radius: 13px; border: 1px solid var(--line-2); font-size: 11.5px; font-weight: 700; color: var(--text-3); }
+  .types b.on { background: var(--pu); border-color: var(--pu); color: #fff; }
+  .types .ad { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--text-2); }
+  .types .ad i { width: 16px; height: 16px; border-radius: 4px; background: var(--pu); display: grid; place-items: center; color: #fff; }
+  .types .ad i svg { width: 11px; height: 11px; stroke-width: 3; }
+  .editor { margin-top: 10px; min-height: 270px; border-radius: 12px; border: 1.5px solid #CDB8F8; background: #fff; padding: 11px 12px; font-size: 12.5px; line-height: 1.6; color: var(--text); box-shadow: 0 0 0 4px rgb(139 92 246 / .08); position: relative; }
+  .lock { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--pu-ink); background: var(--pu-soft); border-radius: 6px; padding: 3px 8px; width: fit-content; }
+  .lock svg { width: 12px; height: 12px; stroke-width: 2.2; }
+  .lock small { font-size: 10.5px; font-weight: 600; color: var(--pu); }
+  .editor p { margin: 6px 0; }
+  .var { background: #FDF2C4; color: #7A5A00; font-weight: 700; padding: 0 3px; border-radius: 4px; font-size: 12px; }
+  .bytes { position: absolute; right: 12px; bottom: 9px; font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .bytes b { color: var(--pu-2); }
+  .vars { display: flex; gap: 6px; margin-top: 8px; }
+  .vars b { height: 26px; display: flex; align-items: center; gap: 4px; padding: 0 9px; border-radius: 7px; background: var(--soft); font-size: 11.5px; font-weight: 600; color: var(--text-2); }
+  .check { margin-top: 10px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; font-size: 11.5px; color: var(--text-2); }
+  .check p { grid-column: 1 / -1; font-size: 11.5px; font-weight: 700; color: var(--text); display: flex; justify-content: space-between; }
+  .check p span { color: var(--mint); }
+  .check b { display: flex; align-items: center; gap: 5px; font-weight: 500; white-space: nowrap; }
+  .check b i { width: 14px; height: 14px; border-radius: 50%; background: var(--mint-soft); color: var(--mint); display: grid; place-items: center; }
+  .check b i svg { width: 9px; height: 9px; stroke-width: 3.4; }
+  .when { margin-top: auto; display: flex; align-items: center; gap: 9px; padding: 9px 11px; border-radius: 10px; background: #F7F4FC; font-size: 12px; color: var(--text-2); }
+  .when b { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .when small { display: block; font-size: 11px; color: var(--mint); font-weight: 600; margin-top: 1px; }
+  .acts { display: flex; gap: 8px; margin-top: 10px; }
+  .btn { height: 40px; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 0 14px; border-radius: 11px; border: 1px solid var(--line-2); font-size: 13px; font-weight: 700; color: var(--text-2); background: #fff; white-space: nowrap; }
+  .btn.pri { flex: 1; background: var(--pu); border-color: var(--pu); color: #fff; box-shadow: 0 6px 16px -6px rgb(124 58 237 / .6); }
+
+  .stage { position: absolute; right: 0; top: 0; bottom: 0; width: 330px; background: radial-gradient(260px 300px at 60% 40%, #E9DDFF, transparent 70%); }
+  .phone { right: 22px; top: 34px; }
+  .msg-h { flex: none; display: flex; align-items: center; gap: 10px; padding: 6px 16px 10px; border-bottom: 1px solid #F0EDF4; }
+  .msg-h .back { width: 9px; height: 9px; border-left: 2px solid #3E3456; border-bottom: 2px solid #3E3456; rotate: 45deg; }
+  .msg-h .pf { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #FDE68A, #F59E0B); display: grid; place-items: center; font-weight: 800; font-size: 13px; color: #7A4B00; }
+  .msg-h b { display: block; font-size: 14px; font-weight: 700; }
+  .msg-h small { display: block; font-size: 11px; color: #8E8799; }
+  .msg-body { flex: 1; padding: 12px 14px; background: #F7F6F9; display: flex; flex-direction: column; }
+  .date { align-self: center; font-size: 11px; color: #8E8799; background: #ECEAF0; padding: 3px 10px; border-radius: 10px; }
+  .bub { margin-top: 12px; max-width: 232px; padding: 11px 13px; border-radius: 4px 16px 16px 16px; background: #fff; box-shadow: 0 1px 1.5px rgb(0 0 0 / .06); font-size: 12.5px; line-height: 1.55; color: #22202A; }
+  .bub .t { font-weight: 700; }
+  .bub p + p { margin-top: 8px; }
+  .bub .opt { color: #6D6878; font-size: 12px; }
+  .meta { display: flex; gap: 6px; align-items: center; margin: 5px 0 0 4px; font-size: 11px; color: #9C97A6; }
+  .meta i { font-style: normal; font-size: 10px; font-weight: 700; color: #fff; background: #B9B3C4; border-radius: 3px; padding: 0 4px; }
+  .msg-in { flex: none; display: flex; align-items: center; gap: 8px; padding: 10px 12px 22px; background: #fff; border-top: 1px solid #F0EDF4; }
+  .msg-in span { flex: 1; height: 34px; border-radius: 17px; background: #F2F0F5; display: flex; align-items: center; padding: 0 14px; font-size: 12px; color: #A7A1B1; }
+  .msg-in i { width: 34px; height: 34px; border-radius: 50%; background: #E4DFEB; }
+  .cap { position: absolute; right: 28px; top: 668px; width: 300px; text-align: center; font-size: 11.5px; color: var(--text-3); }
+  .cap b { color: var(--pu-2); }
+
+  .status { height: 26px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 16px; background: #fff; border-top: 1px solid var(--line); color: var(--text-3); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+  .status .on { color: var(--mint); font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .status .on i { width: 7px; height: 7px; border-radius: 50%; background: var(--mint); }
+  .status .r { margin-left: auto; }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar">
+    <span class="win-icon"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="4" fill="#8B5CF6"/><path d="M4.5 5.5h7v4.2h-4L5.3 11.5V9.7h-.8z" fill="#fff"/></svg></span>
+    <span class="win-title">단골노트 1.5.3 — 헤어살롱 봄날</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <div class="top">
+      <div class="brand"><i><svg viewBox="0 0 24 24" width="16" height="16"><path d="M6 4h10a2 2 0 0 1 2 2v14l-4-2.5L10 20l-4-2.5z" fill="#fff"/><path d="M9.5 9.5h5M9.5 12.5h3" stroke="#7C3AED" stroke-width="1.8" stroke-linecap="round"/></svg></i>단골노트</div>
+      <span class="shop"><b>봄</b>헤어살롱 봄날</span>
+      <nav class="nav">
+        <a><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6 6 0 0 1 3 5.5"/></svg>고객 명부</a>
+        <a class="on"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/></svg>단체 문자</a>
+        <a><svg class="i" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>템플릿</a>
+        <a><svg class="i" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>발송 기록</a>
+      </nav>
+      <span class="sp"></span>
+      <div class="conn"><span><i></i>문자 발송 서비스 연결됨</span><span><i></i>발신번호 사전 등록 완료</span></div>
+    </div>
+
+    <div class="content">
+      <section class="panel list">
+        <div class="l-head">
+          <h3>조건에 맞는 고객<span>238명</span></h3>
+          <div class="seg"><b class="on">발송 214</b><b>제외 24</b><b>전체 명부 486</b></div>
+          <div class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>이름 · 번호 뒤 4자리 · 메모</div>
+        </div>
+        <div class="rows">
+          <div class="row"><span class="av" style="background:#EDE4FF;color:#6D28D9">김</span><div class="who"><b><span class="nm">김○○</span><span class="tag vip">VIP</span><span class="tag re">재방문</span></b><small>010-****-1234 · 10.24 방문</small></div><div class="ok"><b><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>동의</b>2025.03.12</div></div>
+          <div class="row"><span class="av" style="background:#FFE7EF;color:#BE185D">이</span><div class="who"><b><span class="nm">이○○</span><span class="tag re">재방문</span></b><small>010-****-5821 · 10.19 방문</small></div><div class="ok"><b><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>동의</b>2024.11.02</div></div>
+          <div class="row"><span class="av" style="background:#E0F2FE;color:#0369A1">박</span><div class="who"><b><span class="nm">박○○</span><span class="tag vip">VIP</span></b><small>010-****-0937 · 10.11 방문</small></div><div class="ok"><b><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>동의</b>2025.06.20</div></div>
+          <div class="row out"><span class="av">최</span><div class="who"><b><span class="nm">최○○</span><span class="tag new" style="background:#EEECF1;color:#B4ADC0">신규</span></b><small>010-****-4410 · 10.05 방문</small></div><div class="ok"><b>미동의</b>발송 제외</div></div>
+          <div class="row"><span class="av" style="background:#FEF3C7;color:#A16207">정</span><div class="who"><b><span class="nm">정○○</span><span class="tag re">재방문</span></b><small>010-****-7702 · 09.28 방문</small></div><div class="ok"><b><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>동의</b>2025.01.08</div></div>
+          <div class="row"><span class="av" style="background:#EDE4FF;color:#6D28D9">강</span><div class="who"><b><span class="nm">강○○</span><span class="tag vip">VIP</span><span class="tag re">재방문</span></b><small>010-****-3168 · 09.21 방문</small></div><div class="ok"><b><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>동의</b>2023.09.15</div></div>
+          <div class="row out"><span class="av">조</span><div class="who"><b><span class="nm">조○○</span></b><small>010-****-2295 · 09.14 방문</small></div><div class="ok"><b>수신거부</b>10.02 요청</div></div>
+          <div class="row"><span class="av" style="background:#DCFCE7;color:#15803D">윤</span><div class="who"><b><span class="nm">윤○○</span><span class="tag new">신규</span></b><small>010-****-8846 · 08.30 방문</small></div><div class="ok"><b><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>동의</b>2026.08.30</div></div>
+          <div class="row"><span class="av" style="background:#FFE7EF;color:#BE185D">장</span><div class="who"><b><span class="nm">장○○</span><span class="tag re">재방문</span></b><small>010-****-6013 · 08.17 방문</small></div><div class="ok"><b><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>동의</b>2024.05.27</div></div>
+        </div>
+        <div class="l-foot"><span>중복 번호 자동 정리됨</span><span>발송 대상 <b>214명</b></span></div>
+      </section>
+
+      <section class="segm">
+        <div class="panel card">
+          <h3>발송 대상 조건<span>그룹으로 저장</span></h3>
+          <div class="cond">
+            <div class="cd"><span class="ic"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span><p>최근 방문<b>3개월 이내</b></p><em>07.26 ~ 10.26</em></div>
+            <div class="cd join">그리고</div>
+            <div class="cd"><span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M12 3 19 6v5c0 4.4-3 8.1-7 9.8-4-1.7-7-5.4-7-9.8V6z"/><path d="m9 12 2 2 4-4"/></svg></span><p>수신 동의<b>동의한 고객만</b></p><em><svg class="i" viewBox="0 0 24 24"><rect x="6" y="11" width="12" height="9" rx="1.5"/><path d="M9 11V8a3 3 0 0 1 6 0v3"/></svg>항상</em></div>
+            <div class="cd join">그리고</div>
+            <div class="cd"><span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 12V4h8l9 9-8 8z"/><circle cx="7.5" cy="8.5" r="1.3"/></svg></span><p>고객 태그<b>전체 태그</b></p><em>VIP · 재방문 · 신규</em></div>
+            <span class="add"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>조건 추가</span>
+          </div>
+        </div>
+        <div class="panel card result">
+          <p>최근 3개월 방문 · 수신 동의 고객</p>
+          <strong>214<small>명</small></strong>
+          <div class="fun">
+            <div><span style="width:100%;background:#E4D8FC;color:#5B21B6">최근 3개월 방문</span><b>238</b></div>
+            <div class="m"><span style="width:7.1%;min-width:96px;background:#F3F1F6;color:#8C8598">미동의 제외</span><b>−17</b></div>
+            <div class="m"><span style="width:2.9%;min-width:96px;background:#F3F1F6;color:#8C8598">수신거부 제외</span><b>−7</b></div>
+            <div><span style="width:89.9%;background:#8B5CF6;color:#fff">발송 대상</span><b style="color:#7C3AED">214</b></div>
+          </div>
+        </div>
+        <div class="panel card groups">
+          <h3>저장된 그룹<span>불러오기</span></h3>
+          <div class="gchips"><b>VIP <span>38</span></b><b>재방문 <span>156</span></b><b>신규 <span>44</span></b></div>
+        </div>
+      </section>
+
+      <section class="panel comp">
+        <h3 style="font-size:14px;font-weight:700">문자 작성</h3>
+        <div class="tpl"><span>템플릿</span>11월 단골 감사 이벤트<i></i></div>
+        <div class="types"><b>SMS</b><b class="on">LMS</b><b>MMS</b><span class="ad"><i><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>광고성 문자</span></div>
+        <div class="editor">
+          <span class="lock"><svg class="i" viewBox="0 0 24 24"><rect x="6" y="11" width="12" height="9" rx="1.5"/><path d="M9 11V8a3 3 0 0 1 6 0v3"/></svg>(광고)[헤어살롱 봄날]<small>자동 표기</small></span>
+          <p><span class="var">#{이름}</span> 고객님, 늘 찾아 주셔서 감사합니다.</p>
+          <p>11월 한 달 동안 단골 고객님께 클리닉 시술 20% 할인을 드려요.</p>
+          <p>· 기간: 11.1(일) ~ 11.30(월)<br>· 예약: 매장 전화 또는 방문</p>
+          <span class="lock"><svg class="i" viewBox="0 0 24 24"><rect x="6" y="11" width="12" height="9" rx="1.5"/><path d="M9 11V8a3 3 0 0 1 6 0v3"/></svg>무료수신거부 080-***-****<small>자동 추가</small></span>
+          <span class="bytes"><b>318</b> / 2,000 byte</span>
+        </div>
+        <div class="vars"><b>+ 고객 이름</b><b>+ 최근 방문일</b><b>+ 매장 전화</b></div>
+        <div class="check"><p>발송 전 점검<span>4/4 통과</span></p><b><i><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>(광고) 맨 앞 표기</b><b><i><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>무료 수신거부 안내</b><b><i><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>미동의·거부 24명 제외</b><b><i><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>같은 문자 재발송 없음</b></div>
+        <div class="when"><svg class="i" viewBox="0 0 24 24" style="color:#7C3AED"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><div>예약 발송 <b>10.27(화) 오전 10:00</b><small>광고 문자 발송 가능 시간(08~21시) 안</small></div></div>
+        <div class="acts"><span class="btn">테스트 발송</span><span class="btn pri"><svg class="i" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>214명에게 예약</span></div>
+      </section>
+
+      <div class="stage"></div>
+      <div class="phone">
+        <div class="ph-screen">
+          <div class="ph-status"><span>10:00</span><i class="ph-island"></i><span class="ph-icons"></span></div>
+          <div class="msg-h"><i class="back"></i><span class="pf">봄</span><div><b>헤어살롱 봄날</b><small>02-***-1234</small></div></div>
+          <div class="msg-body">
+            <span class="date">10월 23일 금요일</span>
+            <div class="bub" style="margin-top:10px">[헤어살롱 봄날] 김○○ 고객님, 10.24(토) 오후 2시 예약이 확정되었습니다.</div>
+            <div class="meta">오후 6:12</div>
+            <span class="date" style="margin-top:14px">10월 27일 화요일</span>
+            <div class="bub">
+              <p class="t">(광고)[헤어살롱 봄날]</p>
+              <p>김○○ 고객님, 늘 찾아 주셔서 감사합니다.</p>
+              <p>11월 한 달 동안 단골 고객님께 클리닉 시술 20% 할인을 드려요.</p>
+              <p class="opt">· 기간: 11.1(일) ~ 11.30(월)<br>· 예약: 매장 전화 또는 방문</p>
+              <p class="opt">무료수신거부 080-***-****</p>
+            </div>
+            <div class="meta"><i>LMS</i>오전 10:00</div>
+          </div>
+          <div class="msg-in"><i></i><span>문자 메시지</span></div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="status">
+      <span class="on"><i></i>준비됨</span>
+      <span>고객 명부 486명 · 수신 동의 412명</span>
+      <span>미동의·거부 번호 자동 제외 켜짐</span>
+      <span>마지막 발송 10.13 · 성공 198 · 실패 1</span>
+      <span class="r">단골노트 1.5.3</span>
+    </footer>
+  </main>
+</div>
+</body>
+</html>

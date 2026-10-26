@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>순위망원경</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 순위망원경: 브라우저에서 쓰는 웹 프로그램. 키워드 × 날짜 순위 히트맵이 중심. 밝은 테마 + 스카이. */
+  :root {
+    --sky: #0284c7; --sky-d: #0369a1; --sky-50: #f0f9ff; --sky-100: #e0f2fe;
+    --ink: #0f172a; --ink-2: #475569; --ink-3: #94a3b8; --line: #e5e9f0; --line-2: #f1f4f8; --page: #f6f8fb;
+    --up: #0891b2; --down: #e5484d; --num: 'Inter', 'Pretendard Variable', sans-serif;
+  }
+  body { font: 400 13px/1.4 'Pretendard Variable', sans-serif; color: var(--ink); letter-spacing: -0.01em; }
+  .browser { --bar: #e8ecf1; --tool: #fff; --page: #f6f8fb; --fav: #0284c7; }
+  .num, .tnum { font-family: var(--num); font-variant-numeric: tabular-nums; letter-spacing: 0; }
+  svg.i { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .br-fav { display: grid; place-items: center; }
+  .app { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--page); }
+
+  .nav { flex: none; height: 54px; display: flex; align-items: center; gap: 22px; padding: 0 22px; background: #fff; border-bottom: 1px solid var(--line); }
+  .logo { display: flex; align-items: center; gap: 9px; }
+  .logo span { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(140deg, #38bdf8, #0369a1); display: grid; place-items: center; }
+  .logo b { font-size: 15.5px; font-weight: 800; letter-spacing: -0.03em; }
+  .logo small { font: 500 11px var(--num); color: var(--ink-3); }
+  .links { display: flex; gap: 4px; align-self: stretch; }
+  .links a { display: flex; align-items: center; padding: 0 12px; font-size: 13.5px; font-weight: 500; color: var(--ink-2); position: relative; }
+  .links a.on { color: var(--sky-d); font-weight: 700; }
+  .links a.on::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 2.5px; border-radius: 2px; background: var(--sky); }
+  .src { margin-left: auto; height: 32px; display: flex; align-items: center; gap: 8px; padding: 0 12px; border-radius: 8px; background: var(--sky-50); border: 1px solid #cfe9fb; font-size: 12.5px; color: var(--ink-2); }
+  .src b { color: var(--ink); font-weight: 600; }
+  .src .xl { width: 18px; height: 18px; border-radius: 4px; background: #1f7a4d; color: #fff; font: 700 11px/18px var(--num); text-align: center; }
+  .btn { height: 34px; display: flex; align-items: center; gap: 6px; padding: 0 13px; border-radius: 8px; border: 1px solid var(--line); background: #fff; font-size: 13px; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
+  .btn.pri { background: var(--sky); border-color: var(--sky); color: #fff; box-shadow: 0 4px 12px -4px rgb(2 132 199 / .55); }
+
+  .wrap { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; padding: 16px 20px 16px; }
+  .sumrow { flex: none; display: flex; align-items: center; gap: 10px; }
+  .chip { height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 16px 0 14px; border-radius: 12px; background: #fff; border: 1px solid var(--line); }
+  .chip .ic { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; }
+  .chip p { font-size: 11.5px; color: var(--ink-3); font-weight: 500; }
+  .chip strong { display: block; font: 700 19px/1.15 var(--num); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .chip strong small { font: 600 12px 'Pretendard Variable'; color: var(--ink-2); margin-left: 2px; }
+  .chip.hl { background: linear-gradient(135deg, #0284c7, #0369a1); border-color: transparent; color: #fff; box-shadow: 0 8px 20px -10px rgb(2 132 199 / .7); }
+  .chip.hl p, .chip.hl strong small { color: rgb(255 255 255 / .8); }
+  .run { margin-left: auto; text-align: right; font-size: 12px; color: var(--ink-3); line-height: 1.5; }
+  .run b { color: var(--ink); font-weight: 600; }
+  .run .ok { display: inline-flex; align-items: center; gap: 5px; color: #059669; font-weight: 700; }
+
+  .grid2 { flex: 1; min-height: 0; display: flex; gap: 16px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 14px; }
+  .heat { flex: 1; min-width: 0; padding: 14px 16px 12px; display: flex; flex-direction: column; }
+  .hh { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .hh h2 { font-size: 15px; font-weight: 750; letter-spacing: -0.02em; }
+  .hh p { font-size: 12px; color: var(--ink-3); }
+  .filters { margin-left: auto; display: flex; gap: 6px; }
+  .filters span { height: 28px; display: flex; align-items: center; gap: 5px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line); font-size: 12px; color: var(--ink-2); }
+  .filters span b { color: var(--ink); font-weight: 600; }
+
+  table.hm { border-collapse: separate; border-spacing: 3px 3px; margin: -3px; }
+  .hm th { font: 500 11px var(--num); color: var(--ink-3); height: 30px; text-align: center; padding: 0; vertical-align: bottom; }
+  .hm th small { display: block; font: 500 11px 'Pretendard Variable'; color: var(--ink-3); }
+  .hm th.we, .hm th.we small { color: #c08a8a; }
+  .hm th.today { color: var(--sky-d); font-weight: 700; }
+  .hm th.today small { color: var(--sky-d); font-weight: 700; }
+  .hm th.l { text-align: left; font-family: 'Pretendard Variable'; font-size: 11.5px; }
+  .hm td { height: 31px; padding: 0; }
+  .hm td.k { width: 190px; padding-right: 6px; }
+  .hm td.k b { display: block; font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hm td.k small { display: block; font: 400 11px var(--num); color: var(--ink-3); margin-top: -1px; }
+  .hm td.a { width: 72px; }
+  .area { display: inline-block; height: 20px; line-height: 20px; padding: 0 7px; border-radius: 5px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .area.pop { background: #e0f2fe; color: #0369a1; }
+  .area.sb { background: #ede9fe; color: #6d28d9; }
+  .area.bl { background: #dcfce7; color: #15803d; }
+  .area.wd { background: #fef3c7; color: #a16207; }
+  .area.no { background: #f1f5f9; color: #94a3b8; }
+  .hm td.c { width: 38px; text-align: center; border-radius: 6px; font: 600 12px var(--num); font-variant-numeric: tabular-nums; }
+  .hm td.c.t { box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px var(--sky-d); font-weight: 800; }
+  .hm td.d { width: 52px; text-align: right; font: 700 12px var(--num); white-space: nowrap; }
+  .hm tr.sel td.k b { color: var(--sky-d); }
+  .hm tr.sel td.k { box-shadow: inset 3px 0 0 var(--sky); padding-left: 8px; border-radius: 0; }
+  .hm tr.sel td { background-clip: padding-box; }
+  .lg { margin-top: auto; padding-top: 10px; display: flex; align-items: center; gap: 12px; font-size: 11.5px; color: var(--ink-3); border-top: 1px solid var(--line-2); }
+  .lg .sw { display: flex; gap: 3px; align-items: center; }
+  .lg .sw i { width: 30px; height: 18px; border-radius: 4px; display: grid; place-items: center; font: 600 11px var(--num); font-style: normal; }
+  .lg .r { margin-left: auto; }
+
+  /* 오른쪽 패널 */
+  .side { width: 330px; flex: none; display: flex; flex-direction: column; gap: 12px; }
+  .pick { padding: 15px 16px 12px; }
+  .pick .eb { font-size: 11.5px; color: var(--ink-3); font-weight: 600; display: flex; justify-content: space-between; }
+  .pick h3 { margin-top: 5px; font-size: 16px; font-weight: 750; letter-spacing: -0.02em; }
+  .pick .who { margin-top: 3px; display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); }
+  .pick .who b { font-family: var(--num); font-weight: 600; }
+  .bignum { display: flex; align-items: baseline; gap: 6px; margin-top: 10px; }
+  .bignum strong { font: 800 36px/1 var(--num); letter-spacing: -0.04em; color: var(--sky-d); }
+  .bignum span { font-size: 15px; font-weight: 700; color: var(--sky-d); }
+  .bignum em { margin-left: 6px; font-style: normal; height: 22px; display: inline-flex; align-items: center; padding: 0 8px; border-radius: 11px; background: #ecfeff; color: var(--up); font: 700 12px var(--num); }
+  .bignum small { margin-left: auto; font-size: 11.5px; color: var(--ink-3); text-align: right; line-height: 1.4; }
+  .bignum small b { font-family: var(--num); color: var(--ink-2); }
+  .trend { margin-top: 8px; }
+  .post { margin-top: 6px; padding: 9px 11px; border-radius: 10px; background: var(--page); display: flex; align-items: center; gap: 10px; }
+  .post .pt { width: 36px; height: 36px; border-radius: 8px; flex: none; background: linear-gradient(160deg, #7dd3fc 0%, #38bdf8 45%, #fbbf24 46%, #f59e0b 60%, #0e7490 61%, #155e75); position: relative; overflow: hidden; }
+  .post .pt::after { content: ""; position: absolute; left: 6px; top: 6px; width: 8px; height: 8px; border-radius: 50%; background: #fff7d6; }
+  .post b { display: block; font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .post small { display: block; font-size: 11px; color: var(--ink-3); }
+  .post > div { min-width: 0; flex: 1; }
+  .post .cp { flex: none; height: 26px; padding: 0 9px; border-radius: 7px; background: #fff; border: 1px solid var(--line); display: flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; color: var(--ink-2); }
+  .areas { margin-top: 10px; }
+  .areas p { font-size: 11.5px; color: var(--ink-3); font-weight: 600; display: flex; justify-content: space-between; }
+  .areas p span { font-weight: 500; }
+  .stack { margin-top: 6px; height: 10px; border-radius: 5px; overflow: hidden; display: flex; gap: 2px; }
+  .stack i { display: block; height: 100%; }
+  .stack-l { margin-top: 6px; display: flex; gap: 12px; font-size: 11.5px; color: var(--ink-2); }
+  .stack-l i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 5px; }
+  .stack-l b { font-family: var(--num); font-weight: 600; margin-left: 2px; }
+
+  .logs { padding: 12px 16px; flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .logs h4 { font-size: 12px; font-weight: 700; color: var(--ink-2); display: flex; justify-content: space-between; }
+  .logs h4 span { font-weight: 500; color: var(--ink-3); }
+  .logs ul { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+  .logs li { display: grid; grid-template-columns: 58px 1fr auto; gap: 8px; align-items: center; font-size: 12px; color: var(--ink-2); }
+  .logs time { font: 500 11.5px var(--num); color: var(--ink-3); }
+  .logs .opts { margin-top: auto; padding-top: 10px; border-top: 1px solid var(--line-2); display: flex; flex-direction: column; gap: 6px; }
+  .opt { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; color: var(--ink-2); }
+  .tg { width: 30px; height: 18px; border-radius: 9px; background: #d4dae3; position: relative; }
+  .tg::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / .2); }
+  .tg.on { background: var(--sky); }
+  .tg.on::after { left: 14px; }
+</style>
+</head>
+<body>
+<div class="browser">
+  <header class="br-tabs"><span class="mac-lights"><i></i><i></i><i></i></span>
+    <span class="br-tab"><i class="br-fav"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></svg></i>순위망원경 · 오늘의 순위</span>
+    <span class="br-tab off">순위 기록 비교 · 10월</span>
+  </header>
+  <div class="br-tool"><span class="br-nav"><i></i><i></i><i></i></span><span class="br-url"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8a8f98" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>localhost:8080</b>/ranks?date=2026-10-26</span></div>
+  <main class="br-body">
+    <div class="app">
+      <nav class="nav">
+        <div class="logo">
+          <span><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 13 12-6 2 4-12 6z"/><path d="m15 7 4-2 2 4-4 2"/><path d="M9 16l-3 6M11 15l3 7"/></svg></span>
+          <b>순위망원경</b><small>1.3.4</small>
+        </div>
+        <div class="links"><a class="on">오늘의 순위</a><a>기록 비교</a><a>키워드·아이디</a><a>설정</a></div>
+        <div class="src"><span class="xl">X</span>키워드목록.xlsx <b>키워드 24개 · 아이디 3개</b></div>
+        <span class="btn"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>엑셀 저장</span>
+        <span class="btn pri"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 4v5h-5"/></svg>조회 시작</span>
+      </nav>
+
+      <div class="wrap">
+        <div class="sumrow">
+          <div class="chip hl"><span class="ic" style="background:rgb(255 255 255 / .18)"><svg class="i" style="width:16px;height:16px" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></span><div><p>5위 안</p><strong>18<small>개</small></strong></div></div>
+          <div class="chip"><span class="ic" style="background:#ecfeff;color:#0891b2"><svg class="i" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></svg></span><div><p>어제보다 상승</p><strong style="color:#0891b2">7<small>개</small></strong></div></div>
+          <div class="chip"><span class="ic" style="background:#fff1f1;color:#e5484d"><svg class="i" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></span><div><p>하락·이탈</p><strong style="color:#e5484d">3<small>개</small></strong></div></div>
+          <div class="chip"><span class="ic" style="background:#f1f5f9;color:#475569"><svg class="i" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span><div><p>첫 화면 노출</p><strong>51<small>/ 72건</small></strong></div></div>
+          <div class="chip"><span class="ic" style="background:#f1f5f9;color:#94a3b8"><svg class="i" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3 3.9M6.1 6.1A17 17 0 0 0 2 12s3.6 7 10 7a10 10 0 0 0 4.5-1"/></svg></span><div><p>미노출</p><strong style="color:#64748b">21<small>건</small></strong></div></div>
+          <div class="run"><span class="ok"><svg class="i" style="width:13px;height:13px" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>오늘 09:02 조회 완료</span><br>키워드 24 × 아이디 3 · <b>첫 화면 · 광고·더보기 제외</b></div>
+        </div>
+
+        <div class="grid2">
+          <section class="card heat">
+            <div class="hh">
+              <div><h2>키워드별 순위 히트맵</h2><p>최근 14일 · 칸 안 숫자는 영역 안 순위</p></div>
+              <div class="filters"><span>아이디 <b>전체 3</b></span><span>영역 <b>4개 영역</b></span><span>정렬 <b>등록순</b></span></div>
+            </div>
+            <table class="hm" id="hm"></table>
+            <div class="lg">
+              <span>순위</span>
+              <span class="sw"><i style="background:#075985;color:#fff">1</i><i style="background:#0284c7;color:#fff">2–3</i><i style="background:#38bdf8;color:#0c4a6e">4–5</i><i style="background:#7dd3fc;color:#0c4a6e">6–7</i><i style="background:#e0f2fe;color:#0369a1">8–10</i><i style="background:#f4f6f8;color:#b0b8c1">–</i></span>
+              <span>– 첫 화면 미노출</span>
+              <span class="r">노출 기록이 있는 12개 조합 표시 · 72건 중</span>
+            </div>
+          </section>
+
+          <aside class="side">
+            <section class="card pick">
+              <div class="eb">선택한 키워드 <span style="font-weight:500">14일 추이</span></div>
+              <h3>제주 한달살기 숙소</h3>
+              <div class="who"><span class="area pop">인기글</span><b>trip_j</b> · 첫 화면 기준</div>
+              <div class="bignum"><strong>2</strong><span>위</span><em>▲ 1</em><small>최고 <b>2위</b><br>14일 전 <b>6위</b></small></div>
+              <svg class="trend" id="trend" width="298" height="116" viewBox="0 0 298 116"></svg>
+              <div class="post"><span class="pt"></span><div><b>제주 한 달 살기 숙소 6곳 솔직 후기</b><small>trip_j · 10월 9일 발행</small></div><span class="cp"><svg class="i" style="width:12px;height:12px" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>글 주소</span></div>
+              <div class="areas">
+                <p>14일 노출 영역 <span>10.16부터 인기글 유지</span></p>
+                <div class="stack"><i style="flex:3;background:#a78bfa"></i><i style="flex:11;background:#0284c7"></i></div>
+                <div class="stack-l"><span><i style="background:#a78bfa"></i>스마트블록<b>3일</b></span><span><i style="background:#0284c7"></i>인기글<b>11일</b></span></div>
+              </div>
+            </section>
+            <section class="card logs">
+              <h4>오늘 조회 기록 <span>더보기 안쪽 제외 · 지난 기록과 비교</span></h4>
+              <ul>
+                <li><time>09:00:12</time>제주 한달살기 숙소<span class="area pop">인기글 2위</span></li>
+                <li><time>09:00:48</time>강아지 수제간식<span class="area sb">스마트블록 4위</span></li>
+                <li><time>09:01:20</time>홈카페 원두 추천<span class="area wd">웹문서 7위</span></li>
+                <li><time>09:01:55</time>캠핑 의자 비교<span class="area no">미노출</span></li>
+              </ul>
+            </section>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script>(() => {
+  // [키워드, 아이디, 오늘 영역, 14일 순위(10.13~10.26), null = 첫 화면 미노출]
+  const R = [
+    ['제주 한달살기 숙소', 'trip_j',  'pop', [6, 5, 5, 4, 4, 3, 4, 3, 3, 3, 2, 3, 3, 2]],
+    ['강아지 수제간식',    'dog_mom', 'sb',  [7, 7, 6, 6, 5, 5, 5, 4, 5, 4, 4, 4, 4, 4]],
+    ['홈카페 원두 추천',   'cafe_h',  'wd',  [null, null, 10, 9, 9, 8, 9, 9, 8, 9, 9, 8, 9, 7]],
+    ['캠핑 의자 비교',     'trip_j',  'no',  [6, 6, 7, 7, 7, 8, 8, 8, 9, 8, 9, 9, 9, null]],
+    ['제주 애월 카페',     'trip_j',  'pop', [2, 2, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1]],
+    ['노견 관절 영양제',   'dog_mom', 'bl',  [8, 8, 7, 7, 6, 6, 6, 5, 6, 5, 5, 5, 5, 3]],
+    ['드립커피 입문',      'cafe_h',  'sb',  [4, 4, 4, 5, 5, 5, 4, 5, 5, 5, 5, 5, 5, 5]],
+    ['강아지 산책 코스',   'dog_mom', 'pop', [3, 3, 3, 3, 4, 4, 3, 4, 4, 4, 4, 4, 4, 6]],
+    ['제주 렌터카 꿀팁',   'trip_j',  'bl',  [5, 4, 4, 3, 3, 3, 2, 2, 2, 3, 2, 2, 2, 2]],
+    ['콜드브루 만들기',    'cafe_h',  'pop', [7, 6, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 3]],
+    ['반려견 동반 숙소',   'dog_mom', 'sb',  [null, null, null, null, 10, 10, 9, 9, 9, 10, 9, 9, 9, 9]],
+    ['핸드드립 도구',      'cafe_h',  'wd',  [9, 9, 9, 10, 10, null, 10, 10, 10, null, 10, 10, 10, 10]],
+  ];
+  const AREA = { pop: '인기글', sb: '스마트블록', bl: '블로그', wd: '웹문서', no: '미노출' };
+  const days = ['화', '수', '목', '금', '토', '일', '월', '화', '수', '목', '금', '토', '일', '월'];
+  const color = (r) => r == null ? ['#f4f6f8', '#b0b8c1'] : r === 1 ? ['#075985', '#fff'] : r <= 3 ? ['#0284c7', '#fff'] : r <= 5 ? ['#38bdf8', '#0c4a6e'] : r <= 7 ? ['#7dd3fc', '#0c4a6e'] : ['#e0f2fe', '#0369a1'];
+  let h = '<thead><tr><th class="l">키워드 · 아이디</th><th class="l">오늘 영역</th>';
+  days.forEach((d, i) => {
+    const date = 13 + i, we = d === '토' || d === '일', today = i === 13;
+    h += `<th class="${we ? 'we' : ''}${today ? ' today' : ''}"><small>${today ? '오늘' : d}</small>${i === 0 ? '10.' : ''}${date}</th>`;
+  });
+  h += '<th style="text-align:right">어제 대비</th></tr></thead><tbody>';
+  R.forEach(([k, id, a, s], ri) => {
+    h += `<tr${ri === 0 ? ' class="sel"' : ''}><td class="k"><b>${k}</b><small>${id}</small></td><td class="a"><span class="area ${a}">${AREA[a]}</span></td>`;
+    s.forEach((r, i) => {
+      const [bg, fg] = color(r);
+      h += `<td class="c${i === 13 ? ' t' : ''}" style="background:${bg};color:${fg}">${r == null ? '–' : r}</td>`;
+    });
+    const t = s[13], y = s[12];
+    let d;
+    if (t == null && y != null) d = '<span style="color:#e5484d">이탈</span>';
+    else if (t == null) d = '<span style="color:#94a3b8">–</span>';
+    else if (y == null) d = '<span style="color:#0891b2">신규</span>';
+    else if (t < y) d = `<span style="color:#0891b2">▲ ${y - t}</span>`;
+    else if (t > y) d = `<span style="color:#e5484d">▼ ${t - y}</span>`;
+    else d = '<span style="color:#94a3b8">–</span>';
+    h += `<td class="d">${d}</td></tr>`;
+  });
+  document.getElementById('hm').innerHTML = h + '</tbody>';
+
+  // 선택 키워드 추이 (위가 1위)
+  const s = R[0][3], W = 298, H = 116, L = 26, Rr = 8, T = 10, B = 92, maxR = 7;
+  const x = (i) => L + i * (W - L - Rr) / (s.length - 1);
+  const y = (r) => T + (r - 1) / (maxR - 1) * (B - T);
+  let g = '';
+  [1, 3, 5, 7].forEach((r) => { g += `<line x1="${L}" x2="${W - Rr}" y1="${y(r)}" y2="${y(r)}" stroke="#eef2f7"/><text x="${L - 8}" y="${y(r) + 4}" text-anchor="end" font-family="Inter" font-size="11" fill="#94a3b8">${r}</text>`; });
+  g += `<rect x="${x(0) - 4}" y="${T - 6}" width="${x(2) - x(0) + 8}" height="${B - T + 12}" rx="4" fill="#f5f3ff"/>`;
+  const pts = s.map((r, i) => `${x(i).toFixed(1)},${y(r).toFixed(1)}`);
+  g += `<path d="M${x(0)},${B} L${pts.join(' L')} L${x(13)},${B} Z" fill="url(#tf)"/>`;
+  g += `<polyline points="${pts.join(' ')}" fill="none" stroke="#0284c7" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  s.forEach((r, i) => { g += i === 13 ? `<circle cx="${x(i)}" cy="${y(r)}" r="5" fill="#fff" stroke="#0284c7" stroke-width="2.5"/>` : `<circle cx="${x(i)}" cy="${y(r)}" r="2" fill="#0284c7"/>`; });
+  [[0, '10.13'], [6, '10.19'], [13, '오늘']].forEach(([i, t]) => { g += `<text x="${x(i)}" y="${H - 6}" text-anchor="${i === 13 ? 'end' : i === 0 ? 'start' : 'middle'}" font-family="Inter, Pretendard Variable" font-size="11" fill="#94a3b8">${t}</text>`; });
+  g += `<text x="${x(1)}" y="${B - 4}" text-anchor="middle" font-family="Pretendard Variable" font-size="11" fill="#7c3aed">스마트블록</text>`;
+  document.getElementById('trend').innerHTML = `<defs><linearGradient id="tf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0284c7" stop-opacity=".18"/><stop offset="1" stop-color="#0284c7" stop-opacity="0"/></linearGradient></defs>` + g;
+})();</script>
+</body>
+</html>

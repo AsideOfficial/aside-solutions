@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>주문관제탑</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&display=swap">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 주문관제탑: 쇼핑몰 주문 처리를 관제실처럼 보는 화면. 어두운 바탕, 오렌지 신호, 숫자는 모노 글꼴. */
+  :root {
+    --bg: #0D1117; --panel: #131A23; --panel-2: #18212C; --line: rgb(139 155 178 / .14); --line-2: rgb(139 155 178 / .24);
+    --text: #E6EBF2; --text-2: #A2AEBE; --text-3: #6A7788;
+    --or: #F97316; --or-2: #FB923C; --or-soft: rgb(249 115 22 / .13); --ok: #3DD68C; --wait: #EAB308;
+    --mono: 'JetBrains Mono', Consolas, monospace;
+  }
+  body { font: 400 13px/1.4 'Pretendard Variable', 'Segoe UI', sans-serif; color: var(--text); background: var(--bg); letter-spacing: -0.01em; }
+  .win { --bar: #090C11; --bar-fg: #97A3B4; background: var(--bg); }
+  .win-body { flex-direction: column; padding: 0 16px; }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+
+  .head { height: 58px; flex: none; display: flex; align-items: center; gap: 16px; }
+  .head h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.03em; }
+  .head h1 span { font-size: 13px; font-weight: 500; color: var(--text-3); margin-left: 8px; }
+  .clock { font: 700 22px/1 var(--mono); color: var(--text); letter-spacing: -0.02em; padding-left: 16px; border-left: 1px solid var(--line-2); }
+  .clock small { font-size: 12px; color: var(--text-3); font-weight: 500; margin-left: 6px; font-family: 'Pretendard Variable', sans-serif; }
+  .head .sp { flex: 1; }
+  .auto { display: flex; align-items: center; gap: 9px; height: 34px; padding: 0 13px; border-radius: 8px; background: var(--or-soft); border: 1px solid rgb(249 115 22 / .3); font-size: 12.5px; font-weight: 700; color: var(--or-2); }
+  .auto i { width: 8px; height: 8px; border-radius: 50%; background: var(--or); box-shadow: 0 0 0 4px rgb(249 115 22 / .22), 0 0 12px var(--or); }
+  .auto span { color: var(--text-2); font-weight: 500; }
+  .auto span b { font-family: var(--mono); color: var(--text); font-weight: 700; }
+  .btn { height: 34px; display: flex; align-items: center; gap: 7px; padding: 0 13px; border-radius: 8px; border: 1px solid var(--line-2); font-size: 12.5px; font-weight: 600; color: var(--text-2); }
+  .btn.pri { background: var(--or); border-color: var(--or); color: #1B0B00; font-weight: 700; }
+
+  .tiles { flex: none; display: grid; grid-template-columns: repeat(4, 1fr) 1.15fr; gap: 10px; }
+  .tile { position: relative; height: 92px; padding: 12px 14px; border-radius: 10px; background: var(--panel); border: 1px solid var(--line); overflow: hidden; }
+  .tile p { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; font-weight: 700; color: var(--text); }
+  .tile p small { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; color: var(--text-3); }
+  .tile p small i { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); }
+  .tile p small i.x { background: var(--wait); }
+  .tile strong { display: block; margin-top: 6px; font: 800 30px/1 var(--mono); letter-spacing: -0.04em; }
+  .tile strong small { font: 500 12px/1 'Pretendard Variable', sans-serif; color: var(--text-3); margin-left: 4px; letter-spacing: 0; }
+  .tile .meta { margin-top: 7px; font-size: 11.5px; color: var(--text-3); }
+  .tile .meta b { color: var(--text-2); font-weight: 600; font-family: var(--mono); }
+  .tile svg.sp { position: absolute; right: 12px; bottom: 12px; }
+  .tile.sum { background: linear-gradient(135deg, #2A1606, #1A1209 70%); border-color: rgb(249 115 22 / .4); }
+  .tile.sum strong { color: var(--or-2); font-size: 34px; }
+  .tile.sum .bar { margin-top: 9px; height: 6px; border-radius: 3px; display: flex; overflow: hidden; gap: 2px; }
+  .tile.sum .bar i { display: block; height: 100%; }
+
+  .flow { flex: none; margin-top: 12px; height: 186px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); padding: 12px 16px 14px; display: flex; flex-direction: column; }
+  .flow-h { display: flex; align-items: center; gap: 10px; font-size: 12.5px; font-weight: 700; }
+  .flow-h span { font-size: 11.5px; font-weight: 500; color: var(--text-3); }
+  .flow-h .sp { flex: 1; }
+  .lanes { flex: 1; display: grid; grid-template-columns: 1fr 26px 1fr 26px 1fr 26px 1fr; align-items: stretch; margin-top: 10px; }
+  .arrow { display: grid; place-items: center; color: var(--or); }
+  .arrow svg { width: 20px; height: 20px; stroke-width: 2.2; }
+  .arrow.off { color: var(--text-3); }
+  .lane { position: relative; padding: 11px 13px 11px; border-radius: 10px; background: var(--panel-2); border: 1px solid var(--line); display: flex; flex-direction: column; }
+  .lane.done { border-color: rgb(61 214 140 / .3); }
+  .lane.now { border-color: rgb(249 115 22 / .55); box-shadow: 0 0 0 1px rgb(249 115 22 / .2), 0 0 24px -6px rgb(249 115 22 / .45); }
+  .ln-top { display: flex; align-items: center; gap: 8px; }
+  .ln-top em { font: 700 11px/1 var(--mono); font-style: normal; color: var(--text-3); }
+  .ln-top b { font-size: 13px; font-weight: 700; }
+  .ln-top .tag { margin-left: auto; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 5px; }
+  .tag.ok { color: var(--ok); background: rgb(61 214 140 / .12); }
+  .tag.or { color: var(--or-2); background: var(--or-soft); }
+  .tag.wa { color: var(--wait); background: rgb(234 179 8 / .12); }
+  .ln-num { display: flex; align-items: baseline; gap: 6px; margin-top: 8px; }
+  .ln-num strong { font: 800 26px/1 var(--mono); letter-spacing: -0.04em; }
+  .ln-num span { font-size: 12px; color: var(--text-3); }
+  .ln-num span b { font-family: var(--mono); color: var(--text-2); font-weight: 700; }
+  .prog { margin-top: 9px; height: 5px; border-radius: 3px; background: #243040; overflow: hidden; }
+  .prog i { display: block; height: 100%; border-radius: 3px; background: var(--or); }
+  .prog i.ok { background: var(--ok); }
+  .ln-rows { margin-top: auto; display: flex; flex-direction: column; gap: 3px; font-size: 11.5px; color: var(--text-3); padding-top: 8px; }
+  .ln-rows span { display: flex; justify-content: space-between; }
+  .ln-rows b { font-family: var(--mono); font-weight: 700; color: var(--text-2); }
+  .ln-rows b.or { color: var(--or-2); }
+
+  .bottom { flex: 1; min-height: 0; display: flex; gap: 12px; margin: 12px 0 14px; }
+  .tbl { flex: 1; min-width: 0; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); display: flex; flex-direction: column; overflow: hidden; }
+  .tbl-h { height: 44px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--line); font-size: 12.5px; font-weight: 700; }
+  .tbl-h span { font-size: 11.5px; font-weight: 500; color: var(--text-3); }
+  .tbl-h .sp { flex: 1; }
+  .chip { height: 26px; display: flex; align-items: center; gap: 6px; padding: 0 10px; border-radius: 6px; background: var(--panel-2); border: 1px solid var(--line); font-size: 11.5px; font-weight: 600; color: var(--text-2); }
+  .chip b { font-family: var(--mono); color: var(--text); }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  th { height: 32px; text-align: left; padding: 0 12px; font-size: 11.5px; font-weight: 500; color: var(--text-3); border-bottom: 1px solid var(--line); background: #10161E; white-space: nowrap; }
+  td { height: 40px; padding: 0 12px; border-bottom: 1px solid var(--line); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12.5px; }
+  td.mono { font-size: 12px; color: var(--text-2); }
+  td.inv { font-size: 12.5px; color: var(--text); font-weight: 700; }
+  .mk { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); }
+  .mk i { width: 7px; height: 7px; border-radius: 2px; }
+  .st { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; color: var(--ok); }
+  .st svg { width: 14px; height: 14px; stroke-width: 2.4; }
+  .st.wa { color: var(--wait); }
+  tr.wait td { color: var(--text-3); }
+  tr.fresh td { background: rgb(249 115 22 / .06); }
+  tr.fresh td:first-child { box-shadow: inset 2px 0 0 var(--or); }
+
+  .sup { width: 330px; flex: none; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); display: flex; flex-direction: column; overflow: hidden; }
+  .sup ul { padding: 4px 16px 0; }
+  .sup li { display: grid; grid-template-columns: 1fr auto 64px; align-items: center; gap: 10px; height: 39px; border-bottom: 1px solid var(--line); font-size: 12.5px; }
+  .sup li:last-child { border-bottom: 0; }
+  .sup li b { font-weight: 600; }
+  .sup li small { display: block; font-size: 11px; color: var(--text-3); margin-top: 1px; }
+  .sup li .n { font: 700 13px/1 var(--mono); text-align: right; }
+  .sup li .n small { display: inline; font: 500 11px/1 'Pretendard Variable', sans-serif; margin-left: 2px; }
+  .pill { justify-self: end; font-size: 11px; font-weight: 700; padding: 3px 7px; border-radius: 5px; color: var(--or-2); background: var(--or-soft); white-space: nowrap; }
+  .sup-f { margin-top: auto; display: flex; gap: 8px; padding: 12px 16px 14px; border-top: 1px solid var(--line); }
+  .sup-f .btn { flex: 1; justify-content: center; }
+
+  .status { height: 26px; flex: none; margin: 0 -16px; display: flex; align-items: center; gap: 18px; padding: 0 16px; background: #090C11; border-top: 1px solid var(--line); color: var(--text-3); font-size: 11.5px; }
+  .status .on { color: var(--or-2); font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .status .on i { width: 7px; height: 7px; border-radius: 50%; background: var(--or); }
+  .status b { font-family: var(--mono); color: var(--text-2); font-weight: 700; }
+  .status .r { margin-left: auto; }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar">
+    <span class="win-icon"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="3.5" fill="#F97316"/><path d="M8 3.5v9M5 6.5h6M4.5 12.5h7" stroke="#1B0B00" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="3.8" r="1.4" fill="#1B0B00"/></svg></span>
+    <span class="win-title">주문관제탑 2.7.0 — 오늘의 처리</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <div class="head">
+      <h1>오늘의 처리<span>10월 26일 월요일 · 금 15:00 이후 주문</span></h1>
+      <span class="clock">09:34:12<small>현재</small></span>
+      <span class="sp"></span>
+      <span class="auto"><i></i>자동 처리 중<span>다음 발주 메일 <b>11:00</b></span></span>
+      <span class="btn"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 10v10"/></svg>정산표</span>
+      <span class="btn pri"><svg class="i" viewBox="0 0 24 24"><path d="M7 5v14l11-7z"/></svg>처리 시작</span>
+    </div>
+
+    <div class="tiles">
+      <div class="tile">
+        <p>스마트스토어<small><i></i>API</small></p>
+        <strong>128<small>건</small></strong>
+        <div class="meta">취소 <b>2</b> · 발주 대상 <b>126</b></div>
+        <svg class="sp" width="64" height="22" viewBox="0 0 64 22"><polyline points="0,18 8,15 16,16 24,10 32,12 40,6 48,8 56,4 64,7" fill="none" stroke="#F97316" stroke-width="1.6" stroke-linejoin="round" opacity=".8"/></svg>
+      </div>
+      <div class="tile">
+        <p>쿠팡<small><i></i>API</small></p>
+        <strong>96<small>건</small></strong>
+        <div class="meta">취소 <b>1</b> · 발주 대상 <b>95</b></div>
+        <svg class="sp" width="64" height="22" viewBox="0 0 64 22"><polyline points="0,16 8,17 16,12 24,13 32,9 40,11 48,6 56,8 64,5" fill="none" stroke="#F97316" stroke-width="1.6" stroke-linejoin="round" opacity=".8"/></svg>
+      </div>
+      <div class="tile">
+        <p>11번가<small><i></i>API</small></p>
+        <strong>31<small>건</small></strong>
+        <div class="meta">취소 <b>0</b> · 발주 대상 <b>31</b></div>
+        <svg class="sp" width="64" height="22" viewBox="0 0 64 22"><polyline points="0,17 8,15 16,17 24,14 32,15 40,12 48,13 56,10 64,11" fill="none" stroke="#F97316" stroke-width="1.6" stroke-linejoin="round" opacity=".8"/></svg>
+      </div>
+      <div class="tile">
+        <p>자사몰<small><i class="x"></i>엑셀 업로드</small></p>
+        <strong>12<small>건</small></strong>
+        <div class="meta">반품 <b>1</b> · 발주 대상 <b>11</b></div>
+        <svg class="sp" width="64" height="22" viewBox="0 0 64 22"><polyline points="0,18 8,18 16,16 24,17 32,14 40,16 48,13 56,15 64,12" fill="none" stroke="#F97316" stroke-width="1.6" stroke-linejoin="round" opacity=".8"/></svg>
+      </div>
+      <div class="tile sum">
+        <p>오늘 취합한 주문<small style="color:#FDBA74">판매처 4곳</small></p>
+        <strong>267<small>건 · 발주 대상 263</small></strong>
+        <div class="bar"><i style="width:47.9%;background:#F97316"></i><i style="width:36%;background:#FB923C"></i><i style="width:11.6%;background:#FDBA74"></i><i style="width:4.5%;background:#FED7AA"></i></div>
+      </div>
+    </div>
+
+    <section class="flow">
+      <div class="flow-h">처리 흐름<span>주문이 정산까지 가는 길 · 단계별 진행</span><span class="sp"></span><span>마지막 갱신 09:34:05</span></div>
+      <div class="lanes">
+        <div class="lane done">
+          <div class="ln-top"><em>01</em><b>주문 취합</b><span class="tag ok">완료</span></div>
+          <div class="ln-num"><strong class="mono">267</strong><span>/ <b>267</b>건</span></div>
+          <div class="prog"><i class="ok" style="width:100%"></i></div>
+          <div class="ln-rows"><span>취소·반품 제외<b>4건</b></span><span>수집 시각<b>09:00:06</b></span></div>
+        </div>
+        <span class="arrow"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        <div class="lane now">
+          <div class="ln-top"><em>02</em><b>발주 메일</b><span class="tag or">11:00 예약</span></div>
+          <div class="ln-num"><strong class="mono">6</strong><span>/ <b>6</b>곳 발주서 생성</span></div>
+          <div class="prog"><i style="width:50%"></i></div>
+          <div class="ln-rows"><span>발주 대상<b>263건</b></span><span>발송까지<b class="or">1시간 25분</b></span></div>
+        </div>
+        <span class="arrow"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        <div class="lane">
+          <div class="ln-top"><em>03</em><b>운송장 입력</b><span class="tag wa">회신 5/6곳</span></div>
+          <div class="ln-num"><strong class="mono">118</strong><span>/ <b>124</b>건 · 금 15:00 발주분</span></div>
+          <div class="prog"><i style="width:95.2%"></i></div>
+          <div class="ln-rows"><span>마켓 자동 입력<b>118건</b></span><span>회신 대기<b class="or">새봄섬유 6건</b></span></div>
+        </div>
+        <span class="arrow"><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        <div class="lane">
+          <div class="ln-top"><em>04</em><b>정산</b><span class="tag ok">10월 4주차</span></div>
+          <div class="ln-num"><strong class="mono">41</strong><span>/ <b>43</b>건 입금 대조</span></div>
+          <div class="prog"><i style="width:95.3%"></i></div>
+          <div class="ln-rows"><span>매출 · 매입<b>3,842만 · 2,796만</b></span><span>미수금<b class="or">2건 · 61만</b></span></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="bottom">
+      <section class="tbl">
+        <div class="tbl-h">운송장 입력<span>금 15:00 발주분 · 공급처 회신 파일 → 마켓 자동 입력</span><span class="sp"></span><span class="chip">입력 완료 <b>118</b></span><span class="chip">대기 <b>6</b></span></div>
+        <table>
+          <colgroup><col style="width:168px"><col style="width:104px"><col><col style="width:92px"><col style="width:96px"><col style="width:138px"><col style="width:118px"></colgroup>
+          <thead><tr><th>주문번호</th><th>판매처</th><th>상품 · 옵션</th><th>공급처</th><th>택배사</th><th>운송장번호</th><th>상태</th></tr></thead>
+          <tbody>
+            <tr class="fresh"><td class="mono">2026102318472031</td><td><span class="mk"><i style="background:#F97316"></i>스마트스토어</span></td><td>극세사 무릎담요 · 그레이</td><td>온누리리빙</td><td>CJ대한통운</td><td class="mono inv">6841 2290 3317</td><td><span class="st"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>자동 입력 완료</span></td></tr>
+            <tr><td class="mono">31000174428815</td><td><span class="mk"><i style="background:#FB923C"></i>쿠팡</span></td><td>스테인리스 텀블러 500ml</td><td>한결상사</td><td>한진택배</td><td class="mono inv">5120 8447 1926</td><td><span class="st"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>자동 입력 완료</span></td></tr>
+            <tr><td class="mono">2026102318501144</td><td><span class="mk"><i style="background:#F97316"></i>스마트스토어</span></td><td>실리콘 주방장갑 2P · 베이지</td><td>한결상사</td><td>한진택배</td><td class="mono inv">5120 8447 1933</td><td><span class="st"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>자동 입력 완료</span></td></tr>
+            <tr><td class="mono">202610231742115</td><td><span class="mk"><i style="background:#FDBA74"></i>11번가</span></td><td>차량용 방향제 3종 세트</td><td>대광물류</td><td>롯데택배</td><td class="mono inv">2584 1773 0562</td><td><span class="st"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>자동 입력 완료</span></td></tr>
+            <tr><td class="mono">31000174431207</td><td><span class="mk"><i style="background:#FB923C"></i>쿠팡</span></td><td>고양이 스크래쳐 대형</td><td>펫앤홈</td><td>우체국택배</td><td class="mono inv">60703 4881 2254</td><td><span class="st"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>자동 입력 완료</span></td></tr>
+            <tr><td class="mono">AS-1023-0088</td><td><span class="mk"><i style="background:#FED7AA"></i>자사몰</span></td><td>원목 도마 L · 월넛</td><td>숲공방</td><td>로젠택배</td><td class="mono inv">347 2910 5513</td><td><span class="st"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>자동 입력 완료</span></td></tr>
+            <tr class="wait"><td class="mono">2026102318533560</td><td><span class="mk"><i style="background:#F97316"></i>스마트스토어</span></td><td>겨울 수면양말 5족</td><td>새봄섬유</td><td>—</td><td class="mono">—</td><td><span class="st wa"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>회신 대기</span></td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <aside class="sup">
+        <div class="tbl-h">공급처별 발주서<span>11:00 메일 발송 예정</span></div>
+        <ul>
+          <li><div><b>온누리리빙</b><small>자체 양식 · 엑셀</small></div><span class="n">82<small>건</small></span><span class="pill">생성 완료</span></li>
+          <li><div><b>한결상사</b><small>표준 양식</small></div><span class="n">64<small>건</small></span><span class="pill">생성 완료</span></li>
+          <li><div><b>대광물류</b><small>자체 양식 · CSV</small></div><span class="n">41<small>건</small></span><span class="pill">생성 완료</span></li>
+          <li><div><b>펫앤홈</b><small>표준 양식</small></div><span class="n">38<small>건</small></span><span class="pill">생성 완료</span></li>
+          <li><div><b>새봄섬유</b><small>자체 양식 · 엑셀</small></div><span class="n">26<small>건</small></span><span class="pill">생성 완료</span></li>
+          <li><div><b>숲공방</b><small>표준 양식</small></div><span class="n">12<small>건</small></span><span class="pill">생성 완료</span></li>
+        </ul>
+        <div class="sup-f"><span class="btn"><svg class="i" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>미리보기</span><span class="btn"><svg class="i" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>지금 발송</span></div>
+      </aside>
+    </div>
+
+    <footer class="status">
+      <span class="on"><i></i>자동 처리 중</span>
+      <span>마켓 API <b>3</b>곳 연결 · 자사몰 엑셀</span>
+      <span>공급처 <b>6</b>곳 · 양식 <b>6</b>종</span>
+      <span>발주 메일 매일 <b>11:00 · 15:00</b></span>
+      <span>미발송 주문 알림 켜짐</span>
+      <span class="r">주문관제탑 2.7.0</span>
+    </footer>
+  </main>
+</div>
+</body>
+</html>

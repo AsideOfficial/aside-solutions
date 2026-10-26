@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>오토딜리버</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 오토딜리버: 웹 대시보드. 헤더 KPI + 가로 파이프라인 레인(주문 카드) + 실시간 피드 + 상품별 전송 방식 목록. */
+  :root {
+    --bg: #f4f7f6; --surface: #fff; --lane: #edf3f1; --line: #e2e9e7; --line-2: #d3ddda;
+    --text: #12201d; --text-2: #4c5d59; --text-3: #85948f;
+    --accent: #0f766e; --accent-2: #115e59; --accent-bg: #e3f3ef; --accent-soft: #b8e0d7;
+    --ok: #15803d; --warn: #b45309; --warn-bg: #fdf1df; --info: #2563eb;
+  }
+  body { font: 400 13px/1.4 'Pretendard Variable', sans-serif; color: var(--text); background: var(--bg); letter-spacing: -0.01em; word-break: keep-all; }
+  .mix { margin-left: auto; width: 236px; padding-left: 22px; border-left: 1px solid var(--line); }
+  .mix p { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-3); }
+  .mix p b { color: var(--text); font-weight: 700; }
+  .mix .sb { display: flex; gap: 2px; height: 10px; margin-top: 8px; border-radius: 5px; overflow: hidden; }
+  .mix .sb i { display: block; height: 100%; }
+  .mix ul { display: flex; gap: 12px; margin-top: 7px; font-size: 11.5px; color: var(--text-2); }
+  .mix li { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .mix li i { width: 8px; height: 8px; border-radius: 2px; }
+  .mix li b { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .browser { --bar: #e4e9e8; --page: var(--bg); --fav: #0f766e; }
+  .br-fav { display: grid; place-items: center; }
+  .tnum, .num { font-variant-numeric: tabular-nums; }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .page { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+  .hdr { height: 54px; flex: none; display: flex; align-items: center; gap: 22px; padding: 0 22px; background: #fff; border-bottom: 1px solid var(--line); }
+  .logo { display: flex; align-items: center; gap: 9px; font-size: 15px; font-weight: 800; letter-spacing: -0.03em; }
+  .logo i { width: 28px; height: 28px; border-radius: 8px; background: var(--accent); display: grid; place-items: center; }
+  .nav { display: flex; gap: 2px; align-self: stretch; }
+  .nav a { display: flex; align-items: center; padding: 0 12px; font-size: 13px; font-weight: 600; color: var(--text-3); }
+  .nav a.on { color: var(--accent-2); box-shadow: inset 0 -2px 0 var(--accent); }
+  .hdr .sp { flex: 1; }
+  .live { display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 16px; background: var(--accent-bg); color: var(--accent-2); font-weight: 700; font-size: 12px; }
+  .live i { width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 0 4px rgb(16 185 129 / .2); }
+  .live span { color: var(--text-2); font-weight: 500; }
+  .store { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-2); }
+  .store b { width: 30px; height: 30px; border-radius: 50%; background: #d7ebe6; color: var(--accent-2); display: grid; place-items: center; font-size: 12px; font-weight: 800; }
+
+  .main { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 276px; grid-template-rows: auto 1fr; gap: 14px; padding: 16px 20px 16px; }
+  .kpi { grid-column: 1 / 3; height: 78px; display: flex; align-items: center; gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 0 22px; box-shadow: 0 1px 2px rgb(18 32 29 / .04); }
+  .head { display: flex; align-items: baseline; gap: 12px; padding-right: 26px; border-right: 1px solid var(--line); height: 50px; flex-direction: column; justify-content: center; gap: 2px; }
+  .head p { font-size: 12px; color: var(--text-2); font-weight: 600; }
+  .head .n { display: flex; align-items: baseline; gap: 10px; font-variant-numeric: tabular-nums; }
+  .head strong { font-size: 32px; font-weight: 800; letter-spacing: -0.04em; line-height: 1.05; color: var(--text); }
+  .head strong small { font-size: 16px; font-weight: 700; margin-left: 2px; }
+  .head .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-3); align-self: center; }
+  .head .avg { font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--accent-2); }
+  .head .avg small { font-size: 13px; font-weight: 600; color: var(--text-2); margin-right: 6px; }
+  .hours { display: flex; align-items: flex-end; gap: 14px; padding: 0 26px; border-right: 1px solid var(--line); height: 50px; }
+  .hours .bars { display: flex; align-items: flex-end; gap: 4px; height: 44px; }
+  .hours .bars i { width: 12px; border-radius: 3px 3px 1px 1px; background: var(--accent-soft); }
+  .hours .bars i.n { background: #8fcfc2; }
+  .hours .bars i.now { background: var(--accent); }
+  .hours .lab { display: flex; flex-direction: column; justify-content: space-between; height: 44px; font-size: 11px; color: var(--text-3); }
+  .hours .lab b { color: var(--text); font-weight: 700; font-size: 12px; }
+  .mstat { display: flex; gap: 26px; padding-left: 26px; }
+  .mstat div p { font-size: 11.5px; color: var(--text-3); font-weight: 500; }
+  .mstat div b { display: block; margin-top: 2px; font-size: 18px; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .mstat div b small { font-size: 12px; font-weight: 600; color: var(--text-2); margin-left: 2px; }
+  .mstat .w b { color: var(--warn); }
+
+  .left { min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 14px; }
+  .lanes { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .lane { position: relative; min-height: 0; background: var(--lane); border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .lane + .lane::before { content: ""; position: absolute; left: -12px; top: 20px; width: 10px; height: 10px; border-top: 2px solid var(--accent-soft); border-right: 2px solid var(--accent-soft); rotate: 45deg; }
+  .lh { display: flex; align-items: center; gap: 8px; padding: 2px 4px 4px; }
+  .lh .st { width: 22px; height: 22px; border-radius: 50%; background: #fff; color: var(--accent); display: grid; place-items: center; font-size: 11.5px; font-weight: 800; box-shadow: inset 0 0 0 1.5px var(--accent-soft); }
+  .lh h3 { font-size: 13px; font-weight: 800; letter-spacing: -0.02em; }
+  .lh .c { height: 20px; min-width: 22px; padding: 0 6px; display: grid; place-items: center; border-radius: 10px; background: #fff; font-size: 11.5px; font-weight: 700; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .lh small { margin-left: auto; font-size: 11px; color: var(--text-3); }
+  .lane.done .lh .st { background: var(--accent); color: #fff; box-shadow: none; }
+  .oc { background: #fff; border-radius: 10px; border: 1px solid var(--line); padding: 9px 10px; box-shadow: 0 1px 2px rgb(18 32 29 / .05); }
+  .oc.fresh { box-shadow: 0 0 0 2px rgb(15 118 110 / .22), 0 4px 10px -4px rgb(15 118 110 / .3); border-color: var(--accent-soft); }
+  .oh { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .oh .new { color: var(--accent); font-weight: 800; }
+  .op { display: flex; align-items: center; gap: 9px; margin-top: 6px; }
+  .pi { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; flex: none; }
+  .pi svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .op b { display: block; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .op small { display: block; font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
+  .op > div { min-width: 0; }
+  .of { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-top: 7px; padding-top: 7px; border-top: 1px dashed var(--line); font-size: 11px; white-space: nowrap; color: var(--text-2); }
+  .tag { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 7px; border-radius: 6px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .tag svg { width: 11px; height: 11px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .tag.kk { background: #fff6cc; color: #7a5b00; }
+  .tag.sms { background: #e9eefc; color: #3451b2; }
+  .tag.mail { background: #f1ebfb; color: #6b3fb5; }
+  .tag.ok { background: #e5f5ea; color: var(--ok); }
+  .tag.run { background: var(--accent-bg); color: var(--accent-2); }
+  .tag.match { background: #f0f3f2; color: var(--text-2); }
+  .spin { width: 9px; height: 9px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; }
+  .pg { height: 4px; border-radius: 2px; background: #e3ecea; margin-top: 7px; overflow: hidden; }
+  .pg i { display: block; height: 100%; background: var(--accent); border-radius: 2px; }
+  .more { margin-top: auto; text-align: center; font-size: 11.5px; color: var(--text-3); padding: 4px 0 2px; }
+  .more b { color: var(--accent-2); font-weight: 700; }
+
+  .tbl { flex: none; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: 0 1px 2px rgb(18 32 29 / .04); }
+  .tt { height: 40px; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--line); }
+  .tt h3 { font-size: 13.5px; font-weight: 800; letter-spacing: -0.02em; }
+  .tt span { font-size: 11.5px; color: var(--text-3); }
+  .tt .btn { margin-left: auto; display: flex; align-items: center; gap: 5px; height: 28px; padding: 0 10px; border-radius: 7px; border: 1px solid var(--line-2); font-size: 12px; font-weight: 600; color: var(--text-2); }
+  .tt .btn svg { width: 13px; height: 13px; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th { height: 28px; text-align: left; font-size: 11.5px; font-weight: 600; color: var(--text-3); padding: 0 12px; background: #fafcfb; border-bottom: 1px solid var(--line); }
+  td { height: 31px; padding: 0 12px; border-bottom: 1px solid #edf2f0; font-size: 12.5px; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  th.r, td.r { text-align: right; }
+  .pn { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+  .pn i { width: 8px; height: 8px; border-radius: 2px; }
+  .sub { color: var(--text-3); }
+  .via { display: flex; align-items: center; gap: 4px; }
+  .via svg { width: 12px; height: 12px; stroke: var(--text-3); fill: none; stroke-width: 2; }
+  .stock { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+  .stock .tr { width: 54px; height: 5px; border-radius: 3px; background: #e7eeec; overflow: hidden; }
+  .stock .tr i { display: block; height: 100%; background: var(--accent); }
+  .stock.low { color: var(--warn); font-weight: 700; }
+  .stock.low .tr i { background: #f59e0b; }
+  .inf { color: var(--text-3); }
+
+  .feed { grid-row: 2; grid-column: 2; min-height: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 1px 2px rgb(18 32 29 / .04); }
+  .fh { height: 46px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 16px; border-bottom: 1px solid var(--line); }
+  .fh h3 { font-size: 13.5px; font-weight: 800; }
+  .fh .lv { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: #059669; }
+  .fh .lv i { width: 6px; height: 6px; border-radius: 50%; background: #10b981; }
+  .fh small { margin-left: auto; font-size: 11.5px; color: var(--text-3); }
+  .ev { flex: 1; min-height: 0; padding: 6px 16px 0; display: flex; flex-direction: column; }
+  .ev li { position: relative; display: grid; grid-template-columns: 52px 1fr; gap: 10px; padding: 7px 0; }
+  .ev li::before { content: ""; position: absolute; left: 58px; top: 0; bottom: 0; width: 1px; background: var(--line); }
+  .ev time { font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; padding-top: 1px; }
+  .ev .tx { position: relative; padding-left: 14px; font-size: 12.5px; color: var(--text-2); line-height: 1.45; }
+  .ev .tx::before { content: ""; position: absolute; left: -10px; top: 5px; width: 9px; height: 9px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); box-sizing: border-box; }
+  .ev .tx b { color: var(--text); font-weight: 700; }
+  .ev .tx small { display: block; font-size: 11.5px; color: var(--text-3); margin-top: 1px; white-space: nowrap; }
+  .ev .ok .tx::before { background: var(--accent); }
+  .ev .w .tx::before { border-color: #f59e0b; background: #f59e0b; }
+  .ev .w .tx b { color: var(--warn); }
+  .ev .n .tx::before { border-color: #94a3b8; }
+  .note { flex: none; margin: 0 12px 12px; padding: 9px 11px; border-radius: 9px; background: #f5f8f7; border: 1px solid var(--line); font-size: 11.5px; color: var(--text-2); line-height: 1.5; display: flex; gap: 8px; }
+  .note svg { width: 15px; height: 15px; stroke: var(--accent); flex: none; margin-top: 1px; }
+  .note b { color: var(--text); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="browser">
+  <header class="br-tabs"><span class="mac-lights"><i></i><i></i><i></i></span>
+    <span class="br-tab"><i class="br-fav"><svg width="10" height="10" viewBox="0 0 16 16"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></i>실시간 현황 · 오토딜리버</span>
+    <span class="br-tab off"><i class="br-fav"></i>코드 재고 · 오토딜리버</span>
+  </header>
+  <div class="br-tool"><span class="br-nav"><i></i><i></i><i></i></span><span class="br-url"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7079" stroke-width="2.2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>solutions.asidepartners.kr</b>/app/auto-delivery/live</span></div>
+  <main class="br-body">
+    <div class="page">
+      <div class="hdr">
+        <span class="logo"><i><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="m9 13 2 2 4-4"/></svg></i>오토딜리버 <small style="font-size:11px;color:#85948f;font-weight:600">1.8.2</small></span>
+        <nav class="nav"><a class="on">실시간 현황</a><a>주문 내역</a><a>상품·전송 설정</a><a>코드 재고</a><a>발송 기록</a></nav>
+        <span class="sp"></span>
+        <span class="live"><i></i>24시간 자동 발송 중 <span>다음 주문 확인 09:42:00</span></span>
+        <span class="store"><b>스1</b>스마트스토어 · 스토어 1</span>
+      </div>
+
+      <div class="main">
+        <div class="kpi">
+          <div class="head">
+            <p>오늘 자동 처리 · 10월 26일 00시부터</p>
+            <div class="n"><strong>312<small>건</small></strong><i class="dot"></i><span class="avg"><small>평균 처리</small>2분 14초</span></div>
+          </div>
+          <div class="hours">
+            <div class="bars"><i class="n" style="height:7px"></i><i class="n" style="height:5px"></i><i class="n" style="height:4px"></i><i class="n" style="height:3px"></i><i class="n" style="height:3px"></i><i class="n" style="height:4px"></i><i style="height:8px"></i><i style="height:15px"></i><i style="height:32px"></i><i class="now" style="height:44px"></i></div>
+            <div class="lab"><span>시간대별 처리</span><span>새벽 <b>60건</b> · 00–06시</span></div>
+          </div>
+          <div class="mstat">
+            <div><p>전송 실패</p><b>0<small>건</small></b></div>
+            <div><p>발송처리 대기</p><b>2<small>건</small></b></div>
+            <div class="w"><p>남은 코드 · 5만원권</p><b>10<small>개</small></b></div>
+            <div><p>주문 확인</p><b>1분<small>마다</small></b></div>
+          </div>
+          <div class="mix">
+            <p>오늘 전송 수단 <b>312건</b></p>
+            <div class="sb"><i style="width:75.6%;background:#f5c518"></i><i style="width:22.1%;background:#8b5cf6"></i><i style="width:2.3%;background:#3b82f6"></i></div>
+            <ul><li><i style="background:#f5c518"></i>알림톡 <b>236</b></li><li><i style="background:#8b5cf6"></i>메일 <b>69</b></li><li><i style="background:#3b82f6"></i>문자 <b>7</b></li></ul>
+          </div>
+        </div>
+
+        <section class="left">
+          <div class="lanes">
+            <div class="lane">
+              <div class="lh"><span class="st">1</span><h3>신규 주문</h3><span class="c">2</span><small>결제 완료</small></div>
+              <div class="oc fresh">
+                <div class="oh"><span>2026102609418</span><span class="new">방금</span></div>
+                <div class="op"><span class="pi" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 11h18M8 15h3"/></svg></span><div><b>문화상품권 5만원</b><small>1매 · 50,000원</small></div></div>
+                <div class="of"><span>김○○ · 010-****-1234</span><span class="tag match">감지</span></div>
+              </div>
+              <div class="oc">
+                <div class="oh"><span>2026102609417</span><span>22초 전</span></div>
+                <div class="op"><span class="pi" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M9 8h6"/></svg></span><div><b>전자책 PDF · 스토어 첫걸음</b><small>기본 · 12,900원</small></div></div>
+                <div class="of"><span>이○○ · 010-****-5521</span><span class="tag match">감지</span></div>
+              </div>
+            </div>
+
+            <div class="lane">
+              <div class="lh"><span class="st">2</span><h3>주문 확인</h3><span class="c">1</span><small>옵션 매칭</small></div>
+              <div class="oc">
+                <div class="oh"><span>2026102609415</span><span>34초 전</span></div>
+                <div class="op"><span class="pi" style="background:linear-gradient(135deg,#0ea5e9,#0369a1)"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="m10 8 4 2.5-4 2.5zM8 21h8"/></svg></span><div><b>온라인 클래스 수강권</b><small>30일 · 39,000원</small></div></div>
+                <div class="of"><span>박○○ · 010-****-0917</span><span class="tag run"><svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>링크 매칭</span></div>
+              </div>
+              <div class="more">옵션별 보낼 내용 <b>5종</b> 등록됨</div>
+            </div>
+
+            <div class="lane">
+              <div class="lh"><span class="st">3</span><h3>상품 전송</h3><span class="c">2</span><small>알림톡·문자·메일</small></div>
+              <div class="oc">
+                <div class="oh"><span>2026102609412</span><span>1분 08초</span></div>
+                <div class="op"><span class="pi" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 11h18M8 15h3"/></svg></span><div><b>문화상품권 1만원</b><small>3매 · 코드 3개 배정</small></div></div>
+                <div class="of"><span>최○○ · 010-****-3380</span><span class="tag kk"><span class="spin"></span>알림톡</span></div>
+                <div class="pg"><i style="width:70%"></i></div>
+              </div>
+              <div class="oc">
+                <div class="oh"><span>2026102609411</span><span>1분 21초</span></div>
+                <div class="op"><span class="pi" style="background:linear-gradient(135deg,#ec4899,#be185d)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></span><div><b>디자인 템플릿 팩 Vol.2</b><small>PDF 첨부 · 18MB</small></div></div>
+                <div class="of"><span>정○○ · a***@***.com</span><span class="tag mail"><span class="spin"></span>메일</span></div>
+                <div class="pg"><i style="width:45%"></i></div>
+              </div>
+            </div>
+
+            <div class="lane done">
+              <div class="lh"><span class="st"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></span><h3>발송 처리</h3><span class="c">312</span><small>스토어 반영</small></div>
+              <div class="oc">
+                <div class="oh"><span>2026102609409</span><span>09:40:58</span></div>
+                <div class="op"><span class="pi" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 11h18M8 15h3"/></svg></span><div><b>문화상품권 5만원</b><small>알림톡 전송 · 코드 사용 처리</small></div></div>
+                <div class="of"><span>김○○ · 처리 1분 52초</span><span class="tag ok"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>발송처리</span></div>
+              </div>
+              <div class="oc">
+                <div class="oh"><span>2026102609408</span><span>09:39:41</span></div>
+                <div class="op"><span class="pi" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M9 8h6"/></svg></span><div><b>전자책 PDF · 스토어 첫걸음</b><small>메일 PDF + 알림톡 안내</small></div></div>
+                <div class="of"><span>강○○ · 처리 2분 06초</span><span class="tag ok"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>발송처리</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tbl">
+            <div class="tt"><h3>디지털 상품별 전송 방식</h3><span>옵션마다 보낼 내용을 정해 두면 주문에 맞는 것만 보냅니다</span><span class="btn"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>발송 기록 엑셀</span></div>
+            <table>
+              <thead><tr><th>상품</th><th>옵션</th><th>보내는 내용</th><th>전송 수단</th><th class="r">남은 재고</th><th class="r">오늘 처리</th></tr></thead>
+              <tbody>
+                <tr><td><span class="pn"><i style="background:#f59e0b"></i>문화상품권 5만원</span></td><td class="sub">1매</td><td>상품권 코드 · 상품권코드.xlsx</td><td><span class="via">알림톡<svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg><span class="sub">실패 시 문자</span></span></td><td class="r"><span class="stock low">10개<span class="tr"><i style="width:6%"></i></span></span></td><td class="r"><b>128</b>건</td></tr>
+                <tr><td><span class="pn"><i style="background:#fbbf24"></i>문화상품권 1만원</span></td><td class="sub">1·3·5매</td><td>상품권 코드 · 상품권코드.xlsx</td><td><span class="via">알림톡<svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg><span class="sub">실패 시 문자</span></span></td><td class="r"><span class="stock">214개<span class="tr"><i style="width:72%"></i></span></span></td><td class="r"><b>96</b>건</td></tr>
+                <tr><td><span class="pn"><i style="background:#8b5cf6"></i>전자책 PDF · 스토어 첫걸음</span></td><td class="sub">기본</td><td>PDF 첨부 4.2MB</td><td><span class="via">메일<span class="sub">+ 알림톡 안내</span></span></td><td class="r inf">제한 없음</td><td class="r"><b>61</b>건</td></tr>
+                <tr><td><span class="pn"><i style="background:#0ea5e9"></i>온라인 클래스 수강권</span></td><td class="sub">30일</td><td>수강 링크 + 안내문</td><td><span class="via">알림톡</span></td><td class="r inf">제한 없음</td><td class="r"><b>19</b>건</td></tr>
+                <tr><td><span class="pn"><i style="background:#ec4899"></i>디자인 템플릿 팩 Vol.2</span></td><td class="sub">기본</td><td>PDF 첨부 18MB</td><td><span class="via">메일</span></td><td class="r inf">제한 없음</td><td class="r"><b>8</b>건</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <aside class="feed">
+          <div class="fh"><h3>실시간 처리 피드</h3><span class="lv"><i></i>LIVE</span><small>오늘 이벤트 1,251개</small></div>
+          <ul class="ev">
+            <li class="n"><time>09:41:52</time><div class="tx"><b>새 주문 감지</b><small>문화상품권 5만원 · 김○○</small></div></li>
+            <li class="n"><time>09:41:30</time><div class="tx"><b>새 주문 감지</b><small>전자책 PDF · 이○○</small></div></li>
+            <li><time>09:41:18</time><div class="tx"><b>옵션 매칭</b><small>수강권 30일 → 링크 + 안내문</small></div></li>
+            <li><time>09:41:05</time><div class="tx"><b>알림톡 전송 중</b><small>1만원권 코드 3개 · 승인 템플릿</small></div></li>
+            <li class="ok"><time>09:40:58</time><div class="tx"><b>발송처리 완료</b><small>…09409 · 전송 성공 확인 후</small></div></li>
+            <li class="ok"><time>09:40:51</time><div class="tx"><b>알림톡 전송 완료</b><small>5만원권 코드 1개 사용 처리</small></div></li>
+            <li class="ok"><time>09:39:41</time><div class="tx"><b>발송처리 완료</b><small>…09408 · 메일 PDF 4.2MB</small></div></li>
+            <li class="w"><time>09:38:02</time><div class="tx"><b>재고 알림 · 코드 10개 남음</b><small>문화상품권 5만원 · 휴대폰 알림</small></div></li>
+          </ul>
+          <div class="note"><svg class="i" viewBox="0 0 24 24"><path d="M12 3 19 5.8v5.4c0 4.4-3 8.1-7 9.8-4-1.7-7-5.4-7-9.8V5.8z"/><path d="m9 12 2 2 4-4"/></svg><span><b>구매자에게만</b> 주문 상품과 거래 안내를 보냅니다 · 정보성 알림톡 승인 템플릿 3개</span></div>
+        </aside>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

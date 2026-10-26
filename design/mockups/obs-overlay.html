@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>후원스테이지</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 후원스테이지: 방송 중 옆에 띄워 두는 리모컨. 왼쪽 9:16 방송 미리보기, 오른쪽 알림 단계·순위표 설정. 어두운 네온. */
+  :root {
+    --bg: #0B0614; --p1: #130B22; --p2: #1A1030; --p3: #231640; --line: rgb(190 150 255 / .12); --line-2: rgb(190 150 255 / .2);
+    --t1: #F3EEFF; --t2: #B8A9D6; --t3: #7C6E9C; --pu: #A855F7; --pu-2: #C084FC; --pk: #EC4899; --pk-2: #F472B6; --ok: #34D399; --gold: #FBBF24;
+  }
+  body { font: 400 13px/1.4 'Pretendard Variable', sans-serif; color: var(--t1); background: var(--bg); letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+  .win { --bar: #07030E; --bar-fg: #B9A8DA; background: radial-gradient(700px 500px at 20% 30%, #1B0B33 0%, transparent 70%), var(--bg); }
+  .win-body { flex-direction: column; }
+  .bhs { font-family: 'Black Han Sans', 'Pretendard Variable', sans-serif; font-weight: 400; }
+
+  .body { flex: 1; min-height: 0; display: flex; gap: 16px; padding: 14px 16px 12px; }
+
+  /* 왼쪽: 9:16 미리보기 */
+  .pv { width: 384px; flex: none; display: flex; flex-direction: column; gap: 8px; }
+  .pv-h { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--t2); }
+  .pv-h b { color: var(--t1); font-weight: 700; }
+  .onair { display: flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 5px; background: #E11D48; color: #fff; font-weight: 800; font-size: 11px; letter-spacing: .04em; }
+  .onair i { width: 6px; height: 6px; border-radius: 50%; background: #fff; }
+  .pv-h .r { margin-left: auto; color: var(--t3); }
+  .frame { position: relative; width: 384px; height: 683px; border-radius: 14px; overflow: hidden; box-shadow: 0 0 0 1px rgb(192 132 252 / .35), 0 0 40px -6px rgb(168 85 247 / .45); background: linear-gradient(180deg, #2A1446 0%, #40205E 45%, #5B2A62 75%, #2B1236 100%); }
+  .frame svg.scene { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .safe { position: absolute; inset: 10px; border: 1px dashed rgb(255 255 255 / .14); border-radius: 8px; pointer-events: none; }
+
+  .rank { position: absolute; left: 14px; top: 14px; width: 206px; border-radius: 12px; background: rgb(14 6 28 / .72); border: 1px solid rgb(192 132 252 / .35); padding: 9px 10px 8px; backdrop-filter: blur(6px); }
+  .rank h4 { display: flex; align-items: center; justify-content: space-between; font-size: 15px; color: #fff; letter-spacing: .01em; }
+  .rank h4 small { font: 600 10.5px 'Pretendard Variable'; color: var(--pu-2); }
+  .rank ol { margin-top: 6px; display: flex; flex-direction: column; gap: 3px; }
+  .rank li { display: grid; grid-template-columns: 18px 34px 1fr auto; align-items: center; gap: 5px; height: 24px; padding: 0 5px; border-radius: 6px; font-size: 12px; }
+  .rank li .n { font-family: 'Black Han Sans'; font-size: 14px; color: var(--t2); text-align: center; }
+  .rank li .t { font-family: 'Black Han Sans'; font-size: 11.5px; text-align: center; border-radius: 4px; line-height: 17px; color: #1A0B2E; background: #CDB8F5; }
+  .rank li .nk { font-weight: 700; color: #fff; white-space: nowrap; }
+  .rank li .v { font-family: 'Black Han Sans'; font-size: 12.5px; color: var(--t2); }
+  .rank li.g1 .n { color: var(--gold); } .rank li.g1 .t { background: linear-gradient(90deg, #FDE68A, #F59E0B); }
+  .rank li.g2 { background: linear-gradient(90deg, rgb(236 72 153 / .45), rgb(168 85 247 / .2)); box-shadow: inset 0 0 0 1px rgb(244 114 182 / .7); }
+  .rank li.g2 .t { background: linear-gradient(90deg, #F9A8D4, #EC4899); color: #fff; }
+  .rank li.g2 .v { color: #fff; }
+  .rank li em { font-style: normal; font: 800 10px 'Pretendard Variable'; color: var(--pk-2); margin-left: 3px; }
+
+  .pop { position: absolute; left: 0; right: 0; top: 248px; height: 250px; display: flex; flex-direction: column; align-items: center; }
+  .rays { position: absolute; left: 50%; top: 50%; width: 520px; height: 520px; translate: -50% -50%; border-radius: 50%;
+    background: repeating-conic-gradient(from 4deg, rgb(255 214 245 / .28) 0deg 7deg, transparent 7deg 18deg);
+    -webkit-mask: radial-gradient(circle, #000 0%, #000 22%, transparent 62%); mask: radial-gradient(circle, #000 0%, #000 22%, transparent 62%); }
+  .glow { position: absolute; left: 50%; top: 50%; width: 300px; height: 200px; translate: -50% -50%; background: radial-gradient(closest-side, rgb(236 72 153 / .55), transparent); }
+  .pop .badge { position: relative; margin-top: 20px; height: 26px; padding: 0 14px; border-radius: 13px; background: linear-gradient(90deg, #A855F7, #EC4899); color: #fff; font-size: 14px; display: flex; align-items: center; box-shadow: 0 0 18px rgb(236 72 153 / .7); letter-spacing: .02em; }
+  .pop .amt { position: relative; margin-top: 4px; font-size: 64px; line-height: 1.05; letter-spacing: -0.01em;
+    background: linear-gradient(180deg, #FFFFFF 10%, #FFD1F0 55%, #F472B6 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 3px 0 #6B21A8) drop-shadow(0 0 16px rgb(236 72 153 / .8)); }
+  .pop .who { position: relative; font-size: 21px; color: #fff; text-shadow: 0 2px 0 #4C1D95, 0 0 12px rgb(168 85 247 / .9); }
+  .pop .who span { color: #FDE68A; }
+  .pop .msg { position: relative; margin-top: 10px; max-width: 300px; padding: 9px 14px; border-radius: 12px; background: rgb(255 255 255 / .94); color: #2A1446; font-size: 14px; font-weight: 700; text-align: center; line-height: 1.4; box-shadow: 0 8px 24px rgb(0 0 0 / .35); }
+  .pop .msg::before { content: ""; position: absolute; left: 50%; top: -6px; translate: -50% 0; border: 6px solid transparent; border-top: 0; border-bottom-color: rgb(255 255 255 / .94); }
+
+  .goal { position: absolute; left: 14px; right: 14px; bottom: 16px; padding: 9px 12px 10px; border-radius: 12px; background: rgb(14 6 28 / .72); border: 1px solid rgb(192 132 252 / .3); }
+  .goal p { display: flex; justify-content: space-between; align-items: baseline; color: #fff; font-size: 14px; }
+  .goal p span { font-size: 18px; color: var(--pk-2); }
+  .goal .gb { margin-top: 6px; height: 12px; border-radius: 6px; background: rgb(255 255 255 / .12); overflow: hidden; }
+  .goal .gb i { display: block; width: 72%; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #A855F7, #EC4899, #FBBF24); box-shadow: 0 0 12px rgb(236 72 153 / .8); }
+  .goal small { display: flex; justify-content: space-between; margin-top: 4px; font: 600 11px 'Pretendard Variable'; color: var(--t2); }
+
+  /* 오른쪽: 리모컨 */
+  .remote { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+  .r-head { display: flex; align-items: center; gap: 12px; }
+  .logo { display: flex; align-items: center; gap: 9px; }
+  .logo i { width: 32px; height: 32px; border-radius: 10px; background: linear-gradient(135deg, #A855F7, #EC4899); display: grid; place-items: center; box-shadow: 0 0 16px rgb(168 85 247 / .5); }
+  .logo i svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; }
+  .logo b { font-size: 16px; font-weight: 800; letter-spacing: -0.03em; }
+  .logo small { display: block; font-size: 11.5px; color: var(--t3); font-weight: 500; }
+  .r-head .sp { flex: 1; }
+  .link { display: flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 7px; background: rgb(52 211 153 / .1); color: var(--ok); font-size: 12px; font-weight: 700; white-space: nowrap; }
+  .link i { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px rgb(52 211 153 / .2); }
+  .link.dim { background: var(--p2); color: var(--t2); font-weight: 600; }
+  .link.dim i { background: var(--pu-2); box-shadow: none; }
+
+  .kpis { display: grid; grid-template-columns: 1.25fr 1fr 1fr 1fr; gap: 10px; }
+  .kpi { padding: 11px 14px; border-radius: 12px; background: var(--p1); border: 1px solid var(--line); }
+  .kpi p { font-size: 11.5px; color: var(--t3); font-weight: 600; }
+  .kpi b { display: block; margin-top: 3px; font-size: 21px; font-weight: 800; letter-spacing: -0.03em; }
+  .kpi b small { font-size: 12px; color: var(--t2); font-weight: 600; margin-left: 2px; }
+  .kpi.hl { background: linear-gradient(135deg, rgb(168 85 247 / .25), rgb(236 72 153 / .14)); border-color: rgb(192 132 252 / .4); }
+  .kpi .mini { margin-top: 6px; height: 5px; border-radius: 3px; background: rgb(255 255 255 / .1); overflow: hidden; }
+  .kpi .mini i { display: block; height: 100%; width: 72%; background: linear-gradient(90deg, #A855F7, #EC4899); }
+
+  .card { border-radius: 14px; background: var(--p1); border: 1px solid var(--line); }
+  .sec-h { display: flex; align-items: center; gap: 8px; }
+  .sec-h h3 { font-size: 14px; font-weight: 800; }
+  .sec-h span { font-size: 12px; color: var(--t3); }
+  .sec-h .r { margin-left: auto; font-size: 12px; color: var(--pu-2); font-weight: 700; }
+
+  .tiers { padding: 13px 14px 14px; }
+  .tier-row { margin-top: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .tier { position: relative; display: flex; gap: 11px; padding: 11px; border-radius: 12px; background: var(--p2); border: 1px solid var(--line); }
+  .tier.on { background: linear-gradient(160deg, rgb(236 72 153 / .2), rgb(168 85 247 / .12)); border-color: rgb(244 114 182 / .6); box-shadow: 0 0 22px -8px rgb(236 72 153 / .8); }
+  .thumb { width: 58px; height: 103px; border-radius: 7px; overflow: hidden; flex: none; position: relative; background: linear-gradient(180deg, #2A1446, #5B2A62); }
+  .thumb svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .ti { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .ti .lv { font-size: 11px; font-weight: 800; color: var(--t3); letter-spacing: .04em; }
+  .tier.on .ti .lv { color: var(--pk-2); }
+  .ti strong { font-family: 'Black Han Sans'; font-weight: 400; font-size: 22px; line-height: 1.15; margin-top: 1px; }
+  .ti strong small { font: 600 11.5px 'Pretendard Variable'; color: var(--t2); margin-left: 3px; }
+  .ti ul { margin-top: 5px; display: flex; flex-direction: column; gap: 2px; }
+  .ti li { font-size: 11.5px; color: var(--t2); white-space: nowrap; }
+  .ti li::before { content: ""; display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--pu-2); margin-right: 6px; vertical-align: 2px; }
+  .ti .test { margin-top: auto; height: 26px; display: flex; align-items: center; justify-content: center; gap: 5px; border-radius: 7px; background: rgb(255 255 255 / .07); border: 1px solid var(--line-2); font-size: 11.5px; font-weight: 700; color: var(--t1); }
+  .ti .test svg { width: 11px; height: 11px; fill: currentColor; }
+  .tier.on .ti .test { background: linear-gradient(90deg, #A855F7, #EC4899); border-color: transparent; }
+  .now { position: absolute; right: 10px; top: 10px; font-size: 10.5px; font-weight: 800; color: #fff; background: var(--pk); padding: 1px 6px; border-radius: 4px; }
+
+  .lower { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .rset { padding: 13px 14px; display: flex; flex-direction: column; gap: 10px; }
+  .row { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; color: var(--t2); }
+  .row b { color: var(--t1); font-weight: 700; }
+  .stepper { display: flex; align-items: center; border-radius: 7px; border: 1px solid var(--line-2); overflow: hidden; }
+  .stepper span { width: 26px; height: 26px; display: grid; place-items: center; color: var(--t2); font-weight: 700; background: var(--p2); }
+  .stepper b { width: 46px; text-align: center; font-size: 12.5px; }
+  .grades { display: flex; flex-wrap: wrap; gap: 5px; }
+  .grades span { height: 24px; display: flex; align-items: center; gap: 4px; padding: 0 8px; border-radius: 6px; background: var(--p2); border: 1px solid var(--line); font-size: 12px; font-weight: 600; color: var(--t2); }
+  .grades span small { font-size: 11px; color: var(--t3); }
+  .grades span.g { color: #1A0B2E; background: linear-gradient(90deg, #FDE68A, #F59E0B); border-color: transparent; }
+  .grades span.g small { color: #6B4A0E; }
+  .src { display: flex; gap: 6px; }
+  .src span { flex: 1; height: 30px; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; font-size: 12px; font-weight: 700; background: rgb(168 85 247 / .16); color: var(--pu-2); border: 1px solid rgb(192 132 252 / .35); }
+  .src span svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .opt { display: flex; align-items: center; justify-content: space-between; height: 22px; font-size: 12.5px; color: var(--t2); }
+  .sw { width: 30px; height: 17px; border-radius: 9px; background: #2E2348; position: relative; flex: none; }
+  .sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 13px; height: 13px; border-radius: 50%; background: #7C6E9C; }
+  .sw.on { background: linear-gradient(90deg, #A855F7, #EC4899); }
+  .sw.on::after { left: auto; right: 2px; background: #fff; }
+
+  .log { padding: 13px 14px; display: flex; flex-direction: column; }
+  .log ul { margin-top: 8px; display: flex; flex-direction: column; }
+  .log li { display: grid; grid-template-columns: 58px 1fr auto; gap: 8px; align-items: center; height: 31px; border-bottom: 1px dashed var(--line); font-size: 12px; }
+  .log li:last-child { border-bottom: 0; }
+  .log time { color: var(--t3); font-size: 11.5px; }
+  .log li span { color: var(--t2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .log li span b { color: var(--t1); font-weight: 700; }
+  .tag { font-size: 10.5px; font-weight: 800; padding: 2px 6px; border-radius: 4px; background: var(--p3); color: var(--t2); white-space: nowrap; }
+  .tag.l2 { background: rgb(236 72 153 / .2); color: var(--pk-2); }
+  .tag.up { background: rgb(251 191 36 / .15); color: var(--gold); }
+  .log .tests { margin-top: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding-top: 8px; }
+  .log .tests span { height: 34px; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 9px; background: var(--p2); border: 1px solid var(--line-2); font-weight: 700; font-size: 12px; }
+  .log .tests span svg { width: 11px; height: 11px; fill: var(--pk-2); }
+
+  .status { height: 26px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 16px; background: #07030E; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--t3); }
+  .status b { color: var(--ok); font-weight: 700; }
+  .status .r { margin-left: auto; }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar"><span class="win-icon"><svg width="16" height="16" viewBox="0 0 16 16"><defs><linearGradient id="wi" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A855F7"/><stop offset="1" stop-color="#EC4899"/></linearGradient></defs><rect x="1" y="1" width="14" height="14" rx="4" fill="url(#wi)"/><path d="M8 4.2l1.1 2.4 2.6.3-1.9 1.8.5 2.6L8 10l-2.3 1.3.5-2.6-1.9-1.8 2.6-.3z" fill="#fff"/></svg></span><span class="win-title">후원스테이지 2.2.0 — 방송 리모컨</span><span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span></header>
+  <main class="win-body">
+    <div class="body">
+      <section class="pv">
+        <div class="pv-h"><span class="onair"><i></i>LIVE</span><b>세로 방송 미리보기</b><span>1080×1920</span><span class="r">OBS 브라우저 소스 연결됨</span></div>
+        <div class="frame">
+          <svg class="scene" viewBox="0 0 384 683" preserveAspectRatio="none">
+            <defs>
+              <radialGradient id="lamp" cx=".78" cy=".2" r=".5"><stop offset="0" stop-color="#FF9BD0" stop-opacity=".55"/><stop offset="1" stop-color="#FF9BD0" stop-opacity="0"/></radialGradient>
+              <radialGradient id="lamp2" cx=".12" cy=".55" r=".45"><stop offset="0" stop-color="#7C5CFF" stop-opacity=".5"/><stop offset="1" stop-color="#7C5CFF" stop-opacity="0"/></radialGradient>
+              <linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1C0F2E"/><stop offset="1" stop-color="#120820"/></linearGradient>
+            </defs>
+            <rect width="384" height="683" fill="url(#lamp)"/><rect width="384" height="683" fill="url(#lamp2)"/>
+            <g fill="#fff" opacity=".1"><circle cx="300" cy="130" r="26"/><circle cx="60" cy="210" r="18"/><circle cx="330" cy="300" r="14"/><circle cx="40" cy="420" r="22"/></g>
+            <g fill="none" stroke-linejoin="round"><path d="M302 92l9.4 19 21 3-15.2 14.8 3.6 20.9L302 139.8l-18.8 9.9 3.6-20.9L271.6 114l21-3z" stroke="#F472B6" stroke-width="7" opacity=".25"/><path d="M302 92l9.4 19 21 3-15.2 14.8 3.6 20.9L302 139.8l-18.8 9.9 3.6-20.9L271.6 114l21-3z" stroke="#FBCFE8" stroke-width="2.4"/></g><g stroke="#3A1F57" stroke-width="3"><line x1="236" y1="196" x2="372" y2="196"/></g><g><rect x="246" y="172" width="16" height="24" rx="4" fill="#5B3A86"/><rect x="266" y="178" width="22" height="18" rx="9" fill="#7A4FA8"/><circle cx="304" cy="186" r="10" fill="#9C6ACF"/><rect x="320" y="168" width="12" height="28" rx="3" fill="#4C2E70"/><rect x="336" y="176" width="26" height="20" rx="4" fill="#6A4396"/></g>
+            <path d="M88 683c0-120 46-196 104-196s104 76 104 196z" fill="url(#body)"/>
+            <path d="M150 487c10 18 26 26 42 26s32-8 42-26" fill="none" stroke="#2B1840" stroke-width="10"/>
+            <ellipse cx="192" cy="408" rx="52" ry="62" fill="#26143A"/>
+            <path d="M136 410c-6-62 26-100 56-100s62 38 56 100c-8-34-28-56-56-56s-48 22-56 56z" fill="#3A1F57"/>
+            <path d="M330 683V560l-56-30" fill="none" stroke="#0E0718" stroke-width="7" stroke-linecap="round"/>
+            <rect x="248" y="500" width="30" height="52" rx="15" fill="#1A1028" stroke="#A855F7" stroke-width="2" transform="rotate(-28 263 526)"/>
+          </svg>
+          <div class="safe"></div>
+
+          <div class="rank">
+            <h4 class="bhs">오늘의 후원 순위 <small>실시간</small></h4>
+            <ol>
+              <li class="g1"><span class="n">1</span><span class="t">회장</span><span class="nk">별빛고*</span><span class="v">324,000</span></li>
+              <li class="g2"><span class="n">2</span><span class="t">사장</span><span class="nk">달빛토*<em>▲1</em></span><span class="v">210,000</span></li>
+              <li><span class="n">3</span><span class="t">부장</span><span class="nk">치즈냥*</span><span class="v">185,000</span></li>
+              <li><span class="n">4</span><span class="t">차장</span><span class="nk">야식왕*</span><span class="v">120,000</span></li>
+              <li><span class="n">5</span><span class="t">과장</span><span class="nk">구름빵*</span><span class="v">98,000</span></li>
+            </ol>
+          </div>
+
+          <div class="pop">
+            <div class="glow"></div><div class="rays"></div>
+            <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 384 250"><g fill="#FDE68A"><path d="M54 70l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/><path d="M322 52l2.4 5.6 5.6 2.4-5.6 2.4-2.4 5.6-2.4-5.6-5.6-2.4 5.6-2.4z"/><path d="M336 182l2 4.6 4.6 2-4.6 2-2 4.6-2-4.6-4.6-2 4.6-2z"/></g><g fill="#F9A8D4"><circle cx="86" cy="190" r="3"/><circle cx="300" cy="120" r="2.5"/><circle cx="40" cy="140" r="2"/><circle cx="350" cy="96" r="3"/><circle cx="110" cy="40" r="2.2"/><circle cx="262" cy="30" r="2"/></g><g fill="#fff"><circle cx="70" cy="110" r="1.8"/><circle cx="318" cy="210" r="1.8"/><circle cx="286" cy="70" r="1.6"/></g></svg>
+            <span class="badge bhs">2단계 후원</span>
+            <span class="amt bhs">30,000원</span>
+            <span class="who bhs"><span>달빛토*</span>님 사장 승진!</span>
+            <p class="msg">오늘 노래 미쳤다 ㅋㅋ 앵콜 한 곡만 더 부탁해요</p>
+          </div>
+
+          <div class="goal bhs">
+            <p>오늘의 목표 · 새 마이크 <span>72%</span></p>
+            <div class="gb"><i></i></div>
+            <small><span>1,296,000원</span><span>목표 1,800,000원</span></small>
+          </div>
+        </div>
+      </section>
+
+      <section class="remote">
+        <div class="r-head">
+          <div class="logo"><i><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg></i><div><b>후원스테이지</b><small>방송 리모컨 · 2.2.0</small></div></div>
+          <span class="sp"></span>
+          <span class="link"><i></i>투네이션 연결됨</span>
+          <span class="link dim"><i></i>슈퍼챗 합산</span>
+          <span class="link dim"><i></i>계좌 후원 수동 입력</span>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi hl"><p>오늘 후원</p><b>1,296,000<small>원</small></b><div class="mini"><i></i></div></div>
+          <div class="kpi"><p>목표 달성</p><b>72<small>%</small></b></div>
+          <div class="kpi"><p>오늘 알림</p><b>86<small>건</small></b></div>
+          <div class="kpi"><p>방송 시간</p><b>2:14<small>:36</small></b></div>
+        </div>
+
+        <div class="card tiers">
+          <div class="sec-h"><h3>금액별 알림 단계</h3><span>금액이 클수록 연출이 커집니다</span><a class="r">단계 추가</a></div>
+          <div class="tier-row">
+            <div class="tier">
+              <span class="thumb"><svg viewBox="0 0 58 103"><circle cx="29" cy="60" r="14" fill="#1A0D2C"/><path d="M12 103c0-20 8-30 17-30s17 10 17 30z" fill="#1A0D2C"/><rect x="4" y="80" width="50" height="12" rx="4" fill="#A855F7" opacity=".9"/><rect x="8" y="84" width="26" height="4" rx="2" fill="#fff"/></svg></span>
+              <div class="ti"><span class="lv">1단계</span><strong>1,000<small>원 이상</small></strong><ul><li>하단 띠 알림 3초</li><li>효과음 '띵'</li><li>순위표 흐리게만</li></ul><span class="test"><svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>테스트</span></div>
+            </div>
+            <div class="tier on">
+              <span class="now">방금 재생</span>
+              <span class="thumb"><svg viewBox="0 0 58 103"><g fill="#F9A8D4" opacity=".35"><path d="M29 50 0 30v8z"/><path d="M29 50 58 28v8z"/><path d="M29 50 0 66v8z"/><path d="M29 50 58 70v8z"/><path d="M29 50 20 0h8z"/></g><circle cx="29" cy="50" r="16" fill="#EC4899" opacity=".5"/><rect x="9" y="42" width="40" height="15" rx="4" fill="#fff"/><rect x="14" y="47" width="30" height="5" rx="2" fill="#EC4899"/><g fill="#FDE68A"><circle cx="10" cy="30" r="1.6"/><circle cx="48" cy="66" r="1.6"/><circle cx="46" cy="24" r="1.4"/></g><rect x="4" y="4" width="22" height="18" rx="3" fill="#120820" opacity=".8"/></svg></span>
+              <div class="ti"><span class="lv">2단계</span><strong>10,000<small>원 이상</small></strong><ul><li>중앙 팝업 6초</li><li>빛살 · 파티클</li><li>메시지 읽어 주기</li></ul><span class="test"><svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>테스트</span></div>
+            </div>
+            <div class="tier">
+              <span class="thumb"><svg viewBox="0 0 58 103"><rect width="58" height="103" fill="#7C1D6F" opacity=".55"/><circle cx="29" cy="48" r="26" fill="#FBBF24" opacity=".25"/><circle cx="29" cy="48" r="16" fill="#FBBF24" opacity=".45"/><path d="M24 40v16l13-8z" fill="#fff"/><g fill="#fff"><circle cx="8" cy="18" r="1.6"/><circle cx="50" cy="20" r="1.6"/><circle cx="12" cy="86" r="1.6"/><circle cx="48" cy="84" r="1.6"/></g><rect x="8" y="74" width="42" height="6" rx="3" fill="#fff" opacity=".9"/></svg></span>
+              <div class="ti"><span class="lv">3단계</span><strong>50,000<small>원 이상</small></strong><ul><li>전체 화면 연출 12초</li><li>등장 영상 재생</li><li>순위표 잠시 숨김</li></ul><span class="test"><svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>테스트</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lower">
+          <div class="card rset">
+            <div class="sec-h"><h3>순위표 설정</h3><span>후원 즉시 갱신</span></div>
+            <div class="row">표시 인원<span class="stepper"><span>−</span><b>5명</b><span>+</span></span></div>
+            <div><div class="row" style="margin-bottom:6px">직급 단계<b>6단계</b></div>
+              <div class="grades"><span class="g">회장 <small>1위</small></span><span>사장 <small>2위</small></span><span>부장 <small>3위</small></span><span>차장</span><span>과장</span><span>대리</span></div></div>
+            <div><div class="row" style="margin-bottom:6px">집계 범위<b>오늘 방송</b></div>
+              <div class="src"><span><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg>투네이션</span><span><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg>슈퍼챗</span><span><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg>계좌</span></div></div>
+            <div>
+              <div class="opt">큰 알림 때 순위표 숨김<i class="sw on"></i></div>
+              <div class="opt">작은 후원엔 흐리게만<i class="sw on"></i></div>
+              <div class="opt">시그 배너 표시<i class="sw"></i></div>
+            </div>
+          </div>
+
+          <div class="card log">
+            <div class="sec-h"><h3>방금 들어온 후원</h3><span class="r">전체 86건</span></div>
+            <ul>
+              <li><time>22:35:12</time><span>목표 게이지 <b>72%</b> 도달</span><span class="tag">목표</span></li>
+              <li><time>22:33:40</time><span>슈퍼챗 <b>10,000원</b> · 순위표 합산</span><span class="tag l2">2단계</span></li>
+              <li><time>22:31:06</time><span>달빛토* <b>부장 → 사장</b></span><span class="tag up">직급 ▲</span></li>
+              <li><time>22:31:05</time><span>투네이션 <b>30,000원</b> · 달빛토*</span><span class="tag l2">2단계</span></li>
+              <li><time>22:28:51</time><span>투네이션 <b>1,000원</b> · 구름빵*</span><span class="tag">1단계</span></li>
+              <li><time>22:26:30</time><span>투네이션 <b>50,000원</b> · 별빛고*</span><span class="tag l2">3단계</span></li>
+              <li><time>22:24:12</time><span>계좌 후원 <b>20,000원</b> · 수동 입력</span><span class="tag l2">2단계</span></li>
+            </ul>
+            <div class="tests"><span><svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>테스트 1천</span><span><svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>테스트 1만</span><span><svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>테스트 5만</span></div>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="status"><b>● 실행 중</b><span>투네이션 연결됨</span><span>캔버스 1080×1920</span><span>GPU 렌더링 · 60fps</span><span class="r">후원스테이지 2.2.0</span></div>
+  </main>
+</div>
+</body>
+</html>

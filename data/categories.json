@@ -1,0 +1,51 @@
+[
+  {
+    "id": "commerce",
+    "name": "스마트스토어·쿠팡 셀러",
+    "short": "셀러",
+    "en": "Commerce",
+    "group": "sales"
+  },
+  {
+    "id": "resale",
+    "name": "리셀·구매대행",
+    "short": "리셀",
+    "en": "Resale",
+    "group": "sales"
+  },
+  {
+    "id": "marketing",
+    "name": "마케팅·SEO",
+    "short": "마케팅",
+    "en": "Marketing",
+    "group": "sales"
+  },
+  {
+    "id": "message",
+    "name": "메시지·고객응대",
+    "short": "메시지",
+    "en": "Messaging",
+    "group": "sales"
+  },
+  {
+    "id": "data",
+    "name": "데이터 수집·알림",
+    "short": "데이터",
+    "en": "Data",
+    "group": "ops"
+  },
+  {
+    "id": "office",
+    "name": "업무·사무 자동화",
+    "short": "업무",
+    "en": "Office",
+    "group": "ops"
+  },
+  {
+    "id": "creator",
+    "name": "크리에이터·방송",
+    "short": "방송",
+    "en": "Creator",
+    "group": "ops"
+  }
+]

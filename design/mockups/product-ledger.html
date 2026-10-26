@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>대장장이</title>
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 대장장이: 오래 써 온 클래식 Windows 유틸리티. 회색 바탕, 엑셀풍 그리드, 그 위에 뜬 열 매핑 대화상자. */
+  :root {
+    --bg: #eceef1; --face: #f5f6f8; --line: #c9cdd3; --line-2: #dadde2; --grid: #e1e3e7;
+    --text: #1b1f24; --text-2: #4b525c; --text-3: #7a818b;
+    --g: #1e7b45; --g-2: #15633a; --g-soft: #e3f2e8; --g-line: #9ccfb0;
+    --sel: #cce8ff; --sel-line: #7fb9ea; --amber: #b7791f; --amber-soft: #fff3d6; --red: #c0392b; --red-soft: #fde8e6;
+  }
+  body { font: 400 12px/1.35 'Malgun Gothic', 'Segoe UI', sans-serif; color: var(--text); background: var(--bg); }
+  .win { --bar: #dfe2e7; --bar-fg: #1b1f24; background: var(--bg); }
+  .win-bar { font-family: 'Segoe UI', 'Malgun Gothic', sans-serif; border-bottom: 1px solid #cfd3d9; }
+  .win-body { flex-direction: column; }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+  .menu { height: 24px; flex: none; display: flex; align-items: center; padding: 0 4px; background: var(--face); border-bottom: 1px solid var(--line-2); }
+  .menu span { padding: 3px 9px; color: var(--text); }
+  .menu span u { text-decoration: underline; text-underline-offset: 2px; }
+
+  .tools { height: 58px; flex: none; display: flex; align-items: stretch; gap: 2px; padding: 4px 8px; background: var(--face); border-bottom: 1px solid var(--line); }
+  .tb { width: 66px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border-radius: 3px; color: var(--text); font-size: 12px; border: 1px solid transparent; }
+  .tb svg { width: 22px; height: 22px; fill: none; stroke: #3d4651; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .tb.go { width: 78px; background: var(--g); border-color: var(--g-2); color: #fff; font-weight: 700; }
+  .tb.go svg { stroke: #fff; fill: #fff; }
+  .tb.hov { background: #e3eaf3; border-color: #b9c9dc; }
+  .sep { width: 1px; margin: 6px 6px; background: var(--line); }
+  .tools .sp { flex: 1; }
+  .tfield { align-self: center; display: flex; flex-direction: column; gap: 3px; margin-left: 10px; }
+  .tfield label { font-size: 11px; color: var(--text-3); }
+  .combo { height: 24px; display: flex; align-items: center; gap: 8px; padding: 0 6px 0 8px; background: #fff; border: 1px solid #a9afb7; color: var(--text); min-width: 210px; justify-content: space-between; }
+  .combo i { width: 7px; height: 7px; border-right: 1.5px solid #555; border-bottom: 1.5px solid #555; rotate: 45deg; translate: 0 -2px; }
+  .auth { align-self: center; display: flex; align-items: center; gap: 6px; margin-left: 12px; padding: 0 10px; height: 26px; border: 1px solid var(--g-line); background: var(--g-soft); color: var(--g-2); font-weight: 700; border-radius: 2px; }
+  .auth svg { width: 14px; height: 14px; }
+
+  .work { flex: 1; min-height: 0; display: flex; }
+
+  /* 왼쪽: 불러온 파일 + 가공 옵션 */
+  .left { width: 252px; flex: none; display: flex; flex-direction: column; background: var(--face); border-right: 1px solid var(--line); }
+  .ph { height: 28px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 10px; font-weight: 700; background: linear-gradient(#f8f9fa, #e9ebee); border-bottom: 1px solid var(--line); }
+  .ph em { font-style: normal; font-weight: 400; color: var(--text-3); margin-left: 4px; }
+  .ph .mini { font-weight: 400; color: var(--g); display: flex; align-items: center; gap: 3px; }
+  .ph .mini svg { width: 13px; height: 13px; }
+  .files { background: #fff; margin: 6px; border: 1px solid #b9bec5; flex: none; }
+  .files li { display: grid; grid-template-columns: 22px 1fr auto; gap: 0 6px; align-items: center; padding: 3px 6px; height: 35px; border: 1px solid transparent; border-bottom-color: #eef0f2; }
+  .files li.sel { background: var(--sel); border-color: var(--sel-line); }
+  .xl { width: 20px; height: 22px; grid-row: span 2; }
+  .files b { font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .files small { grid-column: 2; color: var(--text-3); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .files .n { grid-row: span 2; grid-column: 3; text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; color: var(--text-2); }
+  .files .tot { display: flex; justify-content: space-between; padding: 6px 8px; background: #f3f5f7; font-weight: 700; font-variant-numeric: tabular-nums; border-top: 1px solid #d9dce1; }
+
+  fieldset { margin: 4px 6px 6px; padding: 8px 10px 9px; border: 1px solid #c3c8cf; border-radius: 2px; }
+  legend { padding: 0 4px; color: var(--g-2); font-weight: 700; }
+  .kv { display: grid; grid-template-columns: 84px 1fr; row-gap: 6px; align-items: center; }
+  .kv dt { color: var(--text-3); }
+  .kv dd { display: flex; align-items: center; justify-content: space-between; gap: 4px; white-space: nowrap; }
+  .kv dd a { color: #1d5fae; text-decoration: underline; text-underline-offset: 2px; font-size: 11px; }
+  .chk { display: flex; align-items: center; gap: 7px; margin-top: 7px; }
+  .chk i { width: 13px; height: 13px; flex: none; border: 1px solid #7d848d; background: #fff; display: grid; place-items: center; }
+  .chk.on i { background: var(--g); border-color: var(--g-2); }
+  .chk.on i::after { content: ""; width: 6px; height: 3px; border-left: 1.6px solid #fff; border-bottom: 1.6px solid #fff; rotate: -45deg; translate: 0 -1px; }
+  .chk span { color: var(--text); }
+  .chk.off span { color: var(--text-2); }
+
+  .logbox { flex: 1; min-height: 0; margin: 0 6px 6px; background: #fff; border: 1px solid #b9bec5; padding: 5px 7px; font: 11px/1.65 'Consolas', 'Malgun Gothic', monospace; color: var(--text-2); overflow: hidden; }
+  .logbox p b { color: var(--g); font-weight: 400; }
+  .logbox p.w b { color: var(--amber); }
+
+  /* 가운데: 그리드 */
+  .center { flex: 1; min-width: 0; display: flex; flex-direction: column; background: #fff; position: relative; }
+  .tabs { height: 30px; flex: none; display: flex; align-items: flex-end; gap: 2px; padding: 0 8px; background: var(--bg); border-bottom: 1px solid var(--line); }
+  .tab { height: 25px; display: flex; align-items: center; gap: 6px; padding: 0 12px; border: 1px solid var(--line); border-bottom: none; background: #e2e5e9; color: var(--text-2); }
+  .tab.on { height: 27px; background: #fff; color: var(--text); font-weight: 700; margin-bottom: -1px; border-top: 2px solid var(--g); }
+  .tab em { font-style: normal; font-variant-numeric: tabular-nums; padding: 0 5px; border-radius: 8px; background: #d4d8de; font-size: 11px; font-weight: 700; color: var(--text-2); }
+  .tab.on em { background: var(--g-soft); color: var(--g-2); }
+  .tab.warn em { background: var(--amber-soft); color: var(--amber); }
+  .tabs .sp { flex: 1; }
+  .mk { align-self: center; display: flex; border: 1px solid #a9afb7; background: #fff; }
+  .mk b { padding: 3px 10px; font-weight: 400; color: var(--text-2); border-right: 1px solid #d0d4da; }
+  .mk b:last-child { border-right: none; }
+  .mk b.on { background: var(--g); color: #fff; font-weight: 700; }
+  .mkl { align-self: center; color: var(--text-3); margin-right: 6px; }
+
+  .fx { height: 26px; flex: none; display: flex; align-items: center; border-bottom: 1px solid var(--line-2); background: #fff; }
+  .fx .ref { width: 70px; height: 100%; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--line-2); font-family: 'Segoe UI', sans-serif; }
+  .fx .f { width: 34px; text-align: center; color: var(--text-3); font-style: italic; font-family: 'Cambria', serif; font-size: 13px; border-right: 1px solid var(--line-2); }
+  .fx .v { padding: 0 10px; white-space: nowrap; }
+  .fx .v span { color: var(--text-3); margin-left: 10px; }
+
+  table.g { border-collapse: collapse; table-layout: fixed; width: 100%; font-variant-numeric: tabular-nums; }
+  .g th, .g td { height: 22px; border: 1px solid var(--grid); padding: 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .g thead th { height: 20px; background: #f1f2f4; color: var(--text-2); font-weight: 400; text-align: center; font-family: 'Segoe UI', sans-serif; font-size: 11.5px; }
+  .g thead tr.h th { height: 24px; background: #f7f8f9; color: var(--text); font-weight: 700; font-family: inherit; font-size: 12px; text-align: left; }
+  .g th.rn, .g td.rn { width: 38px; text-align: center; background: #f1f2f4; color: var(--text-3); font-family: 'Segoe UI', sans-serif; font-size: 11px; padding: 0; }
+  .g thead th.F { background: var(--g); color: #fff; border-color: var(--g-2); }
+  .g thead tr.h th.F { background: #d7eedf; color: var(--g-2); border-color: var(--g-line); }
+  .g thead tr.h th.F span { float: right; font-weight: 700; color: #fff; background: var(--g); padding: 0 5px; border-radius: 2px; font-size: 11px; line-height: 16px; margin-top: 3px; }
+  .g td.F { background: #f2faf5; border-left-color: var(--g-line); border-right-color: var(--g-line); color: #173e27; }
+  .g td.F.lo { background: var(--amber-soft); color: #6b4a0e; }
+  .g td.F.no { background: var(--red-soft); color: var(--red); font-weight: 700; }
+  .g td.r { text-align: right; }
+  .g td.src { color: var(--text-2); }
+  .g td.code { color: var(--text-2); font-family: 'Segoe UI', sans-serif; font-size: 11.5px; }
+  .g tr.cur td { background: #eaf3fd; }
+  .g tr.cur td.F { background: #d9f0e2; box-shadow: inset 0 0 0 2px var(--g); }
+  .g tr.cur td.rn { background: #d6e6f7; color: var(--text); font-weight: 700; }
+  .m { display: inline-block; min-width: 46px; text-align: center; padding: 0 4px; line-height: 15px; border-radius: 2px; font-size: 11px; font-weight: 700; }
+  .m.a { color: var(--g-2); background: var(--g-soft); }
+  .m.my { color: #1d5fae; background: #e1ecf8; }
+  .m.lo { color: var(--amber); background: var(--amber-soft); }
+  .m.no { color: var(--red); background: var(--red-soft); }
+  .bw { color: var(--text-3); }
+  .bw s { color: var(--red); }
+  .bw b { font-weight: 400; color: var(--g-2); }
+
+  /* 열 매핑 대화상자 */
+  .dlg { position: absolute; left: 30px; top: 76px; width: 546px; z-index: 10; background: var(--face); border: 1px solid #8d949d; box-shadow: 0 18px 40px -10px rgb(20 30 40 / .45), 0 4px 10px rgb(20 30 40 / .15); }
+  .dlg-bar { height: 30px; display: flex; align-items: center; gap: 8px; padding-left: 10px; background: #fff; border-bottom: 1px solid #d6d9de; font-family: 'Segoe UI', 'Malgun Gothic', sans-serif; }
+  .dlg-bar .t { flex: 1; }
+  .dlg-bar .x { width: 40px; height: 100%; position: relative; }
+  .dlg-bar .x::before, .dlg-bar .x::after { content: ""; position: absolute; left: 50%; top: 50%; width: 12px; height: 1px; background: #333; translate: -50% -50%; rotate: 45deg; }
+  .dlg-bar .x::after { rotate: -45deg; }
+  .dlg-in { padding: 12px 14px 12px; }
+  .dlg-head { display: flex; gap: 10px; align-items: flex-start; }
+  .dlg-head .ic { width: 34px; height: 34px; flex: none; border-radius: 3px; background: var(--g-soft); border: 1px solid var(--g-line); display: grid; place-items: center; color: var(--g); }
+  .dlg-head .ic svg { width: 20px; height: 20px; }
+  .dlg-head b { display: block; font-size: 13px; }
+  .dlg-head p { color: var(--text-2); margin-top: 2px; }
+  .auto { margin-left: auto; text-align: right; white-space: nowrap; }
+  .auto strong { display: block; font: 700 20px/1 'Segoe UI', sans-serif; color: var(--g); font-variant-numeric: tabular-nums; }
+  .auto small { color: var(--text-3); font-size: 11px; }
+
+  .map { margin-top: 10px; background: #fff; border: 1px solid #b9bec5; }
+  .map .hd, .map .row { display: grid; grid-template-columns: 26px 88px 146px 30px 1fr 22px; align-items: center; }
+  .map .hd { height: 24px; background: #f1f2f4; border-bottom: 1px solid #d6d9de; color: var(--text-2); }
+  .map .hd span { padding: 0 6px; }
+  .map .row { height: 27px; border-bottom: 1px solid #eef0f2; }
+  .map .row:last-child { border-bottom: none; }
+  .map .col { text-align: center; font-family: 'Segoe UI', sans-serif; color: var(--text-3); font-size: 11px; }
+  .map .src { padding: 0 6px; font-weight: 700; }
+  .map .ex { padding: 0 6px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 11.5px; }
+  .map .ar { color: var(--g); display: grid; place-items: center; }
+  .map .ar svg { width: 18px; height: 14px; }
+  .map .dst { height: 21px; margin-right: 4px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 7px; border: 1px solid #a9afb7; background: #fff; }
+  .map .dst i { width: 6px; height: 6px; border-right: 1.4px solid #555; border-bottom: 1.4px solid #555; rotate: 45deg; translate: 0 -2px; }
+  .map .ok { display: grid; place-items: center; color: var(--g); }
+  .map .ok svg { width: 14px; height: 14px; stroke-width: 2.4; }
+  .map .row.key { background: #f2faf5; }
+  .map .row.key .dst { border-color: var(--g); box-shadow: 0 0 0 1px var(--g); font-weight: 700; color: var(--g-2); }
+  .map .row.sel { background: var(--sel); }
+  .map .row.skip .src, .map .row.skip .ex { color: #a2a8b0; }
+  .map .row.skip .dst { color: var(--text-3); background: #f4f5f6; border-style: dashed; }
+  .map .row.skip .ar { color: #b5bac1; }
+  .map .tagm { font-size: 11px; font-weight: 700; color: #fff; background: var(--g); padding: 0 4px; border-radius: 2px; line-height: 15px; }
+
+  .dlg-foot { display: flex; align-items: center; gap: 8px; margin-top: 11px; }
+  .dlg-foot .chk { margin-top: 0; }
+  .dlg-foot .sp { flex: 1; }
+  .btn { height: 26px; min-width: 76px; padding: 0 12px; display: grid; place-items: center; background: #e9ebee; border: 1px solid #a9afb7; border-radius: 2px; }
+  .btn.def { background: var(--g); border-color: var(--g-2); color: #fff; font-weight: 700; box-shadow: inset 0 0 0 1px rgb(255 255 255 / .25); }
+
+  .status { height: 24px; flex: none; display: flex; align-items: center; background: #dfe2e7; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+  .status span { padding: 0 12px; border-right: 1px solid #c3c8cf; height: 16px; display: flex; align-items: center; gap: 6px; color: var(--text-2); }
+  .status span.ok { color: var(--g-2); font-weight: 700; }
+  .status span.ok i { width: 8px; height: 8px; border-radius: 50%; background: var(--g); }
+  .status .prog { width: 120px; height: 12px; border: 1px solid #a9afb7; background: #fff; padding: 1px; }
+  .status .prog b { display: block; height: 100%; width: 100%; background: repeating-linear-gradient(90deg, #2ea05a 0 8px, #fff 8px 9px); }
+  .status .r { margin-left: auto; border-right: none; border-left: 1px solid #c3c8cf; }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar">
+    <span class="win-icon"><svg viewBox="0 0 16 16"><rect x="1.5" y="2" width="13" height="12" rx="1.5" fill="#1e7b45"/><path d="M4 6h8M4 9h8M7 4v9" stroke="#fff" stroke-width="1.2"/><path d="M10.5 10.5 13 13" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+    <span class="win-title">대장장이 2.0.5 — 상품대장 병합·가공 · 10월 위탁상품 통합 작업</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <nav class="menu"><span>파일(<u>F</u>)</span><span>편집(<u>E</u>)</span><span>보기(<u>V</u>)</span><span>가공(<u>P</u>)</span><span>카테고리(<u>C</u>)</span><span>도구(<u>T</u>)</span><span>도움말(<u>H</u>)</span></nav>
+
+    <div class="tools">
+      <span class="tb go"><svg viewBox="0 0 24 24"><path d="M7 5v14l11-7z"/></svg>가공 시작</span>
+      <span class="sep"></span>
+      <span class="tb"><svg viewBox="0 0 24 24"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5M12 11v6M9 14h6"/></svg>파일 추가</span>
+      <span class="tb hov"><svg viewBox="0 0 24 24"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg>열 매핑</span>
+      <span class="tb"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="m6 6 12 12"/></svg>금지어</span>
+      <span class="tb"><svg viewBox="0 0 24 24"><path d="M4 6h10M4 12h7M4 18h10"/><path d="m15 14 3 3 4-5"/></svg>카테고리</span>
+      <span class="sep"></span>
+      <span class="tb"><svg viewBox="0 0 24 24"><path d="M3 7.5A1.5 1.5 0 0 1 4.5 6H9l2 2h8.5A1.5 1.5 0 0 1 21 9.5V10"/><path d="M3 7.5V18a1.5 1.5 0 0 0 1.5 1.5h13.2a1.5 1.5 0 0 0 1.4-1l2.4-7.3H6.6a1.5 1.5 0 0 0-1.4 1L3 18.5"/></svg>결과 열기</span>
+      <span class="tb"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M21.5 12h-3M5.5 12h-3M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1M18.7 18.7l-2.1-2.1M7.4 7.4 5.3 5.3"/></svg>설정</span>
+      <span class="sp"></span>
+      <div class="tfield"><label>저장 양식</label><span class="combo">이셀러스 업로드 양식 (.xlsx)<i></i></span></div>
+      <span class="auth"><svg class="i" viewBox="0 0 24 24"><path d="M12 3 19 6v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6z"/><path d="m9 12 2 2 4-4"/></svg>인증됨 · ●●●●</span>
+    </div>
+
+    <div class="work">
+      <aside class="left">
+        <div class="ph"><span>불러온 파일<em>8개</em></span><span class="mini"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>추가</span></div>
+        <ul class="files">
+          <li class="sel"><svg class="xl" viewBox="0 0 20 22"><path d="M3 1h10l5 5v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" fill="#fff" stroke="#1e7b45"/><rect x="2" y="9" width="11" height="9" fill="#1e7b45"/><path d="m5 11 5 5m0-5-5 5" stroke="#fff" stroke-width="1.4"/></svg><b>도매몰A_상품대장.xlsx</b><span class="n">612</span><small>열 10개 · 매핑 저장됨</small></li>
+          <li><svg class="xl" viewBox="0 0 20 22"><path d="M3 1h10l5 5v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" fill="#fff" stroke="#1e7b45"/><rect x="2" y="9" width="11" height="9" fill="#1e7b45"/><path d="m5 11 5 5m0-5-5 5" stroke="#fff" stroke-width="1.4"/></svg><b>생활잡화B_1026.xlsx</b><span class="n">488</span><small>열 14개 · 매핑 저장됨</small></li>
+          <li><svg class="xl" viewBox="0 0 20 22"><path d="M3 1h10l5 5v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" fill="#fff" stroke="#1e7b45"/><rect x="2" y="9" width="11" height="9" fill="#1e7b45"/><path d="m5 11 5 5m0-5-5 5" stroke="#fff" stroke-width="1.4"/></svg><b>주방몰C_전체상품.xlsx</b><span class="n">455</span><small>열 12개 · 매핑 저장됨</small></li>
+          <li><svg class="xl" viewBox="0 0 20 22"><path d="M3 1h10l5 5v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" fill="#fff" stroke="#1e7b45"/><rect x="2" y="9" width="11" height="9" fill="#1e7b45"/><path d="m5 11 5 5m0-5-5 5" stroke="#fff" stroke-width="1.4"/></svg><b>펫용품D_신상품.xlsx</b><span class="n">402</span><small>열 9개 · 매핑 저장됨</small></li>
+          <li><svg class="xl" viewBox="0 0 20 22"><path d="M3 1h10l5 5v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" fill="#fff" stroke="#1e7b45"/><rect x="2" y="9" width="11" height="9" fill="#1e7b45"/><path d="m5 11 5 5m0-5-5 5" stroke="#fff" stroke-width="1.4"/></svg><b>문구몰E_상품목록.xls</b><span class="n">371</span><small>열 11개 · 매핑 저장됨</small></li>
+          <li><svg class="xl" viewBox="0 0 20 22"><path d="M3 1h10l5 5v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" fill="#fff" stroke="#1e7b45"/><rect x="2" y="9" width="11" height="9" fill="#1e7b45"/><path d="m5 11 5 5m0-5-5 5" stroke="#fff" stroke-width="1.4"/></svg><b>캠핑F_상품대장.xlsx</b><span class="n">348</span><small>열 13개 · 매핑 저장됨</small></li>
+          <li><svg class="xl" viewBox="0 0 20 22"><path d="M3 1h10l5 5v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" fill="#fff" stroke="#1e7b45"/><rect x="2" y="9" width="11" height="9" fill="#1e7b45"/><path d="m5 11 5 5m0-5-5 5" stroke="#fff" stroke-width="1.4"/></svg><b>뷰티G_1025.xlsx</b><span class="n">301</span><small>열 10개 · 매핑 저장됨</small></li>
+          <li><svg class="xl" viewBox="0 0 20 22"><path d="M3 1h10l5 5v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" fill="#fff" stroke="#1e7b45"/><rect x="2" y="9" width="11" height="9" fill="#1e7b45"/><path d="m5 11 5 5m0-5-5 5" stroke="#fff" stroke-width="1.4"/></svg><b>완구H_상품.xlsx</b><span class="n">237</span><small>열 8개 · 매핑 저장됨</small></li>
+          <li class="tot"><span>합계 (중복 제외 전)</span><span>3,214</span></li>
+        </ul>
+
+        <fieldset>
+          <legend>가공 설정</legend>
+          <dl class="kv">
+            <dt>대상 마켓</dt><dd>쿠팡 외 2곳 <a>편집</a></dd>
+            <dt>금지어 목록</dt><dd>기본+내 단어 42개 <a>편집</a></dd>
+            <dt>우선 카테고리</dt><dd>마이카테고리 12개 <a>편집</a></dd>
+          </dl>
+          <div class="chk on"><i></i><span>금지어 대체어로 바꾸기</span></div>
+          <div class="chk on"><i></i><span>중복 단어·기호 정리</span></div>
+          <div class="chk off"><i></i><span>상세설명 문구 일괄 수정</span></div>
+        </fieldset>
+
+        <div class="logbox">
+          <p>09:30:02 도매몰 엑셀 8개 불러옴</p>
+          <p>09:30:09 표준 양식으로 <b>3,214개</b> 병합</p>
+          <p>09:30:21 금지어 <b>126건</b> 정리</p>
+          <p>09:31:04 카테고리 매칭 <b>3,187</b>/3,214</p>
+          <p class="w">09:31:06 미매칭 <b>27개</b> · 확인 필요</p>
+        </div>
+      </aside>
+
+      <section class="center">
+        <div class="tabs">
+          <span class="tab on">병합 결과 <em>3,214</em></span>
+          <span class="tab">금지어 정리 <em>126</em></span>
+          <span class="tab warn">미매칭 <em>27</em></span>
+          <span class="tab">도매몰별 요약</span>
+          <span class="sp"></span>
+          <span class="mkl">카테고리 보기</span>
+          <span class="mk"><b class="on">쿠팡</b><b>스마트스토어</b><b>11번가</b></span>
+        </div>
+        <div class="fx"><span class="ref">F7</span><span class="f">fx</span><span class="v">주방용품 &gt; 보관/밀폐용기 &gt; 밀폐용기세트<span>쿠팡 카테고리 80312 · 일치도 97%</span></span></div>
+        <table class="g">
+          <colgroup><col style="width:38px"><col style="width:84px"><col style="width:86px"><col style="width:250px"><col style="width:70px"><col style="width:70px"><col style="width:232px"><col style="width:64px"><col></colgroup>
+          <thead>
+            <tr><th class="rn"></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th class="F">F</th><th>G</th><th>H</th></tr>
+            <tr class="h"><th class="rn">1</th><th>원본</th><th>상품코드</th><th>상품명 (가공 후)</th><th>판매가</th><th>공급가</th><th class="F">카테고리 · 쿠팡<span>자동 92%</span></th><th>매칭</th><th>금지어</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="rn">2</td><td class="src">도매몰A</td><td class="code">DA-10288</td><td>스테인리스 냄비 3종 세트 인덕션 겸용</td><td class="r">32,900</td><td class="r">19,800</td><td class="F">주방용품 &gt; 냄비/프라이팬 &gt; 냄비세트</td><td><span class="m a">자동 98%</span></td><td class="bw">-</td></tr>
+            <tr><td class="rn">3</td><td class="src">도매몰A</td><td class="code">DA-10289</td><td>실리콘 주방 집게 2P 내열</td><td class="r">6,900</td><td class="r">3,100</td><td class="F">주방용품 &gt; 주방잡화 &gt; 집게</td><td><span class="m a">자동 96%</span></td><td class="bw">-</td></tr>
+            <tr><td class="rn">4</td><td class="src">도매몰A</td><td class="code">DA-10290</td><td>원목 도마 대형 손잡이형</td><td class="r">18,500</td><td class="r">9,700</td><td class="F">주방용품 &gt; 칼/도마 &gt; 도마</td><td><span class="m a">자동 99%</span></td><td class="bw"><s>최저가</s> 삭제</td></tr>
+            <tr><td class="rn">5</td><td class="src">도매몰A</td><td class="code">DA-10291</td><td>밀폐 유리 반찬통 6종</td><td class="r">21,900</td><td class="r">12,400</td><td class="F">주방용품 &gt; 보관/밀폐용기 &gt; 유리용기</td><td><span class="m a">자동 97%</span></td><td class="bw">-</td></tr>
+            <tr><td class="rn">6</td><td class="src">도매몰A</td><td class="code">DA-10292</td><td>대용량 쌀통 20kg 계량컵 포함</td><td class="r">27,800</td><td class="r">15,900</td><td class="F">주방용품 &gt; 보관/밀폐용기 &gt; 쌀통</td><td><span class="m my">마이</span></td><td class="bw">-</td></tr>
+            <tr class="cur"><td class="rn">7</td><td class="src">도매몰A</td><td class="code">DA-10293</td><td>스텐 밀폐용기 5종 세트 대용량</td><td class="r">15,900</td><td class="r">8,900</td><td class="F">주방용품 &gt; 보관/밀폐용기 &gt; 밀폐용기세트</td><td><span class="m a">자동 97%</span></td><td class="bw"><s>무료배송</s> 삭제</td></tr>
+            <tr><td class="rn">8</td><td class="src">도매몰A</td><td class="code">DA-10294</td><td>접이식 식기 건조대 2단</td><td class="r">24,900</td><td class="r">13,200</td><td class="F">주방용품 &gt; 주방수납 &gt; 식기건조대</td><td><span class="m a">자동 95%</span></td><td class="bw">-</td></tr>
+            <tr><td class="rn">9</td><td class="src">도매몰A</td><td class="code">DA-10295</td><td>세라믹 코팅 프라이팬 28cm</td><td class="r">19,900</td><td class="r">10,500</td><td class="F">주방용품 &gt; 냄비/프라이팬 &gt; 프라이팬</td><td><span class="m a">자동 99%</span></td><td class="bw">-</td></tr>
+            <tr><td class="rn">10</td><td class="src">생활잡화B</td><td class="code">SB-2207</td><td>규조토 발매트 대형 그레이</td><td class="r">12,900</td><td class="r">6,300</td><td class="F">생활용품 &gt; 욕실용품 &gt; 발매트</td><td><span class="m a">자동 94%</span></td><td class="bw"><s>정품</s> 삭제</td></tr>
+            <tr><td class="rn">11</td><td class="src">생활잡화B</td><td class="code">SB-2208</td><td>압축 수납팩 10매 이불 보관</td><td class="r">14,900</td><td class="r">7,800</td><td class="F lo">생활용품 &gt; 수납/정리 &gt; 압축팩 (후보 3)</td><td><span class="m lo">확인 71%</span></td><td class="bw">-</td></tr>
+            <tr><td class="rn">12</td><td class="src">생활잡화B</td><td class="code">SB-2209</td><td>무타공 수건걸이 2단</td><td class="r">16,500</td><td class="r">8,400</td><td class="F">생활용품 &gt; 욕실용품 &gt; 수건걸이</td><td><span class="m a">자동 96%</span></td><td class="bw">-</td></tr>
+            <tr><td class="rn">13</td><td class="src">생활잡화B</td><td class="code">SB-2210</td><td>먼지 차단 현관 매트 60×90</td><td class="r">22,000</td><td class="r">11,900</td><td class="F">생활용품 &gt; 생활잡화 &gt; 현관매트</td><td><span class="m my">마이</span></td><td class="bw"><s>1위</s> 삭제</td></tr>
+            <tr><td class="rn">14</td><td class="src">주방몰C</td><td class="code">JC-0417</td><td>전동 거품기 무선 충전식</td><td class="r">23,900</td><td class="r">12,800</td><td class="F">주방가전 &gt; 소형가전 &gt; 핸드블렌더</td><td><span class="m a">자동 93%</span></td><td class="bw">-</td></tr>
+            <tr><td class="rn">15</td><td class="src">주방몰C</td><td class="code">JC-0418</td><td>대나무 수저통 물빠짐</td><td class="r">9,900</td><td class="r">4,600</td><td class="F">주방용품 &gt; 주방수납 &gt; 수저통</td><td><span class="m a">자동 97%</span></td><td class="bw">-</td></tr>
+            <tr><td class="rn">16</td><td class="src">주방몰C</td><td class="code">JC-0419</td><td>다용도 멀티 슬라이서 6종</td><td class="r">17,900</td><td class="r">9,100</td><td class="F no">미매칭 · 확인 필요</td><td><span class="m no">미매칭</span></td><td class="bw">-</td></tr>
+            <tr><td class="rn">17</td><td class="src">주방몰C</td><td class="code">JC-0420</td><td>스테인리스 텀블러 600ml</td><td class="r">13,900</td><td class="r">6,900</td><td class="F">주방용품 &gt; 컵/텀블러 &gt; 텀블러</td><td><span class="m a">자동 98%</span></td><td class="bw"><s>특가</s> 삭제</td></tr>
+            <tr><td class="rn">18</td><td class="src">펫용품D</td><td class="code">PD-3051</td><td>고양이 스크래쳐 하우스 원형</td><td class="r">26,900</td><td class="r">14,500</td><td class="F">반려동물용품 &gt; 고양이 &gt; 스크래쳐</td><td><span class="m a">자동 99%</span></td><td class="bw">-</td></tr>
+            <tr><td class="rn">19</td><td class="src">펫용품D</td><td class="code">PD-3052</td><td>강아지 노즈워크 담요 사각</td><td class="r">15,900</td><td class="r">7,900</td><td class="F">반려동물용품 &gt; 강아지 &gt; 장난감</td><td><span class="m a">자동 92%</span></td><td class="bw">-</td></tr>
+            <tr><td class="rn">20</td><td class="src">펫용품D</td><td class="code">PD-3053</td><td>자동 급수기 2L 필터 포함</td><td class="r">29,800</td><td class="r">16,400</td><td class="F lo">반려동물용품 &gt; 급식/급수기 (후보 2)</td><td><span class="m lo">확인 76%</span></td><td class="bw">-</td></tr>
+            <tr><td class="rn">21</td><td class="src">펫용품D</td><td class="code">PD-3054</td><td>펫 드라이룸 전용 매트</td><td class="r">11,900</td><td class="r">5,800</td><td class="F">반려동물용품 &gt; 미용/목욕 &gt; 매트</td><td><span class="m my">마이</span></td><td class="bw">-</td></tr>
+            <tr><td class="rn">22</td><td class="src">문구몰E</td><td class="code">ME-0902</td><td>스프링 노트 A5 5권 세트</td><td class="r">8,900</td><td class="r">4,200</td><td class="F">문구/오피스 &gt; 노트/메모 &gt; 스프링노트</td><td><span class="m a">자동 98%</span></td><td class="bw">-</td></tr>
+            <tr><td class="rn">23</td><td class="src">문구몰E</td><td class="code">ME-0903</td><td>데스크 정리함 3단 서랍형</td><td class="r">19,800</td><td class="r">10,100</td><td class="F">문구/오피스 &gt; 데스크정리 &gt; 서랍정리함</td><td><span class="m a">자동 95%</span></td><td class="bw">-</td></tr>
+            <tr><td class="rn">24</td><td class="src">문구몰E</td><td class="code">ME-0904</td><td>젤 중성펜 0.5mm 12색</td><td class="r">7,500</td><td class="r">3,600</td><td class="F">문구/오피스 &gt; 필기구 &gt; 중성펜</td><td><span class="m a">자동 99%</span></td><td class="bw"><s>최고급</s> 대체</td></tr>
+            <tr><td class="rn">25</td><td class="src">캠핑F</td><td class="code">CF-1180</td><td>접이식 캠핑 의자 경량</td><td class="r">34,900</td><td class="r">19,500</td><td class="F">캠핑 &gt; 캠핑가구 &gt; 캠핑의자</td><td><span class="m a">자동 99%</span></td><td class="bw">-</td></tr>
+          </tbody>
+        </table>
+
+        <div class="dlg">
+          <div class="dlg-bar"><svg class="i" viewBox="0 0 24 24" style="color:#1e7b45"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg><span class="t">열 매핑 — 도매몰A_상품대장.xlsx</span><span class="x"></span></div>
+          <div class="dlg-in">
+            <div class="dlg-head">
+              <span class="ic"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="7" height="16" rx="1"/><rect x="14" y="4" width="7" height="16" rx="1"/><path d="M10 9h4M10 15h4"/></svg></span>
+              <div><b>원본 열을 표준 양식의 열에 연결합니다</b><p>저장해 둔 '도매몰A' 매핑을 불러왔습니다. 확인을 누르면 다음 가공부터 적용됩니다.</p></div>
+              <div class="auto"><strong>9 / 10</strong><small>자동 인식된 열</small></div>
+            </div>
+            <div class="map">
+              <div class="hd"><span></span><span>원본 열</span><span>첫 행 값</span><span></span><span>표준 열</span><span></span></div>
+              <div class="row"><span class="col">A</span><span class="src">상품번호</span><span class="ex">DA-10293</span><span class="ar"><svg class="i" viewBox="0 0 24 18"><path d="M2 9h18M15 4l5 5-5 5"/></svg></span><span class="dst">상품코드<i></i></span><span class="ok"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span></div>
+              <div class="row"><span class="col">B</span><span class="src">상품명</span><span class="ex">[무료배송] 스텐 밀폐용기 5종…</span><span class="ar"><svg class="i" viewBox="0 0 24 18"><path d="M2 9h18M15 4l5 5-5 5"/></svg></span><span class="dst">상품명<i></i></span><span class="ok"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span></div>
+              <div class="row"><span class="col">C</span><span class="src">도매가</span><span class="ex">8,900</span><span class="ar"><svg class="i" viewBox="0 0 24 18"><path d="M2 9h18M15 4l5 5-5 5"/></svg></span><span class="dst">공급가<i></i></span><span class="ok"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span></div>
+              <div class="row"><span class="col">D</span><span class="src">소비자가</span><span class="ex">15,900</span><span class="ar"><svg class="i" viewBox="0 0 24 18"><path d="M2 9h18M15 4l5 5-5 5"/></svg></span><span class="dst">판매가<i></i></span><span class="ok"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span></div>
+              <div class="row key sel"><span class="col">E</span><span class="src">분류</span><span class="ex">주방&gt;보관용기&gt;스텐</span><span class="ar"><svg class="i" viewBox="0 0 24 18"><path d="M2 9h18M15 4l5 5-5 5"/></svg></span><span class="dst"><span>카테고리 원문 <span class="tagm">매칭 기준</span></span><i></i></span><span class="ok"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span></div>
+              <div class="row"><span class="col">F</span><span class="src">옵션</span><span class="ex">색상:실버,블랙</span><span class="ar"><svg class="i" viewBox="0 0 24 18"><path d="M2 9h18M15 4l5 5-5 5"/></svg></span><span class="dst">옵션명·옵션값<i></i></span><span class="ok"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span></div>
+              <div class="row"><span class="col">G</span><span class="src">이미지1</span><span class="ex">img/DA-10293_1.jpg</span><span class="ar"><svg class="i" viewBox="0 0 24 18"><path d="M2 9h18M15 4l5 5-5 5"/></svg></span><span class="dst">대표 이미지<i></i></span><span class="ok"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span></div>
+              <div class="row"><span class="col">H</span><span class="src">배송비</span><span class="ex">3,000</span><span class="ar"><svg class="i" viewBox="0 0 24 18"><path d="M2 9h18M15 4l5 5-5 5"/></svg></span><span class="dst">기본 배송비<i></i></span><span class="ok"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span></div>
+              <div class="row"><span class="col">I</span><span class="src">원산지</span><span class="ex">중국</span><span class="ar"><svg class="i" viewBox="0 0 24 18"><path d="M2 9h18M15 4l5 5-5 5"/></svg></span><span class="dst">원산지<i></i></span><span class="ok"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span></div>
+              <div class="row skip"><span class="col">J</span><span class="src">비고</span><span class="ex">10/20 입고분</span><span class="ar"><svg class="i" viewBox="0 0 24 18"><path d="M2 9h18M15 4l5 5-5 5"/></svg></span><span class="dst">(사용 안 함)<i></i></span><span></span></div>
+            </div>
+            <div class="dlg-foot">
+              <div class="chk on"><i></i><span>'도매몰A' 양식으로 저장</span></div>
+              <span class="sp"></span>
+              <span class="btn">미리보기</span><span class="btn def">확인</span><span class="btn">취소</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="status"><span class="ok"><i></i>완료</span><span>병합 3,214개</span><span>매칭 3,187개 (자동 2,957 · 마이카테고리 230)</span><span>미매칭 27개</span><span>금지어 정리 126건</span><span class="r"><span class="prog"><b></b></span>100%</span></footer>
+  </main>
+</div>
+</body>
+</html>

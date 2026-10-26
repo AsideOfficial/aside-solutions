@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>프라이스가드</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 프라이스가드: 야간에도 돌아가는 가격 관제 화면. 트레이딩 터미널처럼 촘촘한 다크 테마. */
+  :root {
+    --bg: #0b131f; --panel: #101a29; --panel-2: #152238; --line: rgb(146 168 205 / .12); --line-2: rgb(146 168 205 / .2);
+    --text: #e7eef8; --text-2: #9eb0c9; --text-3: #6a7c97;
+    --accent: #4d8dff; --ok: #31d39c; --warn: #f5b74e; --down: #ff6c7c;
+  }
+  body { font: 400 13px/1.4 'Pretendard Variable', 'Segoe UI', sans-serif; color: var(--text); background: var(--bg); letter-spacing: -0.01em; }
+  .win { --bar: #070d16; --bar-fg: #aebbd0; background: var(--bg); }
+  .win-icon svg { width: 16px; height: 16px; }
+
+  .rail { width: 56px; flex: none; background: #08101a; border-right: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; gap: 6px; padding-top: 12px; }
+  .rail a { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; color: var(--text-3); }
+  .rail a.on { background: rgb(77 141 255 / .14); color: var(--accent); box-shadow: inset 2px 0 0 var(--accent); }
+  .rail svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .rail .grow { flex: 1; }
+
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .head { height: 62px; flex: none; display: flex; align-items: center; gap: 16px; padding: 0 22px; border-bottom: 1px solid var(--line); }
+  .head h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; }
+  .head .sub { color: var(--text-3); font-size: 12px; margin-top: 3px; }
+  .head .sp { flex: 1; }
+  .live { display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 8px; background: rgb(49 211 156 / .1); color: var(--ok); font-weight: 600; font-size: 12px; }
+  .live i { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 4px rgb(49 211 156 / .18); }
+  .live span { color: var(--text-2); font-weight: 400; }
+  .btn { height: 32px; display: flex; align-items: center; gap: 6px; padding: 0 13px; border-radius: 8px; border: 1px solid var(--line-2); color: var(--text-2); font-weight: 600; font-size: 12px; }
+  .btn.pri { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .kpis { flex: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 16px 22px 0; }
+  .kpi { position: relative; padding: 13px 16px 12px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); overflow: hidden; }
+  .kpi p { color: var(--text-3); font-size: 12px; }
+  .kpi strong { display: block; margin-top: 6px; font-size: 24px; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .kpi strong small { font-size: 13px; font-weight: 500; color: var(--text-2); margin-left: 3px; }
+  .kpi em { position: absolute; right: 14px; top: 13px; font-style: normal; font-size: 11px; font-weight: 600; padding: 3px 7px; border-radius: 6px; }
+  .kpi .up { color: var(--ok); background: rgb(49 211 156 / .12); }
+  .kpi .wa { color: var(--warn); background: rgb(245 183 78 / .12); }
+  .kpi svg.bars { position: absolute; right: 14px; bottom: 12px; }
+  .kpi.hl { background: linear-gradient(135deg, #14305e, #11203a 60%); border-color: rgb(77 141 255 / .35); }
+
+  .split { flex: 1; min-height: 0; display: flex; gap: 14px; padding: 14px 22px 14px; }
+  .tbl { flex: 1; min-width: 0; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); display: flex; flex-direction: column; overflow: hidden; }
+  .tbl-top { height: 46px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--line); }
+  .seg { display: flex; background: #0b1422; border-radius: 8px; padding: 3px; }
+  .seg b { height: 26px; display: grid; place-items: center; padding: 0 11px; border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--text-3); }
+  .seg b.on { background: var(--panel-2); color: var(--text); }
+  .seg b span { color: var(--text-3); font-weight: 500; margin-left: 4px; }
+  .search { margin-left: auto; width: 190px; height: 30px; border-radius: 8px; background: #0b1422; border: 1px solid var(--line); display: flex; align-items: center; gap: 7px; padding: 0 10px; color: var(--text-3); font-size: 12px; }
+  .search svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; }
+
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th { height: 34px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--text-3); padding: 0 10px; border-bottom: 1px solid var(--line); background: #0e1726; }
+  th.r, td.r { text-align: right; }
+  td { height: 44.5px; padding: 0 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  tr.sel td { background: rgb(77 141 255 / .09); }
+  tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+  .prod { display: flex; align-items: center; gap: 10px; }
+  .thumb { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; flex: none; }
+  .thumb svg { width: 17px; height: 17px; fill: none; stroke: #fff; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; opacity: .92; }
+  .prod b { display: block; font-weight: 600; font-size: 13px; }
+  .prod small { display: block; color: var(--text-3); font-size: 11px; margin-top: 1px; }
+  .comp { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+  .comp small { display: block; color: var(--text-3); font-size: 11px; text-align: right; }
+  .mine b { font-weight: 700; }
+  .delta { display: inline-block; margin-left: 6px; padding: 2px 5px; border-radius: 5px; font-size: 10.5px; font-weight: 700; background: rgb(255 108 124 / .14); color: var(--down); }
+  .delta.flat { background: rgb(158 176 201 / .1); color: var(--text-3); }
+  .floor { color: var(--text-2); }
+  .rank { display: inline-grid; place-items: center; min-width: 30px; height: 20px; border-radius: 5px; font-size: 11px; font-weight: 700; background: rgb(77 141 255 / .15); color: #8fb6ff; }
+  .rank.two { background: rgb(158 176 201 / .1); color: var(--text-2); }
+  .st { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; }
+  .st i { width: 7px; height: 7px; border-radius: 50%; }
+  .st.ok { color: var(--ok); } .st.ok i { background: var(--ok); }
+  .st.wa { color: var(--warn); } .st.wa i { background: var(--warn); }
+  .st.run { color: #8fb6ff; } .st.run i { background: transparent; border: 1.5px solid #8fb6ff; border-right-color: transparent; width: 9px; height: 9px; }
+  .st.idle { color: var(--text-3); } .st.idle i { background: var(--text-3); }
+  .time { color: var(--text-3); font-size: 12px; }
+
+  .side { width: 330px; flex: none; min-height: 0; display: flex; flex-direction: column; gap: 12px; }
+  .card { border-radius: 12px; background: var(--panel); border: 1px solid var(--line); padding: 15px 16px; }
+  .card h3 { font-size: 12px; font-weight: 600; color: var(--text-3); display: flex; justify-content: space-between; }
+  .card h3 span { color: var(--accent); font-weight: 600; }
+  .pick { display: flex; gap: 11px; align-items: center; margin-top: 11px; }
+  .pick .thumb { width: 40px; height: 40px; border-radius: 10px; }
+  .pick .thumb svg { width: 22px; height: 22px; }
+  .pick b { font-size: 14px; font-weight: 700; }
+  .pick small { display: block; color: var(--text-3); font-size: 11.5px; margin-top: 2px; }
+  .now { display: flex; align-items: baseline; gap: 8px; margin-top: 14px; font-variant-numeric: tabular-nums; }
+  .now strong { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; }
+  .now span { color: var(--text-2); font-size: 12px; }
+  .now em { margin-left: auto; font-style: normal; font-size: 11px; font-weight: 700; color: #8fb6ff; background: rgb(77 141 255 / .15); padding: 4px 8px; border-radius: 6px; }
+  .chart { margin-top: 10px; }
+  .legend { display: flex; gap: 12px; margin-top: 6px; font-size: 11px; color: var(--text-3); }
+  .legend i { display: inline-block; width: 10px; height: 2px; vertical-align: middle; margin-right: 5px; border-radius: 2px; }
+  .rules { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .rules div { padding: 9px 11px; border-radius: 9px; background: #0c1523; border: 1px solid var(--line); }
+  .rules p { font-size: 11px; color: var(--text-3); }
+  .rules b { display: block; margin-top: 3px; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .rules .on { color: var(--ok); }
+  .events { margin-top: 10px; display: flex; flex-direction: column; gap: 9px; }
+  .events li { display: grid; grid-template-columns: 44px 10px 1fr; gap: 8px; align-items: start; font-size: 12px; }
+  .events time { color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .events i { width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; background: var(--accent); box-shadow: 0 0 0 3px rgb(77 141 255 / .15); }
+  .events i.wa { background: var(--warn); box-shadow: 0 0 0 3px rgb(245 183 78 / .15); }
+  .events span { color: var(--text-2); }
+  .events span b { color: var(--text); font-weight: 600; }
+
+  .status { height: 26px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 14px; background: #070d16; border-top: 1px solid var(--line); color: var(--text-3); font-size: 11.5px; }
+  .status b { color: var(--ok); font-weight: 600; }
+  .status .r { margin-left: auto; }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar">
+    <span class="win-icon"><svg viewBox="0 0 16 16"><path d="M8 1.5 13.5 3.6v4.1c0 3.1-2.3 5.7-5.5 6.8C4.8 13.4 2.5 10.8 2.5 7.7V3.6z" fill="#4d8dff"/><path d="m5.6 8 1.7 1.7 3.2-3.4" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <span class="win-title">프라이스가드 2.4.1 — 스마트스토어 · 판매자 1</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <nav class="rail">
+      <a class="on"><svg viewBox="0 0 24 24"><path d="M12 3 19 5.8v5.4c0 4.4-3 8.1-7 9.8-4-1.7-7-5.4-7-9.8V5.8z"/><path d="m9 12 2 2 4-4"/></svg></a>
+      <a><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg></a>
+      <a><svg viewBox="0 0 24 24"><path d="M4 6h10M4 12h6M4 18h12"/><circle cx="17" cy="6" r="2.5"/><circle cx="13" cy="12" r="2.5"/><circle cx="19" cy="18" r="2.5"/></svg></a>
+      <a><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></a>
+      <span class="grow"></span>
+      <a style="margin-bottom:10px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></a>
+    </nav>
+
+    <section class="main">
+      <div class="head">
+        <div>
+          <h1>실시간 가격 방어</h1>
+          <p class="sub">비교 대상 · 가격비교 묶음, 쿠팡, 11번가 · 배송비 포함 비교</p>
+        </div>
+        <span class="sp"></span>
+        <span class="live"><i></i>감시 중 <span>다음 점검 09:22</span></span>
+        <span class="btn"><svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>일시정지</span>
+        <span class="btn pri"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>변경 이력 저장</span>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi hl"><p>오늘 자동 수정</p><strong>37<small>건</small></strong><em class="up">어제보다 +12</em>
+          <svg class="bars" width="86" height="26" viewBox="0 0 86 26"><g fill="#4d8dff"><rect x="0" y="16" width="6" height="10" rx="1.5" opacity=".35"/><rect x="10" y="12" width="6" height="14" rx="1.5" opacity=".4"/><rect x="20" y="18" width="6" height="8" rx="1.5" opacity=".35"/><rect x="30" y="9" width="6" height="17" rx="1.5" opacity=".5"/><rect x="40" y="14" width="6" height="12" rx="1.5" opacity=".45"/><rect x="50" y="6" width="6" height="20" rx="1.5" opacity=".6"/><rect x="60" y="10" width="6" height="16" rx="1.5" opacity=".6"/><rect x="70" y="2" width="6" height="24" rx="1.5"/><rect x="80" y="8" width="6" height="18" rx="1.5" opacity=".8"/></g></svg></div>
+        <div class="kpi"><p>가격비교 1위 유지</p><strong>112<small>/ 120개</small></strong><em class="up">93%</em></div>
+        <div class="kpi"><p>하한가 도달</p><strong>3<small>개</small></strong><em class="wa">확인 필요</em></div>
+        <div class="kpi"><p>지켜낸 예상 주문</p><strong>41<small>건 · 오늘</small></strong></div>
+      </div>
+
+      <div class="split">
+        <div class="tbl">
+          <div class="tbl-top">
+            <div class="seg"><b class="on">전체<span>120</span></b><b>방어 완료<span>84</span></b><b>하한가<span>3</span></b><b>점검 중<span>2</span></b></div>
+            <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>상품명·코드 검색</div>
+          </div>
+          <table>
+            <thead><tr><th>상품</th><th class="r">경쟁 최저가</th><th class="r">내 가격</th><th class="r">하한가</th><th>순위</th><th>상태</th><th class="r">조정</th></tr></thead>
+            <tbody>
+              <tr class="sel">
+                <td><div class="prod"><span class="thumb" style="background:linear-gradient(135deg,#5b7cff,#3446b8)"><svg viewBox="0 0 24 24"><path d="M15 3 10.5 15"/><path d="M7 15.5h7.5a2 2 0 0 1 2 2V19h-11.5v-1.5a2 2 0 0 1 2-2z"/></svg></span><div><b>무선 청소기 V12</b><small>그레이 · NS-20418</small></div></div></td>
+                <td class="r"><div class="comp"><svg width="48" height="18"><polyline points="0,5 8,5 8,8 18,8 18,11 30,11 30,9 40,9 40,14 48,14" fill="none" stroke="#ff6c7c" stroke-width="1.5"/></svg><div>129,800<small>하○○몰</small></div></div></td>
+                <td class="r mine"><b>129,790</b><span class="delta">-10</span></td>
+                <td class="r floor">125,000</td>
+                <td><span class="rank">1위</span></td>
+                <td><span class="st ok"><i></i>방어 완료</span></td>
+                <td class="r time">09:12</td>
+              </tr>
+              <tr>
+                <td><div class="prod"><span class="thumb" style="background:linear-gradient(135deg,#ff9a62,#e0533a)"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="16" rx="4"/><rect x="8" y="10" width="8" height="6" rx="1.5"/><path d="M11 7h2"/></svg></span><div><b>에어프라이어 5.5L</b><small>화이트 · NS-31207</small></div></div></td>
+                <td class="r"><div class="comp"><svg width="48" height="18"><polyline points="0,6 12,6 12,6 22,6 22,10 34,10 34,13 48,13" fill="none" stroke="#ff6c7c" stroke-width="1.5"/></svg><div>89,000<small>쿠팡 · 주○○</small></div></div></td>
+                <td class="r mine"><b>88,990</b><span class="delta">-10</span></td>
+                <td class="r floor">84,000</td>
+                <td><span class="rank">1위</span></td>
+                <td><span class="st ok"><i></i>방어 완료</span></td>
+                <td class="r time">09:12</td>
+              </tr>
+              <tr>
+                <td><div class="prod"><span class="thumb" style="background:linear-gradient(135deg,#43c6ac,#1f8a78)"><svg viewBox="0 0 24 24"><path d="M7 9h9l1 11H6z"/><path d="M16 11h1.5a2 2 0 0 1 0 4H16.6"/><path d="M9.5 9V6.5h4V9"/></svg></span><div><b>전기포트 1.7L</b><small>스테인리스 · NS-11852</small></div></div></td>
+                <td class="r"><div class="comp"><svg width="48" height="18"><polyline points="0,4 10,4 10,7 20,7 20,10 30,10 30,13 40,13 40,15 48,15" fill="none" stroke="#ff6c7c" stroke-width="1.5"/></svg><div>32,500<small>11번가 · 리○○</small></div></div></td>
+                <td class="r mine"><b>33,000</b><span class="delta flat">유지</span></td>
+                <td class="r floor" style="color:#f5b74e">33,000</td>
+                <td><span class="rank two">2위</span></td>
+                <td><span class="st wa"><i></i>하한가 유지</span></td>
+                <td class="r time">09:12</td>
+              </tr>
+              <tr>
+                <td><div class="prod"><span class="thumb" style="background:linear-gradient(135deg,#c084fc,#7c3aed)"><svg viewBox="0 0 24 24"><circle cx="9" cy="9" r="5"/><path d="M14 7h6v4h-6"/><path d="m8 14 1 6h2l-.8-6"/></svg></span><div><b>헤어드라이기 BLDC</b><small>블랙 · NS-40112</small></div></div></td>
+                <td class="r"><div class="comp"><svg width="48" height="18"><polyline points="0,9 14,9 14,7 26,7 26,11 48,11" fill="none" stroke="#ff6c7c" stroke-width="1.5"/></svg><div>45,900<small>가격비교 · 온○○</small></div></div></td>
+                <td class="r mine"><b>45,890</b><span class="delta">-10</span></td>
+                <td class="r floor">42,000</td>
+                <td><span class="rank">1위</span></td>
+                <td><span class="st ok"><i></i>방어 완료</span></td>
+                <td class="r time">09:12</td>
+              </tr>
+              <tr>
+                <td><div class="prod"><span class="thumb" style="background:linear-gradient(135deg,#60a5fa,#2563eb)"><svg viewBox="0 0 24 24"><path d="M12 21V10"/><rect x="10" y="3" width="4" height="7" rx="1.2"/></svg></span><div><b>음파 전동칫솔</b><small>민트 · NS-22093</small></div></div></td>
+                <td class="r"><div class="comp"><svg width="48" height="18"><polyline points="0,8 20,8 20,8 34,8 34,12 48,12" fill="none" stroke="#ff6c7c" stroke-width="1.5"/></svg><div>38,900<small>쿠팡 · 해○○</small></div></div></td>
+                <td class="r mine"><b>38,890</b><span class="delta">-10</span></td>
+                <td class="r floor">35,500</td>
+                <td><span class="rank">1위</span></td>
+                <td><span class="st ok"><i></i>방어 완료</span></td>
+                <td class="r time">09:11</td>
+              </tr>
+              <tr>
+                <td><div class="prod"><span class="thumb" style="background:linear-gradient(135deg,#fbbf24,#d97706)"><svg viewBox="0 0 24 24"><path d="M8 3h8l-1.5 11h-5z"/><rect x="7" y="14" width="10" height="6" rx="2"/></svg></span><div><b>초고속 블렌더</b><small>1.5L · NS-50071</small></div></div></td>
+                <td class="r"><div class="comp"><svg width="48" height="18"><polyline points="0,10 48,10" fill="none" stroke="#6a7c97" stroke-width="1.5"/></svg><div>59,000<small>가격비교 · 키○○</small></div></div></td>
+                <td class="r mine"><b>58,990</b><span class="delta flat">유지</span></td>
+                <td class="r floor">55,000</td>
+                <td><span class="rank">1위</span></td>
+                <td><span class="st idle"><i></i>변동 없음</span></td>
+                <td class="r time">08:52</td>
+              </tr>
+              <tr>
+                <td><div class="prod"><span class="thumb" style="background:linear-gradient(135deg,#7dd3fc,#0284c7)"><svg viewBox="0 0 24 24"><path d="M12 3c3 4 5 6.6 5 9.6a5 5 0 0 1-10 0C7 9.6 9 7 12 3z"/></svg></span><div><b>초음파 가습기</b><small>4L · NS-18830</small></div></div></td>
+                <td class="r"><div class="comp"><svg width="48" height="18"><polyline points="0,5 16,5 16,9 30,9 30,14 48,14" fill="none" stroke="#ff6c7c" stroke-width="1.5"/></svg><div>42,000<small>쿠팡 · 바○○</small></div></div></td>
+                <td class="r mine"><b>42,500</b><span class="delta flat">유지</span></td>
+                <td class="r floor" style="color:#f5b74e">42,500</td>
+                <td><span class="rank two">2위</span></td>
+                <td><span class="st wa"><i></i>하한가 유지</span></td>
+                <td class="r time">09:10</td>
+              </tr>
+              <tr>
+                <td><div class="prod"><span class="thumb" style="background:linear-gradient(135deg,#94a3b8,#475569)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5"/><path d="M12 4v3"/></svg></span><div><b>물걸레 로봇청소기</b><small>NS-60245</small></div></div></td>
+                <td class="r"><div class="comp"><svg width="48" height="18"><polyline points="0,7 22,7 22,10 48,10" fill="none" stroke="#ff6c7c" stroke-width="1.5"/></svg><div>319,000<small>가격비교 · 스○○</small></div></div></td>
+                <td class="r mine"><b>318,990</b><span class="delta">-10</span></td>
+                <td class="r floor">299,000</td>
+                <td><span class="rank">1위</span></td>
+                <td><span class="st run"><i></i>점검 중</span></td>
+                <td class="r time">09:12</td>
+              </tr>
+              <tr>
+                <td><div class="prod"><span class="thumb" style="background:linear-gradient(135deg,#f472b6,#be185d)"><svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 13h6v4H9zM9 7h6"/></svg></span><div><b>캡슐 커피머신</b><small>레드 · NS-27716</small></div></div></td>
+                <td class="r"><div class="comp"><svg width="48" height="18"><polyline points="0,9 30,9 30,12 48,12" fill="none" stroke="#ff6c7c" stroke-width="1.5"/></svg><div>129,000<small>11번가 · 데○○</small></div></div></td>
+                <td class="r mine"><b>128,990</b><span class="delta">-10</span></td>
+                <td class="r floor">119,000</td>
+                <td><span class="rank">1위</span></td>
+                <td><span class="st ok"><i></i>방어 완료</span></td>
+                <td class="r time">09:04</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <aside class="side">
+          <div class="card">
+            <h3>선택 상품 <span>규칙 편집</span></h3>
+            <div class="pick"><span class="thumb" style="background:linear-gradient(135deg,#5b7cff,#3446b8)"><svg viewBox="0 0 24 24"><path d="M15 3 10.5 15"/><path d="M7 15.5h7.5a2 2 0 0 1 2 2V19h-11.5v-1.5a2 2 0 0 1 2-2z"/></svg></span><div><b>무선 청소기 V12</b><small>가격비교 묶음 판매처 18곳 중</small></div></div>
+            <div class="now"><strong>129,790</strong><span>원</span><em>가격비교 1위</em></div>
+            <svg class="chart" width="296" height="118" viewBox="0 0 296 118">
+              <g stroke="rgb(146 168 205 / .1)"><line x1="0" y1="20" x2="296" y2="20"/><line x1="0" y1="50" x2="296" y2="50"/><line x1="0" y1="80" x2="296" y2="80"/></g>
+              <line x1="0" y1="92" x2="296" y2="92" stroke="#f5b74e" stroke-dasharray="4 4" stroke-width="1.2"/>
+              <text x="296" y="88" fill="#f5b74e" font-size="10" text-anchor="end">하한가 125,000</text>
+              <text x="4" y="16" fill="#ff6c7c" font-size="10">경쟁 최저가</text><text x="4" y="45" fill="#4d8dff" font-size="10" opacity="0">.</text>
+              <polyline points="0,22 46,22 46,34 92,34 92,30 140,30 140,46 190,46 190,58 238,58 238,62 296,62" fill="none" stroke="#ff6c7c" stroke-width="1.6" opacity=".9"/>
+              <path d="M0,26 46,26 46,38 92,38 92,34 140,34 140,50 190,50 190,62 238,62 238,66 296,66 V104 H0Z" fill="url(#g)"/>
+              <polyline points="0,26 46,26 46,38 92,38 92,34 140,34 140,50 190,50 190,62 238,62 238,66 296,66" fill="none" stroke="#4d8dff" stroke-width="2"/>
+              <circle cx="296" cy="66" r="3.5" fill="#4d8dff" stroke="#101a29" stroke-width="2"/>
+              <g fill="#6a7c97" font-size="10"><text x="0" y="116">어제 09시</text><text x="140" y="116" text-anchor="middle">21시</text><text x="296" y="116" text-anchor="end">지금</text></g>
+              <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4d8dff" stop-opacity=".28"/><stop offset="1" stop-color="#4d8dff" stop-opacity="0"/></linearGradient></defs>
+            </svg>
+            <div class="rules">
+              <div><p>대응 금액</p><b>최저가 -10원</b></div>
+              <div><p>점검 주기</p><b>10분마다</b></div>
+              <div><p>배송비 포함 비교</p><b class="on">켜짐</b></div>
+              <div><p>하한가 도달 알림</p><b class="on">켜짐</b></div>
+            </div>
+          </div>
+          <div class="card" style="flex:1; min-height:0; overflow:hidden">
+            <h3>오늘의 조정 기록 <span>전체 37건</span></h3>
+            <ul class="events">
+              <li><time>09:12</time><i></i><span><b>129,790원</b>으로 수정 · 경쟁 129,800원</span></li>
+              <li><time>06:40</time><i></i><span><b>129,890원</b>으로 수정 · 경쟁 129,900원</span></li>
+              <li><time>03:20</time><i class="wa"></i><span>하한가까지 <b>4,890원</b> 남음 · 알림 보냄</span></li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+
+      <footer class="status"><span><b>● 실행 중</b></span><span>관리 상품 120개</span><span>커머스 API 연결됨</span><span>마지막 점검 09:12:11</span><span class="r">프라이스가드 2.4.1</span></footer>
+    </section>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>리뷰현미경</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 리뷰현미경: 라벤더빛 밝은 테마 + 퍼플. 주제별 감성 막대, 키워드 버블, 하이라이트된 리뷰 카드. */
+  :root {
+    --bg: #f8f7fc; --card: #fff; --line: #ebe8f3; --line-2: #f3f1f8;
+    --ink: #1c1730; --ink-2: #5c5670; --ink-3: #9a94ab;
+    --pu: #9333ea; --pu-d: #7e22ce; --pu-50: #f5edff; --pu-100: #ead9fe;
+    --pos: #16a34a; --pos-50: #dcfce7; --neg: #e11d48; --neg-50: #ffe4e8;
+  }
+  body { font: 400 13px/1.45 'Pretendard Variable', 'Segoe UI', sans-serif; color: var(--ink); background: var(--bg); letter-spacing: -0.01em; }
+  .win { --bar: #f1eff8; --bar-fg: #3a3450; background: var(--bg); }
+  .tnum, .num, td { font-variant-numeric: tabular-nums; }
+  svg.i { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+  .top { flex: none; height: 58px; display: flex; align-items: center; gap: 12px; padding: 0 18px; background: #fff; border-bottom: 1px solid var(--line); }
+  .logo { display: flex; align-items: center; gap: 9px; margin-right: 6px; }
+  .logo span { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(145deg, #a855f7, #6b21a8); display: grid; place-items: center; box-shadow: 0 4px 10px -4px rgb(147 51 234 / .6); }
+  .logo b { font-size: 15.5px; font-weight: 800; letter-spacing: -0.03em; }
+  .srcs { display: flex; gap: 6px; flex: 1; min-width: 0; }
+  .src { height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 12px 0 6px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); white-space: nowrap; }
+  .src .bd { height: 24px; padding: 0 7px; border-radius: 6px; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #fff; }
+  .src b { font-size: 12.5px; font-weight: 650; }
+  .src small { font-size: 11.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .src.add { border-style: dashed; color: var(--ink-3); padding: 0 12px; font-size: 12.5px; gap: 5px; background: transparent; }
+  .btn { height: 34px; display: flex; align-items: center; gap: 6px; padding: 0 13px; border-radius: 9px; border: 1px solid var(--line); background: #fff; font-size: 13px; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
+  .btn.pri { background: var(--pu); border-color: var(--pu); color: #fff; box-shadow: 0 6px 14px -6px rgb(147 51 234 / .7); }
+
+  .content { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 12px; padding: 14px 16px; }
+  .kpis { flex: none; display: grid; grid-template-columns: 1.05fr 1.25fr 1fr 1.2fr; gap: 12px; height: 88px; }
+  .kpi { position: relative; padding: 12px 16px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); overflow: hidden; }
+  .kpi p { font-size: 12px; color: var(--ink-3); font-weight: 600; }
+  .kpi strong { display: block; margin-top: 2px; font-size: 27px; font-weight: 800; letter-spacing: -0.035em; line-height: 1.15; font-variant-numeric: tabular-nums; }
+  .kpi strong small { font-size: 14px; font-weight: 700; margin-left: 2px; color: var(--ink-2); }
+  .kpi .sub { font-size: 11.5px; color: var(--ink-2); margin-top: 3px; }
+  .kpi.hero { background: linear-gradient(135deg, #9333ea, #6d28d9); border-color: transparent; color: #fff; }
+  .kpi.hero p, .kpi.hero .sub, .kpi.hero strong small { color: rgb(255 255 255 / .82); }
+  .kpi .scope { position: absolute; right: 12px; top: 12px; opacity: .25; }
+  .senti { position: absolute; left: 150px; right: 16px; top: 18px; }
+  .senti .bar { height: 12px; border-radius: 6px; overflow: hidden; display: flex; gap: 2px; }
+  .senti .bar i { display: block; height: 100%; }
+  .senti .lg { margin-top: 8px; display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; color: var(--ink-2); }
+  .senti .lg span { display: flex; align-items: center; gap: 6px; }
+  .senti .lg i { width: 8px; height: 8px; border-radius: 2px; }
+  .senti .lg b { margin-left: auto; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .dist { position: absolute; right: 16px; top: 13px; width: 108px; display: flex; flex-direction: column; gap: 3px; }
+  .dist div { display: grid; grid-template-columns: 18px 1fr; align-items: center; gap: 5px; font-size: 11px; color: var(--ink-3); height: 11px; }
+  .dist i { display: block; height: 6px; border-radius: 3px; background: #f0ebf8; position: relative; overflow: hidden; }
+  .dist i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--w); background: var(--pu); border-radius: 3px; }
+  .stars { display: flex; gap: 1px; margin-top: 4px; }
+  .kpi .spark { position: absolute; right: 14px; bottom: 12px; }
+
+  .main { flex: 1; min-height: 0; display: flex; gap: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+  .hd { display: flex; align-items: center; justify-content: space-between; }
+  .hd h2 { font-size: 14px; font-weight: 750; letter-spacing: -0.02em; }
+  .hd span { font-size: 11.5px; color: var(--ink-3); }
+
+  /* 주제별 감성 */
+  .topics { width: 330px; flex: none; padding: 14px 16px 12px; display: flex; flex-direction: column; }
+  .axis { display: flex; justify-content: space-between; margin: 10px 0 2px 84px; font-size: 11px; font-weight: 600; }
+  .axis .n { color: var(--neg); } .axis .p { color: var(--pos); }
+  .tp { display: grid; grid-template-columns: 76px 1fr; align-items: center; gap: 8px; height: 43px; }
+  .tp + .tp { border-top: 1px solid var(--line-2); }
+  .tp b { display: block; font-size: 12.5px; font-weight: 650; white-space: nowrap; }
+  .tp small { display: block; font-size: 11px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .dv { position: relative; height: 26px; }
+  .dv::before { content: ""; position: absolute; left: 50%; top: -6px; bottom: -6px; width: 1px; background: #ddd8e8; }
+  .dv i { position: absolute; top: 7px; height: 12px; }
+  .dv i.n { right: 50%; border-radius: 4px 0 0 4px; background: linear-gradient(270deg, #fb7185, #e11d48); }
+  .dv i.p { left: 50%; border-radius: 0 4px 4px 0; background: linear-gradient(90deg, #4ade80, #16a34a); }
+  .dv em { position: absolute; top: 6px; font-style: normal; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .dv em.n { color: var(--neg); }
+  .dv em.p { color: var(--pos); }
+  .tp.sel { background: var(--pu-50); border-radius: 8px; box-shadow: inset 0 0 0 1.5px #d8b4fe; border-top-color: transparent; margin: 0 -6px; padding: 0 6px; }
+  .tp.sel + .tp { border-top-color: transparent; }
+  .opt { margin-top: auto; padding-top: 10px; border-top: 1px solid var(--line); }
+  .opt h3 { font-size: 12px; font-weight: 700; color: var(--ink-2); display: flex; justify-content: space-between; }
+  .opt h3 span { font-weight: 500; color: var(--ink-3); }
+  .ob { display: grid; grid-template-columns: 52px 1fr 34px 54px; align-items: center; gap: 8px; height: 25px; font-size: 12px; color: var(--ink-2); }
+  .ob .sw { display: flex; align-items: center; gap: 6px; }
+  .ob .sw i { width: 10px; height: 10px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgb(0 0 0 / .12); }
+  .ob .tr { height: 6px; border-radius: 3px; background: #f0ebf8; position: relative; }
+  .ob .tr i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: var(--pu); }
+  .ob b { font-weight: 800; color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; }
+  .ob small { font-size: 11px; color: var(--ink-3); text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* 버블 */
+  .bub { flex: 1; min-width: 0; padding: 14px 16px 10px; display: flex; flex-direction: column; position: relative;
+         background: radial-gradient(ellipse 60% 55% at 50% 52%, #faf6ff, #fff 70%); }
+  .bub svg#cloud { flex: 1; }
+  .blg { display: flex; justify-content: center; gap: 16px; font-size: 11.5px; color: var(--ink-2); }
+  .blg i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+
+  /* 리뷰 카드 */
+  .reviews { width: 352px; flex: none; padding: 14px 14px 12px; display: flex; flex-direction: column; gap: 8px; background: #fcfbfe; }
+  .flt { display: flex; gap: 6px; }
+  .flt span { height: 26px; display: flex; align-items: center; gap: 5px; padding: 0 10px; border-radius: 13px; border: 1px solid var(--line); background: #fff; font-size: 12px; color: var(--ink-2); font-weight: 500; }
+  .flt span.on { background: var(--pu); border-color: var(--pu); color: #fff; font-weight: 700; }
+  .rv { padding: 10px 12px 10px; border-radius: 12px; background: #fff; border: 1px solid var(--line); }
+  .rv-top { display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: var(--ink-3); }
+  .rv-top .st { display: flex; gap: 1px; }
+  .rv-top .mk { height: 18px; padding: 0 6px; border-radius: 5px; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #fff; }
+  .rv-top .dt { margin-left: auto; font-variant-numeric: tabular-nums; }
+  .rv p.t { margin-top: 6px; font-size: 12.5px; line-height: 1.62; color: var(--ink); word-break: keep-all; }
+  mark { padding: 1px 2px; border-radius: 3px; color: inherit; }
+  mark.g { background: #d7f5e0; box-shadow: inset 0 -2px 0 #4ade80; }
+  mark.r { background: #ffe0e5; box-shadow: inset 0 -2px 0 #fb7185; }
+  .rv .meta { margin-top: 6px; display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--ink-3); }
+  .rv .meta .tag { height: 18px; padding: 0 6px; border-radius: 5px; display: inline-flex; align-items: center; font-weight: 600; }
+  .rv .meta .tag.r { background: var(--neg-50); color: var(--neg); }
+  .rv .meta .tag.g { background: var(--pos-50); color: var(--pos); }
+  .rv .ph { margin-left: auto; display: flex; gap: 4px; }
+  .rv .ph svg { width: 32px; height: 32px; border-radius: 6px; }
+
+  .status { flex: none; height: 26px; display: flex; align-items: center; gap: 18px; padding: 0 16px; background: #f1eff8; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--ink-3); }
+  .status b { color: var(--pu); font-weight: 700; }
+  .status .r { margin-left: auto; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="star" viewBox="0 0 24 24"><path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.3l-5.6 2.9 1.1-6.3L2.9 9.5l6.3-.9z"/></symbol>
+    <radialGradient id="fbg" cx="40%" cy="30%" r="80%"><stop offset="0" stop-color="#f3eee8"/><stop offset="1" stop-color="#cdbfb0"/></radialGradient>
+    <symbol id="fan" viewBox="0 0 40 40">
+      <rect width="40" height="40" fill="url(#fbg)"/>
+      <rect x="17" y="27" width="6" height="7" fill="#e9e6e2"/><ellipse cx="20" cy="34.5" rx="10" ry="2.6" fill="#f7f5f2" stroke="#d6d0c8" stroke-width=".6"/>
+      <circle cx="20" cy="17" r="12" fill="#fbfaf8" stroke="#d6d0c8" stroke-width=".8"/>
+      <g fill="none" stroke="#c9c1b6" stroke-width=".6"><circle cx="20" cy="17" r="9.5"/><circle cx="20" cy="17" r="7"/><circle cx="20" cy="17" r="4.5"/></g>
+      <circle cx="20" cy="17" r="2.4" fill="#9a8f82"/>
+    </symbol>
+    <symbol id="fan-dark" viewBox="0 0 40 40">
+      <rect width="40" height="40" fill="#3a3f4a"/><rect y="28" width="40" height="12" fill="#5b5148"/>
+      <rect x="17" y="26" width="6" height="7" fill="#8b8f98"/><ellipse cx="20" cy="33.5" rx="10" ry="2.6" fill="#9ca0a8"/>
+      <circle cx="20" cy="16" r="12" fill="#a7abb3"/>
+      <g fill="none" stroke="#7a7f88" stroke-width=".7"><circle cx="20" cy="16" r="9.5"/><circle cx="20" cy="16" r="7"/><circle cx="20" cy="16" r="4.5"/></g>
+      <circle cx="20" cy="16" r="2.4" fill="#5c6068"/>
+      <path d="M31 8q3 2 0 4M33.5 6q4.5 4 0 8" fill="none" stroke="#fde68a" stroke-width=".9" opacity=".8"/>
+    </symbol>
+  </defs>
+</svg>
+<div class="win">
+  <header class="win-bar">
+    <span class="win-icon"><svg viewBox="0 0 16 16" width="16" height="16"><rect x="1" y="1" width="14" height="14" rx="4" fill="#9333ea"/><circle cx="7.2" cy="7.2" r="3.2" fill="none" stroke="#fff" stroke-width="1.3"/><path d="m9.6 9.6 2.6 2.6" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+    <span class="win-title">리뷰현미경 1.4.2 — 코지 무선 서큘레이터 C2 리뷰 분석</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <div class="col">
+      <div class="top">
+        <div class="logo"><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="6"/><path d="m14.5 14.5 5.5 5.5M7.5 10h5M10 7.5v5"/></svg></span><b>리뷰현미경</b></div>
+        <div class="srcs">
+          <span class="src"><span class="bd" style="background:#16a34a">스마트스토어</span><b>코지 무선 서큘레이터 C2</b><small>612개</small></span>
+          <span class="src"><span class="bd" style="background:#22a35a">네이버 쇼핑</span><small>같은 상품 · 288개</small></span>
+          <span class="src"><span class="bd" style="background:#e8562f">쿠팡</span><small>384개</small></span>
+          <span class="src add"><svg class="i" style="width:13px;height:13px" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>주소 추가</span>
+        </div>
+        <span class="btn"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h10M4 12h6M4 18h12"/><circle cx="17" cy="6" r="2.5"/><circle cx="13" cy="12" r="2.5"/><circle cx="19" cy="18" r="2.5"/></svg>평점 낮은 순 · 최근 6개월</span>
+        <span class="btn"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>엑셀 저장</span>
+        <span class="btn pri"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 4v5h-5"/></svg>다시 수집</span>
+      </div>
+
+      <div class="content">
+        <div class="kpis">
+          <div class="kpi hero">
+            <p>분석한 리뷰</p><strong>1,284<small>개</small></strong>
+            <p class="sub">상품 주소 3개 · 사진 318장 저장</p>
+            <svg class="scope" width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><circle cx="10" cy="10" r="6"/><path d="m14.5 14.5 5.5 5.5"/></svg>
+          </div>
+          <div class="kpi">
+            <p>긍정 비율</p><strong style="color:#16a34a">78<small>%</small></strong>
+            <p class="sub">긍정 1,002개</p>
+            <div class="senti">
+              <div class="bar"><i style="flex:1002;background:#22c55e"></i><i style="flex:103;background:#c4b5fd"></i><i style="flex:179;background:#f43f5e"></i></div>
+              <div class="lg"><span><i style="background:#c4b5fd"></i>중립<b>103개 · 8%</b></span><span><i style="background:#f43f5e"></i>부정<b>179개 · 14%</b></span></div>
+            </div>
+          </div>
+          <div class="kpi">
+            <p>평균 평점</p><strong>4.5<small>/ 5</small></strong>
+            <div class="stars"><svg width="13" height="13" fill="#a855f7"><use href="#star"/></svg><svg width="13" height="13" fill="#a855f7"><use href="#star"/></svg><svg width="13" height="13" fill="#a855f7"><use href="#star"/></svg><svg width="13" height="13" fill="#a855f7"><use href="#star"/></svg><svg width="13" height="13" fill="#e4d7f7"><use href="#star"/></svg></div>
+            <div class="dist">
+              <div>5★<i style="--w:70.5%"></i></div><div>4★<i style="--w:16%"></i></div><div>3★<i style="--w:5.8%"></i></div><div>2★<i style="--w:3.7%"></i></div><div>1★<i style="--w:4%"></i></div>
+            </div>
+          </div>
+          <div class="kpi">
+            <p>불만 1위</p><strong style="color:#e11d48">소음<small>96건</small></strong>
+            <p class="sub">3단 이상 · 야간 사용 언급</p>
+            <svg class="spark" width="104" height="40" viewBox="0 0 104 40">
+              <text x="104" y="9" text-anchor="end" font-size="11" fill="#9a94ab" font-family="Pretendard Variable">주차별 부정</text>
+              <g fill="#fecdd3"><rect x="0" y="32" width="8" height="8" rx="2"/><rect x="11" y="30" width="8" height="10" rx="2"/><rect x="22" y="33" width="8" height="7" rx="2"/><rect x="33" y="27" width="8" height="13" rx="2"/></g>
+              <g fill="#f43f5e"><rect x="44" y="17" width="8" height="23" rx="2"/><rect x="55" y="14" width="8" height="26" rx="2"/></g>
+              <g fill="#fecdd3"><rect x="66" y="23" width="8" height="17" rx="2"/><rect x="77" y="29" width="8" height="11" rx="2"/><rect x="88" y="31" width="8" height="9" rx="2"/><rect x="99" y="33" width="5" height="7" rx="2"/></g>
+            </svg>
+          </div>
+        </div>
+
+        <div class="main">
+          <section class="card topics">
+            <div class="hd"><h2>주제별 감성</h2><span>언급 많은 순</span></div>
+            <div class="axis"><span class="n">◀ 부정</span><span class="p">긍정 ▶</span></div>
+            <div id="tps"></div>
+            <div class="opt">
+              <h3>옵션별 평점 <span>구매 옵션 기준</span></h3>
+              <div class="ob"><span class="sw"><i style="background:#fff"></i>화이트</span><span class="tr"><i style="width:92%"></i></span><b>4.6</b><small>702개</small></div>
+              <div class="ob"><span class="sw"><i style="background:#9ca3af"></i>그레이</span><span class="tr"><i style="width:88%"></i></span><b>4.4</b><small>412개</small></div>
+              <div class="ob"><span class="sw"><i style="background:#99e2cf"></i>민트</span><span class="tr"><i style="width:82%;background:#e11d48"></i></span><b style="color:#e11d48">4.1</b><small>170개</small></div>
+            </div>
+          </section>
+
+          <section class="card bub">
+            <div class="hd"><h2>키워드 버블</h2><span>원 크기 = 언급 수 · 리뷰 1,284개</span></div>
+            <svg id="cloud" width="100%" viewBox="0 0 520 452"></svg>
+            <div class="blg"><span><i style="background:#22c55e"></i>칭찬</span><span><i style="background:#f43f5e"></i>불만</span><span><i style="background:#c084fc"></i>중립</span><span style="color:#7e22ce;font-weight:700"><i style="background:#fff;box-shadow:0 0 0 2px #9333ea"></i>선택: 소음</span></div>
+          </section>
+
+          <section class="card reviews">
+            <div class="hd"><h2>‘소음’ 언급 리뷰</h2><span>152개 · 부정 96</span></div>
+            <div class="flt"><span class="on">전체 152</span><span>부정 96</span><span>긍정 56</span><span>포토 41</span></div>
+            <article class="rv">
+              <div class="rv-top"><span class="st"><svg width="12" height="12" fill="#a855f7"><use href="#star"/></svg><svg width="12" height="12" fill="#a855f7"><use href="#star"/></svg><svg width="12" height="12" fill="#e4d7f7"><use href="#star"/></svg><svg width="12" height="12" fill="#e4d7f7"><use href="#star"/></svg><svg width="12" height="12" fill="#e4d7f7"><use href="#star"/></svg></span><span class="mk" style="background:#16a34a">스마트스토어</span>jin***<span class="dt">2026.10.21</span></div>
+              <p class="t"><mark class="g">바람은 정말 시원하고</mark> 디자인도 마음에 들어요. 그런데 <mark class="r">3단부터는 소음이 꽤 커서 밤에 켜 두기 힘들어요.</mark></p>
+              <div class="meta">화이트 / 1개 <span class="tag r">소음</span><span class="tag g">바람 세기</span><span class="ph"><svg><use href="#fan"/></svg><svg><use href="#fan-dark"/></svg></span></div>
+            </article>
+            <article class="rv">
+              <div class="rv-top"><span class="st"><svg width="12" height="12" fill="#a855f7"><use href="#star"/></svg><svg width="12" height="12" fill="#a855f7"><use href="#star"/></svg><svg width="12" height="12" fill="#a855f7"><use href="#star"/></svg><svg width="12" height="12" fill="#e4d7f7"><use href="#star"/></svg><svg width="12" height="12" fill="#e4d7f7"><use href="#star"/></svg></span><span class="mk" style="background:#e8562f">쿠팡</span>ha***<span class="dt">2026.10.18</span></div>
+              <p class="t"><mark class="g">배송은 하루 만에 왔어요.</mark> <mark class="r">모터 소리가 생각보다 커서</mark> 침실보다는 거실에 두는 게 나을 것 같아요.</p>
+              <div class="meta">그레이 / 1개 <span class="tag r">소음</span><span class="tag g">배송</span></div>
+            </article>
+            <article class="rv">
+              <div class="rv-top"><span class="st"><svg width="12" height="12" fill="#a855f7"><use href="#star"/></svg><svg width="12" height="12" fill="#a855f7"><use href="#star"/></svg><svg width="12" height="12" fill="#a855f7"><use href="#star"/></svg><svg width="12" height="12" fill="#a855f7"><use href="#star"/></svg><svg width="12" height="12" fill="#a855f7"><use href="#star"/></svg></span><span class="mk" style="background:#22a35a">네이버 쇼핑</span>mo***<span class="dt">2026.10.14</span></div>
+              <p class="t"><mark class="g">1~2단은 조용해서 아기 방에서도 써요.</mark> <mark class="g">충전 한 번에 이틀은 거뜬하고</mark> <mark class="r">단자 덮개가 헐거운 건</mark> 아쉬워요.</p>
+              <div class="meta">화이트 / 2개 <span class="tag g">소음</span><span class="tag g">배터리</span><span class="tag r">충전 단자</span></div>
+            </article>
+            <article class="rv">
+              <div class="rv-top"><span class="st"><svg width="12" height="12" fill="#a855f7"><use href="#star"/></svg><svg width="12" height="12" fill="#a855f7"><use href="#star"/></svg><svg width="12" height="12" fill="#e4d7f7"><use href="#star"/></svg><svg width="12" height="12" fill="#e4d7f7"><use href="#star"/></svg><svg width="12" height="12" fill="#e4d7f7"><use href="#star"/></svg></span><span class="mk" style="background:#e8562f">쿠팡</span>su***<span class="dt">2026.10.09</span></div>
+              <p class="t"><mark class="r">생각보다 작고</mark> <mark class="r">소리도 커요.</mark> 책상용으로 써요.</p>
+              <div class="meta">민트 / 1개 <span class="tag r">사이즈</span><span class="tag r">소음</span></div>
+            </article>
+          </section>
+        </div>
+      </div>
+
+      <footer class="status">
+        <b>● 완료</b><span>리뷰 1,284개 · 사진 318장</span><span>불만 리뷰 179개 분류</span><span>사진 폴더 리뷰사진_1026</span>
+        <span class="r">09:18:50 분석 완료 · 리뷰분석_코지C2_1026.xlsx 저장</span>
+      </footer>
+    </div>
+  </main>
+</div>
+<script>(() => {
+  // 주제별 감성: [주제, 긍정, 부정]
+  const T = [['배송', 298, 14], ['디자인', 226, 15], ['바람 세기', 171, 34], ['배터리', 129, 39], ['소음', 56, 96], ['사이즈', 44, 74], ['각도 조절', 35, 41], ['충전 단자', 12, 46]];
+  const half = 74, scale = half / 300;
+  document.getElementById('tps').innerHTML = T.map(([k, p, n]) => {
+    const pw = p * scale, nw = n * scale;
+    const sel = k === '소음';
+    return `<div class="tp${sel ? ' sel' : ''}"><div><b>${k}</b><small>언급 ${p + n}</small></div>
+      <div class="dv"><i class="n" style="width:${nw}px"></i><i class="p" style="width:${pw}px"></i>
+      <em class="n" style="right:calc(50% + ${nw + 4}px)">${n}</em><em class="p" style="left:calc(50% + ${pw + 4}px)">${p}</em></div></div>`;
+  }).join('');
+
+  // 키워드 버블: [문구, 언급 수, 감성 p/n/u]
+  const B = [['배송 빠름', 298, 'p'], ['예뻐요', 176, 'p'], ['바람 시원', 151, 'p'], ['가성비', 133, 'p'], ['배터리\n오래감', 112, 'p'], ['소음 있음', 96, 'n'],
+    ['생각보다\n작음', 74, 'n'], ['가벼워요', 64, 'p'], ['선물용', 58, 'u'], ['단자\n헐거움', 46, 'n'], ['각도 불편', 41, 'n'], ['밤에\n거슬림', 38, 'n'], ['캠핑용', 33, 'u'], ['조립 쉬움', 29, 'p']];
+  const W = 520, H = 452, k = 5.2, gap = 5;
+  const placed = [];
+  const cx = W / 2, cy = H / 2;
+  B.forEach(([label, c, s]) => {
+    const r = k * Math.sqrt(c);
+    if (!placed.length) { placed.push({ x: cx - 22, y: cy - 16, r, label, c, s }); return; }
+    for (let t = 0; t < 4000; t += 0.05) {
+      const x = cx - 22 + 3.2 * t * Math.cos(t), y = cy - 16 + 2.6 * t * Math.sin(t);
+      if (x - r < 4 || x + r > W - 4 || y - r < 4 || y + r > H - 4) continue;
+      if (placed.every((q) => Math.hypot(q.x - x, q.y - y) >= q.r + r + gap)) { placed.push({ x, y, r, label, c, s }); break; }
+    }
+  });
+  const fill = { p: ['#dcfce7', '#86efac', '#166534'], n: ['#ffe4e8', '#fda4af', '#be123c'], u: ['#f3e8ff', '#d8b4fe', '#7e22ce'] };
+  let svg = '';
+  placed.forEach(({ x, y, r, label, c, s }, i) => {
+    let [bg, st, fg] = fill[s];
+    let extra = '';
+    if (i === 0) { bg = '#22c55e'; st = '#16a34a'; fg = '#fff'; }
+    if (label === '소음 있음') { bg = '#f43f5e'; st = '#e11d48'; fg = '#fff'; extra = `<circle cx="${x}" cy="${y}" r="${r + 6}" fill="none" stroke="#9333ea" stroke-width="2.2" stroke-dasharray="5 4"/>`; }
+    const fs = Math.max(11, Math.min(19, r * 0.27));
+    const lines = label.split('\n');
+    const lh = fs * 1.15, total = lines.length * lh + 13;
+    let ty = y - total / 2 + fs * 0.92;
+    let txt = lines.map((l, j) => `<text x="${x}" y="${(ty + j * lh).toFixed(1)}" text-anchor="middle" font-size="${fs.toFixed(1)}" font-weight="700" fill="${fg}">${l}</text>`).join('');
+    txt += `<text x="${x}" y="${(ty + lines.length * lh + 1).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="600" fill="${fg}" opacity=".8">${c}</text>`;
+    svg += `${extra}<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="${bg}" stroke="${st}" stroke-width="1.2"/>${txt}`;
+  });
+  document.getElementById('cloud').innerHTML = `<g font-family="Pretendard Variable">${svg}</g>`;
+})();</script>
+</body>
+</html>

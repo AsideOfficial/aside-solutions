@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>썸네일공방</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 썸네일공방: 어두운 이미지 편집기. 도구 막대 + 캔버스(누끼 비교 슬라이더, 크롭 가이드) + 속성 패널 + 일괄 작업 필름스트립. */
+  :root {
+    --bg: #1e1f22; --deep: #17181a; --panel: #25262a; --panel-2: #2c2d32; --line: #303237; --line-2: #3a3c42;
+    --text: #e8e9ec; --text-2: #a7aab1; --text-3: #737780;
+    --accent: #38bdf8; --accent-d: #0ea5e9; --ok: #4ade80;
+  }
+  body { font: 400 12.5px/1.4 'Inter', 'Pretendard Variable', sans-serif; color: var(--text); background: var(--bg); letter-spacing: -0.005em; }
+  .win { --bar: #141517; --bar-fg: #b5b9c1; background: var(--bg); }
+  .tnum { font-variant-numeric: tabular-nums; }
+  svg.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  .app { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  /* 상단 작업 막대 */
+  .top { height: 46px; flex: none; display: flex; align-items: center; gap: 4px; padding: 0 12px; background: var(--deep); border-bottom: 1px solid var(--line); }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13px; padding-right: 14px; margin-right: 6px; border-right: 1px solid var(--line); height: 26px; }
+  .brand i { width: 22px; height: 22px; border-radius: 6px; background: linear-gradient(135deg, #38bdf8, #0369a1); display: grid; place-items: center; }
+  .tb { height: 30px; display: flex; align-items: center; gap: 7px; padding: 0 11px; border-radius: 7px; color: var(--text-2); font-weight: 500; font-size: 12.5px; }
+  .tb svg.i { width: 16px; height: 16px; }
+  .tb.on { background: rgb(56 189 248 / .13); color: var(--accent); }
+  .tb kbd { font: 500 11px/1 'Inter', sans-serif; color: var(--text-3); border: 1px solid var(--line-2); border-radius: 4px; padding: 2px 4px; }
+  .top .sp { flex: 1; }
+  .go { height: 30px; display: flex; align-items: center; gap: 7px; padding: 0 14px; border-radius: 7px; background: var(--accent); color: #062033; font-weight: 700; font-size: 12.5px; }
+  .go svg.i { width: 15px; height: 15px; stroke-width: 2.2; }
+  .host { display: flex; align-items: center; gap: 6px; color: var(--text-2); font-size: 12px; margin-right: 10px; }
+  .host i { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+
+  .mid { flex: 1; min-height: 0; display: flex; }
+  /* 도구 막대 */
+  .tools { width: 48px; flex: none; background: var(--deep); border-right: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; padding-top: 8px; gap: 3px; }
+  .tools a { width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; color: var(--text-3); position: relative; }
+  .tools a.on { background: rgb(56 189 248 / .16); color: var(--accent); }
+  .tools a.on::after { content: ""; position: absolute; left: -6px; top: 9px; bottom: 9px; width: 2px; border-radius: 2px; background: var(--accent); }
+  .tools hr { width: 24px; border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
+  .tools .sp { flex: 1; }
+  .sw { position: relative; width: 30px; height: 30px; margin-bottom: 12px; }
+  .sw i { position: absolute; width: 18px; height: 18px; border-radius: 4px; }
+  .sw i:first-child { left: 0; top: 0; background: #fff; z-index: 2; box-shadow: 0 0 0 1.5px var(--deep); }
+  .sw i:last-child { right: 0; bottom: 0; background: #1e3a5f; box-shadow: 0 0 0 1px var(--line-2); }
+
+  /* 캔버스 */
+  .stage { flex: 1; min-width: 0; display: flex; flex-direction: column; background: #161719; }
+  .doc { height: 34px; flex: none; display: flex; align-items: flex-end; gap: 2px; padding: 0 10px; background: var(--deep); border-bottom: 1px solid var(--line); }
+  .dt { height: 28px; display: flex; align-items: center; gap: 8px; padding: 0 12px; border-radius: 7px 7px 0 0; font-size: 12px; color: var(--text-3); }
+  .dt.on { background: #161719; color: var(--text); box-shadow: inset 0 2px 0 var(--accent); }
+  .dt em { font-style: normal; color: var(--text-3); font-size: 11px; }
+  .dt svg { width: 12px; height: 12px; stroke: var(--text-3); fill: none; stroke-width: 2; }
+  .doc .sp { flex: 1; }
+  .zoom { align-self: center; display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--text-2); }
+  .zoom b { font-weight: 600; color: var(--text); background: var(--panel); border: 1px solid var(--line-2); border-radius: 6px; padding: 3px 8px; font-variant-numeric: tabular-nums; }
+  .zoom .cmp { display: flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 6px; background: rgb(56 189 248 / .12); color: var(--accent); font-weight: 600; }
+  .vp { position: relative; flex: 1; min-height: 0; overflow: hidden; background: radial-gradient(circle at 1px 1px, #24262a 1px, transparent 1.2px) 0 0 / 14px 14px, #161719; }
+  .ruler-h { position: absolute; left: 18px; right: 0; top: 0; height: 18px; background: var(--deep); border-bottom: 1px solid var(--line); }
+  .ruler-v { position: absolute; left: 0; top: 18px; bottom: 0; width: 18px; background: var(--deep); border-right: 1px solid var(--line); }
+  .corner { position: absolute; left: 0; top: 0; width: 18px; height: 18px; background: var(--deep); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .ruler-h svg, .ruler-v svg { position: absolute; left: 0; top: 0; }
+
+  .board { position: absolute; width: 420px; height: 420px; left: 268px; top: 50px; box-shadow: 0 18px 50px -12px rgb(0 0 0 / .7); }
+  .checker { position: absolute; inset: 0; background: repeating-conic-gradient(#d9dbdf 0 25%, #f1f2f4 0 50%) 0 0 / 18px 18px; }
+  .orig { position: absolute; left: 0; top: 0; bottom: 0; width: 177px; overflow: hidden; }
+  .orig svg { width: 420px; height: 420px; }
+  .board > svg.art { position: absolute; inset: 0; width: 420px; height: 420px; }
+  .slider { position: absolute; left: 176px; top: -6px; bottom: -6px; width: 2px; background: #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / .25); }
+  .knob { position: absolute; left: 50%; top: 50%; translate: -50% -50%; width: 30px; height: 30px; border-radius: 50%; background: #fff; box-shadow: 0 4px 12px rgb(0 0 0 / .35); display: grid; place-items: center; }
+  .knob svg { width: 16px; height: 16px; stroke: #1e1f22; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .tag { position: absolute; top: 12px; height: 22px; display: flex; align-items: center; padding: 0 9px; border-radius: 11px; font-size: 11px; font-weight: 600; }
+  .tag.a { left: 12px; background: rgb(20 21 23 / .72); color: #fff; }
+  .tag.b { right: 12px; background: var(--accent); color: #062033; }
+  .dim { position: absolute; left: 268px; width: 420px; top: 28px; display: flex; align-items: center; gap: 8px; color: var(--accent); font: 600 11px/1 'Inter', sans-serif; font-variant-numeric: tabular-nums; }
+  .dim::before, .dim::after { content: ""; flex: 1; height: 1px; background: rgb(56 189 248 / .55); }
+  .handle { position: absolute; width: 10px; height: 10px; background: #fff; border: 1.5px solid var(--accent); border-radius: 2px; }
+  .info { position: absolute; left: 30px; bottom: 14px; display: flex; gap: 6px; }
+  .info span { height: 24px; display: flex; align-items: center; gap: 6px; padding: 0 9px; border-radius: 6px; background: rgb(37 38 42 / .92); border: 1px solid var(--line-2); font-size: 11.5px; color: var(--text-2); }
+  .info b { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .info .ok { color: var(--ok); }
+  .legend { position: absolute; right: 16px; bottom: 14px; display: flex; flex-direction: column; gap: 5px; padding: 9px 11px; border-radius: 8px; background: rgb(37 38 42 / .92); border: 1px solid var(--line-2); font-size: 11px; color: var(--text-2); }
+  .legend span { display: flex; align-items: center; gap: 7px; }
+  .legend i { width: 16px; height: 0; border-top: 1.5px solid var(--accent); }
+  .legend i.d { border-top-style: dashed; border-color: #f0f0f0; opacity: .8; }
+  .legend i.t { border-top: 1px solid rgb(255 255 255 / .45); }
+
+  /* 속성 패널 */
+  .panel { width: 292px; flex: none; background: var(--panel); border-left: 1px solid var(--line); display: flex; flex-direction: column; overflow: hidden; }
+  .ph { height: 34px; flex: none; display: flex; align-items: center; gap: 16px; padding: 0 14px; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--text-3); font-weight: 600; background: var(--deep); }
+  .ph b { color: var(--text); height: 34px; display: flex; align-items: center; box-shadow: inset 0 -2px 0 var(--accent); }
+  .sec { padding: 10px 14px 11px; border-bottom: 1px solid var(--line); }
+  .sec h3 { display: flex; align-items: center; justify-content: space-between; font-size: 11.5px; font-weight: 600; color: var(--text-2); margin-bottom: 9px; }
+  .sec h3 span { color: var(--text-3); font-weight: 500; }
+  .preset { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line-2); margin-bottom: 4px; background: var(--panel-2); }
+  .preset.on { border-color: var(--accent); background: rgb(56 189 248 / .08); }
+  .preset .sq { width: 18px; height: 18px; border: 1.5px solid var(--text-3); border-radius: 3px; flex: none; }
+  .preset.on .sq { border-color: var(--accent); background: rgb(56 189 248 / .2); }
+  .preset .sq.s { width: 15px; height: 15px; margin: 0 1.5px; }
+  .preset p { flex: 1; font-size: 12.5px; font-weight: 600; color: var(--text); }
+  .preset small { font: 500 11.5px/1 'Inter', sans-serif; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .preset.on small { color: var(--accent); }
+  .bgs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .bgs div { text-align: center; font-size: 11px; color: var(--text-3); }
+  .bgs i { display: block; height: 32px; border-radius: 8px; border: 1px solid var(--line-2); margin-bottom: 4px; }
+  .bgs .on i { box-shadow: 0 0 0 2px var(--panel), 0 0 0 3.5px var(--accent); }
+  .bgs .on { color: var(--text); font-weight: 600; }
+  .row { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--text); }
+  .tg { width: 32px; height: 18px; border-radius: 9px; background: var(--accent); position: relative; }
+  .tg::after { content: ""; position: absolute; right: 3px; top: 3px; width: 12px; height: 12px; border-radius: 50%; background: #062033; }
+  .tg.off { background: #3a3c42; }
+  .tg.off::after { right: auto; left: 3px; background: #8b8f97; }
+  .sl { display: grid; grid-template-columns: 52px 1fr 44px; align-items: center; gap: 10px; margin-top: 8px; font-size: 11.5px; color: var(--text-2); }
+  .sl .tr { position: relative; height: 4px; border-radius: 2px; background: #3a3c42; }
+  .sl .tr i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; background: var(--accent); }
+  .sl .tr b { position: absolute; top: 50%; width: 12px; height: 12px; translate: -50% -50%; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / .5); }
+  .sl output { text-align: right; font: 500 11.5px/1 'Inter', sans-serif; color: var(--text); font-variant-numeric: tabular-nums; }
+  .kv { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .kv div { padding: 7px 9px; border-radius: 7px; background: var(--panel-2); border: 1px solid var(--line); }
+  .kv p { font-size: 11px; color: var(--text-3); }
+  .kv b { display: block; font-size: 12px; font-weight: 600; margin-top: 1px; white-space: nowrap; }
+
+  /* 필름스트립 */
+  .strip { height: 128px; flex: none; background: var(--deep); border-top: 1px solid var(--line); padding: 10px 16px 0; display: flex; flex-direction: column; }
+  .sh { display: flex; align-items: center; gap: 12px; height: 24px; }
+  .sh h4 { font-size: 12.5px; font-weight: 700; }
+  .sh .fold { display: flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px; border-radius: 6px; background: var(--panel); border: 1px solid var(--line-2); color: var(--text-2); font-size: 11.5px; }
+  .sh .fold svg { width: 13px; height: 13px; }
+  .sh .prog { flex: 1; display: flex; align-items: center; gap: 10px; margin-left: 8px; }
+  .sh .track { flex: 1; height: 6px; border-radius: 3px; background: #2e3035; overflow: hidden; }
+  .sh .track i { display: block; height: 100%; width: 67.7%; border-radius: 3px; background: linear-gradient(90deg, #0ea5e9, #38bdf8); }
+  .sh .cnt { font: 600 12.5px/1 'Inter', sans-serif; font-variant-numeric: tabular-nums; }
+  .sh .cnt span { color: var(--text-3); font-weight: 500; }
+  .sh .eta { color: var(--text-2); font-size: 11.5px; }
+  .sh .pause { display: flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--line-2); color: var(--text-2); font-size: 11.5px; font-weight: 600; }
+  .sh .pause svg { width: 12px; height: 12px; }
+  .film { display: grid; grid-template-columns: repeat(24, 1fr); gap: 6px; margin-top: 10px; }
+  .fr { position: relative; }
+  .fr .im { position: relative; height: 46px; border-radius: 6px; overflow: hidden; border: 1px solid #34363c; }
+  .fr .im svg { width: 100%; height: 100%; }
+  .fr p { margin-top: 5px; text-align: center; font: 500 11px/1 'Inter', sans-serif; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .fr.done p { color: var(--text-2); }
+  .fr .ck { position: absolute; right: -3px; top: -4px; width: 15px; height: 15px; border-radius: 50%; background: var(--accent); display: grid; place-items: center; box-shadow: 0 0 0 2px var(--deep); }
+  .fr .ck svg { width: 9px; height: 9px; stroke: #062033; stroke-width: 3.4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .fr.cur .im { border: 2px solid var(--accent); box-shadow: 0 0 0 3px rgb(56 189 248 / .25); }
+  .fr.cur p { color: var(--accent); font-weight: 700; }
+  .fr.wait .im { opacity: .5; }
+  .fr .ring { position: absolute; inset: 0; display: grid; place-items: center; background: rgb(10 12 14 / .45); }
+
+  .status { height: 24px; flex: none; display: flex; align-items: center; gap: 16px; padding: 0 12px; background: #121315; border-top: 1px solid var(--line); font-size: 11px; color: var(--text-3); }
+  .status b { color: var(--accent); font-weight: 600; }
+  .status .r { margin-left: auto; }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar">
+    <span class="win-icon"><svg viewBox="0 0 16 16" width="16" height="16"><rect x="1.5" y="1.5" width="13" height="13" rx="3.5" fill="#0ea5e9"/><path d="M4.5 11.5 7 8.5l1.8 2 1.4-1.6 1.8 2.6z" fill="#fff"/><circle cx="10.5" cy="5.5" r="1.4" fill="#fff"/></svg></span>
+    <span class="win-title">썸네일공방 1.6.4 — 일괄 가공 · 248장</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <div class="app">
+      <div class="top">
+        <span class="brand"><i><svg viewBox="0 0 16 16" width="13" height="13"><path d="M3 12 6.5 7.5l2.4 2.8 1.8-2.1L13 12z" fill="#fff"/><circle cx="10.6" cy="4.6" r="1.6" fill="#fff"/></svg></i>썸네일공방</span>
+        <span class="go"><svg class="i" viewBox="0 0 24 24"><path d="M7 5v14l11-7z"/></svg>변환 시작</span>
+        <span class="tb"><svg class="i" viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><circle cx="12" cy="12" r="3"/></svg>캡처 <kbd>F2</kbd></span>
+        <span class="tb on"><svg class="i" viewBox="0 0 24 24"><path d="m4 20 10-10M14 4v3M18.5 5.5l-2 2M20 10h-3"/><path d="m12.5 8.5 3 3"/></svg>누끼 <kbd>F3</kbd></span>
+        <span class="tb"><svg class="i" viewBox="0 0 24 24"><path d="m7 21-4-4 11-11 7 7-7 7z"/><path d="M14 20h7M9.5 10.5l7 7"/></svg>글자 지우기 <kbd>F4</kbd></span>
+        <span class="tb"><svg class="i" viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/></svg>폴더 열기</span>
+        <span class="sp"></span>
+        <span class="host"><i></i>이미지 호스팅 연결됨</span>
+        <span class="tb"><svg class="i" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></span>
+        <span class="tb"><svg class="i" viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></span>
+      </div>
+
+      <div class="mid">
+        <nav class="tools">
+          <a><svg class="i" viewBox="0 0 24 24"><path d="m5 3 14 8-6 1.5L10 19z"/></svg></a>
+          <a><svg class="i" viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg></a>
+          <a class="on"><svg class="i" viewBox="0 0 24 24"><path d="m4 20 10-10M14 4v3M18.5 5.5l-2 2M20 10h-3"/><path d="m12.5 8.5 3 3"/></svg></a>
+          <a><svg class="i" viewBox="0 0 24 24"><path d="m7 21-4-4 11-11 7 7-7 7z"/><path d="M14 20h7M9.5 10.5l7 7"/></svg></a>
+          <a><svg class="i" viewBox="0 0 24 24"><path d="M9.5 14.5c-2 0-3.5 1.5-3.5 3.5 0 1.2-.8 2-2 2 1 1 2.4 1.5 3.8 1.5a4 4 0 0 0 4-4c0-1.7-1-3-2.3-3z"/><path d="m11 15 10-10.5a2 2 0 0 0-3-2.5L8 12"/></svg></a>
+          <a><svg class="i" viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg></a>
+          <hr>
+          <a><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="10" rx="1.5"/><rect x="13" y="3" width="8" height="6" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/><rect x="3" y="15" width="8" height="6" rx="1.5"/></svg></a>
+          <a><svg class="i" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/><path d="M12 8v8M8 12h8"/></svg></a>
+          <a><svg class="i" viewBox="0 0 24 24"><path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-6-2.4l-3.6-3.6a2 2 0 0 1 2.8-2.8L7 15"/></svg></a>
+          <span class="sp"></span>
+          <span class="sw"><i></i><i></i></span>
+        </nav>
+
+        <section class="stage">
+          <div class="doc">
+            <span class="dt on">머그컵_네이비_169.jpg <em>원본 2400×1800</em><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></span>
+            <span class="dt">머그컵_크림_170.jpg</span>
+            <span class="dt">텀블러_세이지_171.jpg</span>
+            <span class="sp"></span>
+            <span class="zoom"><span class="cmp"><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M12 3v18"/><rect x="3" y="5" width="18" height="14" rx="2"/></svg>원본 비교</span><b>45%</b></span>
+          </div>
+          <div class="vp">
+            <span class="corner"></span>
+            <div class="ruler-h"><svg width="922" height="18" viewBox="0 0 922 18">
+              <g stroke="#4a4d54" stroke-width="1"><path d="M40 18v-12M82 18v-8M124 18v-6M166 18v-8M208 18v-6M250 18v-12M292 18v-6M334 18v-8M376 18v-6M418 18v-8M460 18v-12M502 18v-8M544 18v-6M586 18v-8M628 18v-6M670 18v-12M712 18v-6M754 18v-8M796 18v-6M838 18v-8M880 18v-12"/></g>
+              <rect x="250" y="15" width="420" height="3" fill="#38bdf8" opacity=".55"/>
+              <g fill="#7d818a" font-family="Inter" font-size="11"><text x="253" y="11">0</text><text x="463" y="11">500</text><text x="673" y="11">1000</text></g>
+            </svg></div>
+            <div class="ruler-v"><svg width="18" height="520" viewBox="0 0 18 520">
+              <g stroke="#4a4d54" stroke-width="1"><path d="M18 32h-12M18 74h-6M18 116h-8M18 158h-6M18 200h-8M18 242h-12M18 284h-8M18 326h-6M18 368h-8M18 410h-6M18 452h-12M18 494h-6"/></g>
+              <rect x="15" y="32" width="3" height="420" fill="#38bdf8" opacity=".55"/>
+            </svg></div>
+
+            <div class="dim">1000 × 1000 px · 스마트스토어 대표</div>
+            <div class="board">
+              <div class="checker"></div>
+              <div class="orig"><svg viewBox="0 0 1000 1000">
+                <defs>
+                  <linearGradient id="wall" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9d2c6"/><stop offset="1" stop-color="#b9afa1"/></linearGradient>
+                  <radialGradient id="win" cx=".15" cy=".2" r=".6"><stop offset="0" stop-color="#fff6e6" stop-opacity=".9"/><stop offset="1" stop-color="#fff6e6" stop-opacity="0"/></radialGradient>
+                  <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a7774f"/><stop offset="1" stop-color="#6d4a2f"/></linearGradient>
+                </defs>
+                <rect width="1000" height="640" fill="url(#wall)"/>
+                <rect width="1000" height="640" fill="url(#win)"/>
+                <path d="M60 0h140v420H60z" fill="#fff" opacity=".18"/>
+                <path d="M230 0h90v420h-90z" fill="#fff" opacity=".12"/>
+                <rect y="620" width="1000" height="380" fill="url(#wood)"/>
+                <rect y="620" width="1000" height="10" fill="#c39468" opacity=".7"/>
+                <g stroke="#5a3b24" stroke-width="3" opacity=".35" fill="none"><path d="M0 700c200-8 400 6 620-4"/><path d="M0 780c260 10 380-12 660 2"/><path d="M0 870c180-10 340 8 560-6"/><path d="M0 950c240 6 420-8 700 4"/></g>
+                <ellipse cx="500" cy="752" rx="230" ry="34" fill="#2b1b10" opacity=".45"/>
+                <rect x="40" y="520" width="150" height="104" rx="10" fill="#7f9a7a"/>
+                <path d="M60 520c10-70 50-110 110-130M90 520c0-60 20-100 60-120" stroke="#56724f" stroke-width="14" fill="none" stroke-linecap="round"/>
+              </svg></div>
+              <svg class="art" viewBox="0 0 1000 1000">
+                <defs>
+                  <linearGradient id="body" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0f2238"/><stop offset=".3" stop-color="#2f557f"/><stop offset=".42" stop-color="#3f6894"/><stop offset=".75" stop-color="#1b3656"/><stop offset="1" stop-color="#0c1b2e"/></linearGradient>
+                  <linearGradient id="cream" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#cfc4b0"/><stop offset=".35" stop-color="#f7f1e6"/><stop offset=".8" stop-color="#ddd3c1"/><stop offset="1" stop-color="#bfb39d"/></linearGradient>
+                  <linearGradient id="inside" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8d8370"/><stop offset="1" stop-color="#d9cfbd"/></linearGradient>
+                  <linearGradient id="hdl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#16304d"/><stop offset=".55" stop-color="#36618e"/><stop offset="1" stop-color="#0f2238"/></linearGradient>
+                  <filter id="blur" x="-30%" y="-200%" width="160%" height="500%"><feGaussianBlur stdDeviation="16"/></filter>
+                  <clipPath id="rightside"><rect x="422" y="0" width="578" height="1000"/></clipPath>
+                </defs>
+                <!-- 누끼 쪽 그림자 -->
+                <ellipse cx="505" cy="760" rx="205" ry="24" fill="#0b1626" opacity=".38" filter="url(#blur)" clip-path="url(#rightside)"/>
+                <!-- 손잡이 -->
+                <path d="M640 420c95-6 140 40 136 102-4 64-56 104-136 104" fill="none" stroke="url(#hdl)" stroke-width="44" stroke-linecap="round"/>
+                <path d="M652 438c70 0 104 34 101 84" fill="none" stroke="#6d92b8" stroke-width="7" stroke-linecap="round" opacity=".55"/>
+                <!-- 몸통 -->
+                <path d="M340 330v370c0 40 74 58 160 58s160-18 160-58V330z" fill="url(#body)"/>
+                <!-- 유약 디핑 -->
+                <path d="M340 330v118c22 14 40 4 58 18s34 10 54 4 40 16 62 6 36-12 56-2 30 12 50 0 26-14 40-10V330z" fill="url(#cream)"/>
+                <g fill="#1d3a5c" opacity=".35"><circle cx="402" cy="380" r="3"/><circle cx="470" cy="402" r="2.5"/><circle cx="560" cy="372" r="3"/><circle cx="610" cy="410" r="2.5"/><circle cx="520" cy="432" r="2"/></g>
+                <g fill="#cfe0f1" opacity=".18"><circle cx="410" cy="560" r="3"/><circle cx="455" cy="640" r="2.5"/><circle cx="590" cy="600" r="3"/><circle cx="520" cy="690" r="2.5"/><circle cx="380" cy="660" r="2"/></g>
+                <path d="M392 470c-8 60-6 170 6 250" stroke="#8fb1d4" stroke-width="12" stroke-linecap="round" opacity=".28" fill="none"/>
+                <!-- 입구 -->
+                <ellipse cx="500" cy="330" rx="160" ry="40" fill="#efe7d8"/>
+                <ellipse cx="500" cy="334" rx="146" ry="32" fill="url(#inside)"/>
+                <!-- 누끼 경계 -->
+                <path d="M340 330v370c0 40 74 58 160 58s160-18 160-58v-74c50-2 116-36 116-104 0-64-46-108-116-102v-90c0-22-72-40-160-40s-160 18-160 40z" fill="none" stroke="#38bdf8" stroke-width="3" stroke-dasharray="10 8" opacity=".9"/>
+                <!-- 안전 영역 · 3분할 -->
+                <rect x="50" y="50" width="900" height="900" fill="none" stroke="#2a2d33" stroke-width="2.5" stroke-dasharray="14 10" opacity=".55"/>
+                <text x="62" y="984" font-family="Pretendard Variable" font-size="28" fill="#2a2d33" opacity=".7" font-weight="600">안전 영역 90%</text>
+                <g stroke="#2a2d33" stroke-width="1.5" opacity=".18"><path d="M333 0v1000M667 0v1000M0 333h1000M0 667h1000"/></g>
+              </svg>
+              <span class="tag a">원본</span><span class="tag b">누끼 · 투명</span>
+              <div class="slider"><span class="knob"><svg viewBox="0 0 24 24"><path d="m9 7-5 5 5 5M15 7l5 5-5 5"/></svg></span></div>
+              <i class="handle" style="left:-6px;top:-6px"></i><i class="handle" style="right:-6px;top:-6px"></i><i class="handle" style="left:-6px;bottom:-6px"></i><i class="handle" style="right:-6px;bottom:-6px"></i>
+              <i class="handle" style="left:205px;top:-6px"></i><i class="handle" style="left:205px;bottom:-6px"></i><i class="handle" style="left:-6px;top:205px"></i><i class="handle" style="right:-6px;top:205px"></i>
+            </div>
+
+            <div class="info">
+              <span>누끼 <b class="ok">완료</b> · 0.8초</span>
+              <span>상품 영역 <b>458 × 468</b></span>
+              <span>여백 <b>상 29% · 하 24%</b></span>
+            </div>
+            <div class="legend">
+              <span><i></i>누끼 경계</span>
+              <span><i class="d"></i>안전 영역</span>
+              <span><i class="t"></i>3분할 안내선</span>
+            </div>
+          </div>
+        </section>
+
+        <aside class="panel">
+          <div class="ph"><b>출력 설정</b><span>레이어</span><span>기록</span></div>
+          <div class="sec">
+            <h3>마켓 프리셋 <span>4개</span></h3>
+            <div class="preset on"><i class="sq"></i><p>스마트스토어 대표</p><small>1000×1000</small></div>
+            <div class="preset"><i class="sq s"></i><p>쿠팡 대표</p><small>780×780</small></div>
+            <div class="preset"><i class="sq"></i><p>정사각 고화질</p><small>1200×1200</small></div>
+            <div class="preset"><i class="sq" style="height:12px;margin:3px 0"></i><p>상세페이지 가로</p><small>860×자동</small></div>
+          </div>
+          <div class="sec">
+            <h3>배경 <span>흰색 #FFFFFF</span></h3>
+            <div class="bgs">
+              <div><i style="background:repeating-conic-gradient(#d9dbdf 0 25%, #f1f2f4 0 50%) 0 0 / 10px 10px"></i>투명</div>
+              <div class="on"><i style="background:#fff"></i>흰색</div>
+              <div><i style="background:#eef0f3"></i>연회색</div>
+              <div><i style="background:linear-gradient(160deg,#f8fafc,#dbeafe 55%,#bae6fd)"></i>그라데이션</div>
+              <div><i style="background:#2c2d32; display:grid; place-items:center"><svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px;color:#a7aab1;margin:8px auto 0"><path d="M12 5v14M5 12h14"/></svg></i>직접</div>
+            </div>
+          </div>
+          <div class="sec">
+            <div class="row"><h3 style="margin:0">그림자</h3><span class="tg"></span></div>
+            <div class="sl"><span>불투명도</span><span class="tr"><i style="width:38%"></i><b style="left:38%"></b></span><output>38%</output></div>
+            <div class="sl"><span>흐림</span><span class="tr"><i style="width:45%"></i><b style="left:45%"></b></span><output>16px</output></div>
+            <div class="sl"><span>거리</span><span class="tr"><i style="width:22%"></i><b style="left:22%"></b></span><output>8px</output></div>
+          </div>
+          <div class="sec" style="border-bottom:0">
+            <h3>저장 <span>원본 따로 보관</span></h3>
+            <div class="kv">
+              <div><p>형식</p><b>JPG · 품질 90%</b></div>
+              <div><p>워터마크</p><b>내 로고 · 우하단</b></div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="strip">
+        <div class="sh">
+          <h4>일괄 작업</h4>
+          <span class="fold"><svg class="i" viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/></svg>상품이미지_1026 · 248장</span>
+          <span class="fold">누끼 → 흰 배경 → 1000×1000 → 워터마크</span>
+          <span class="prog"><span class="track"><i></i></span><span class="cnt">168 <span>/ 248장</span></span></span>
+          <span class="eta">남은 시간 약 1분 10초 · 오류 0건</span>
+          <span class="pause"><svg class="i" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>일시정지</span>
+        </div>
+        <div class="film" id="film"></div>
+      </div>
+
+      <footer class="status"><span><b>● 변환 중</b></span><span>169번째 · 머그컵_네이비_169.jpg</span><span>1000×1000px · 흰 배경 · JPG 90%</span><span>호스팅 주소 168개 상품대장 입력</span><span class="r">썸네일공방 1.6.4</span></footer>
+    </div>
+  </main>
+</div>
+<script>
+  // 필름스트립 24칸: 157~168 완료(흰 배경), 169 진행 중, 170~180 대기(원본 사진 배경).
+  const C = ['#2f557f', '#e9dfcf', '#8fae9a', '#c96f5a', '#d9b45a', '#6b7fa8', '#b8c4cc', '#3f3f46'];
+  const shapes = [
+    (c) => `<path d="M30 20c6 0 8 3 8 7s-3 7-8 7" fill="none" stroke="${c}" stroke-width="3.2" stroke-linecap="round"/><path d="M15 17h16v17c0 2-3.6 3-8 3s-8-1-8-3z" fill="${c}"/><ellipse cx="23" cy="17" rx="8" ry="2" fill="#f2ede4"/>`,
+    (c) => `<path d="M17 14h14l-1.4 22a1.6 1.6 0 0 1-1.6 1.4h-8a1.6 1.6 0 0 1-1.6-1.4z" fill="${c}"/><rect x="16.5" y="10" width="15" height="5" rx="1.4" fill="#3f3f46"/>`,
+    (c) => `<path d="M11 22h26c0 8-6 13-13 13s-13-5-13-13z" fill="${c}"/><ellipse cx="24" cy="22" rx="13" ry="3" fill="#f4efe6"/>`,
+    (c) => `<ellipse cx="24" cy="27" rx="15" ry="7" fill="#f4f1ec" stroke="#d6d0c6"/><ellipse cx="24" cy="26.5" rx="9" ry="4" fill="none" stroke="${c}" stroke-width="1.6"/>`,
+    (c) => `<path d="M17 13h14l-2 22h-10z" fill="${c}" opacity=".35" stroke="${c}" stroke-width="1.2"/><path d="M18.5 21h11" stroke="#fff" stroke-width="1.2" opacity=".8"/>`,
+    (c) => `<path d="M14 22c0-6 4-9 10-9s10 3 10 9v6c0 4-4 7-10 7s-10-3-10-7z" fill="${c}"/><path d="M34 22c4 0 5 3 3 6M14 24l-4-4" stroke="${c}" stroke-width="2.6" fill="none" stroke-linecap="round"/><rect x="21" y="10" width="6" height="3.4" rx="1.4" fill="${c}"/>`,
+  ];
+  const origBg = ['#b79a7b', '#9fb3a2', '#c7b9a8', '#8e8a99', '#b6a28a', '#a6b0bd'];
+  let html = '';
+  for (let i = 0; i < 24; i++) {
+    const n = 157 + i;
+    const shape = shapes[(i * 5 + 2) % shapes.length];
+    const col = C[(i * 3 + 1) % C.length];
+    const done = n < 169, cur = n === 169;
+    const bg = done || cur
+      ? `<rect width="48" height="48" fill="#fff"/><ellipse cx="24" cy="38" rx="11" ry="1.8" fill="#000" opacity=".12"/>`
+      : `<rect width="48" height="48" fill="${origBg[i % origBg.length]}"/><rect y="31" width="48" height="17" fill="#6d4a2f" opacity=".55"/>`;
+    const art = cur ? shapes[0]('#2f557f') : shape(col);
+    html += `<div class="fr ${done ? 'done' : cur ? 'cur' : 'wait'}"><div class="im"><svg viewBox="0 0 48 48" preserveAspectRatio="xMidYMid slice">${bg}${art}</svg>${cur ? '<span class="ring"><svg width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="10" fill="none" stroke="rgb(255 255 255 / .25)" stroke-width="3"/><circle cx="13" cy="13" r="10" fill="none" stroke="#38bdf8" stroke-width="3" stroke-dasharray="40 63" stroke-linecap="round" transform="rotate(-90 13 13)"/></svg></span>' : ''}</div>${done ? '<span class="ck"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span>' : ''}<p>${n}</p></div>`;
+  }
+  document.getElementById('film').innerHTML = html;
+</script>
+</body>
+</html>

@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>리드메이커</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2.0.5/fonts/variable/woff2/SUIT-Variable.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 리드메이커: 영업 지역을 지도처럼 보며 공개 사업장 정보를 모으는 수집기. 밝은 민트 회색 + 틸, 육각 타일 지도. */
+  :root {
+    --bg: #f5f7f6; --panel: #fff; --line: #e3e8e6; --line-2: #d3dbd8;
+    --text: #102522; --text-2: #46605b; --text-3: #7f9590;
+    --t: #0d9488; --t-2: #0f766e; --t-soft: #e6f5f2; --t-line: #a7ddd3;
+    --new: #2563eb; --new-soft: #e8effd; --dup: #a16207; --dup-soft: #fdf4dc;
+  }
+  body { font: 400 13px/1.45 'SUIT Variable', 'Pretendard Variable', sans-serif; color: var(--text); background: var(--bg); letter-spacing: -0.005em; }
+  .tnum, td, strong { font-variant-numeric: tabular-nums; }
+  .win { --bar: #ffffff; --bar-fg: #2d3f3b; background: var(--bg); }
+  .win-bar { border-bottom: 1px solid var(--line); }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* 필터 */
+  .filter { width: 270px; flex: none; background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 14px 16px 14px; }
+  .brand { display: flex; align-items: center; gap: 9px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+  .brand b { font-size: 16px; font-weight: 800; letter-spacing: -0.03em; }
+  .brand small { color: var(--text-3); font-size: 11px; }
+  .brand .st { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--t-2); background: var(--t-soft); padding: 3px 8px; border-radius: 6px; }
+  .fs { padding: 11px 0 0; }
+  .fs h4 { font-size: 11.5px; font-weight: 700; color: var(--text-3); display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+  .fs h4 span { font-weight: 600; color: var(--t-2); }
+  .crumb { height: 34px; display: flex; align-items: center; gap: 6px; padding: 0 11px; border-radius: 8px; border: 1px solid var(--line-2); font-weight: 600; }
+  .crumb svg { width: 15px; height: 15px; color: var(--t); }
+  .crumb i { margin-left: auto; width: 6px; height: 6px; border-right: 1.5px solid var(--text-3); border-bottom: 1.5px solid var(--text-3); rotate: 45deg; translate: 0 -2px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+  .chip { height: 28px; display: flex; align-items: center; gap: 6px; padding: 0 9px 0 11px; border-radius: 14px; font-size: 12.5px; font-weight: 700; background: var(--t); color: #fff; }
+  .chip small { font-weight: 600; opacity: .8; font-size: 11px; }
+  .chip .x { width: 8px; height: 8px; position: relative; opacity: .85; }
+  .chip .x::before, .chip .x::after { content: ""; position: absolute; left: 50%; top: 50%; width: 9px; height: 1.6px; background: #fff; translate: -50% -50%; rotate: 45deg; border-radius: 1px; }
+  .chip .x::after { rotate: -45deg; }
+  .chip.ghost { background: #fff; color: var(--text-2); border: 1px dashed var(--line-2); font-weight: 600; padding: 0 11px; }
+  .chip.sug { background: #fff; color: var(--text-2); border: 1px solid var(--line-2); font-weight: 600; padding: 0 11px; }
+  .seg { display: flex; padding: 3px; border-radius: 9px; background: #eef2f1; }
+  .seg b { flex: 1; height: 28px; display: grid; place-items: center; border-radius: 7px; font-size: 12px; font-weight: 600; color: var(--text-3); }
+  .seg b.on { background: #fff; color: var(--text); box-shadow: 0 1px 2px rgb(16 37 34 / .12); }
+  .ck { display: flex; align-items: center; gap: 8px; height: 25px; font-size: 12.5px; color: var(--text-2); }
+  .ck i { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid #b5c4c0; flex: none; display: grid; place-items: center; }
+  .ck.on i { background: var(--t); border-color: var(--t); }
+  .ck.on i::after { content: ""; width: 7px; height: 4px; border-left: 1.8px solid #fff; border-bottom: 1.8px solid #fff; rotate: -45deg; translate: 0 -1px; }
+  .pub { margin-top: 12px; padding: 10px 11px; border-radius: 10px; background: var(--t-soft); border: 1px solid var(--t-line); }
+  .pub .ck { height: auto; font-weight: 700; color: var(--t-2); font-size: 13px; }
+  .pub .ck svg { width: 15px; height: 15px; margin-left: auto; color: var(--t-2); }
+  .pub p { margin-top: 5px; font-size: 11.5px; line-height: 1.5; color: #3d6a63; }
+  .go { margin-top: auto; height: 42px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 10px; background: var(--t); color: #fff; font-weight: 800; font-size: 14px; box-shadow: 0 8px 18px -8px rgb(13 148 136 / .7); }
+  .go svg { width: 17px; height: 17px; }
+  .done { margin-top: 10px; display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-3); }
+  .done b { color: var(--t-2); font-weight: 700; }
+
+  /* 메인 */
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 16px 20px 16px; gap: 14px; }
+  .head { display: flex; align-items: center; gap: 10px; }
+  .head h1 { font-size: 19px; font-weight: 800; letter-spacing: -0.03em; }
+  .head p { font-size: 12.5px; color: var(--text-3); margin-top: 2px; }
+  .head p b { color: var(--text-2); font-weight: 700; }
+  .head .sp { flex: 1; }
+  .btn { height: 36px; display: flex; align-items: center; gap: 7px; padding: 0 14px; border-radius: 9px; border: 1px solid var(--line-2); background: #fff; font-weight: 700; font-size: 12.5px; color: var(--text-2); }
+  .btn svg { width: 15px; height: 15px; }
+  .btn.pri { background: var(--t-2); border-color: var(--t-2); color: #fff; }
+
+  .top { display: flex; gap: 14px; height: 342px; flex: none; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+  .mapc { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 14px 16px 12px; }
+  .ch { display: flex; align-items: center; justify-content: space-between; }
+  .ch h3 { font-size: 13.5px; font-weight: 800; }
+  .ch h3 small { font-size: 11.5px; font-weight: 600; color: var(--text-3); margin-left: 6px; }
+  .ch .lg { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-3); }
+  .ch .lg span { display: flex; }
+  .ch .lg span i { width: 18px; height: 10px; }
+  .mapw { flex: 1; display: flex; align-items: center; gap: 14px; margin-top: 4px; }
+  .mapw svg.hex { flex: none; font-family: 'SUIT Variable', sans-serif; }
+  .gu { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .gu div { padding: 9px 11px; border-radius: 10px; border: 1px solid var(--line); }
+  .gu p { font-size: 11.5px; color: var(--text-3); font-weight: 600; }
+  .gu strong { display: block; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; margin-top: 1px; }
+  .gu strong small { font-size: 12px; font-weight: 600; color: var(--text-3); margin-left: 2px; }
+  .gu .pick { background: #0f2a27; border-color: #0f2a27; color: #e3f4f0; }
+  .gu .pick p { color: #8fc9be; }
+  .gu .pick ul { margin-top: 6px; font-size: 11.5px; color: #b9ddd6; }
+  .gu .pick li { display: flex; justify-content: space-between; height: 19px; align-items: center; }
+  .gu .pick li b { color: #fff; font-weight: 700; }
+
+  .kcol { width: 330px; flex: none; display: flex; flex-direction: column; gap: 12px; }
+  .kpi { position: relative; padding: 16px 18px; border-radius: 14px; overflow: hidden; color: #fff; background: radial-gradient(260px 160px at 100% 0%, #2dd4bf55, transparent 70%), linear-gradient(140deg, #0f766e, #0d9488 55%, #14b8a6); }
+  .kpi p { font-size: 12.5px; font-weight: 600; color: #ccf3ec; display: flex; justify-content: space-between; }
+  .kpi p span { font-size: 11px; font-weight: 700; background: rgb(255 255 255 / .18); padding: 2px 8px; border-radius: 6px; color: #fff; }
+  .kpi strong { display: block; font-size: 44px; font-weight: 800; letter-spacing: -0.04em; line-height: 1.05; margin-top: 6px; }
+  .kpi strong small { font-size: 18px; font-weight: 700; margin-left: 3px; letter-spacing: -0.02em; }
+  .split { display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 12px; gap: 2px; }
+  .split i { display: block; height: 100%; }
+  .kpi .sl { display: flex; justify-content: space-between; margin-top: 7px; font-size: 12px; color: #d5f5ef; }
+  .kpi .sl b { color: #fff; font-weight: 800; }
+  .kpi svg.deco { position: absolute; right: -14px; bottom: -22px; opacity: .14; }
+  .tiles { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .tile { padding: 11px 12px; border-radius: 12px; background: #fff; border: 1px solid var(--line); }
+  .tile p { font-size: 11.5px; color: var(--text-3); font-weight: 600; }
+  .tile strong { display: block; font-size: 19px; font-weight: 800; letter-spacing: -0.02em; margin-top: 2px; }
+  .tile strong small { font-size: 11.5px; font-weight: 600; color: var(--text-3); margin-left: 1px; }
+  .tile em { font-style: normal; font-size: 11px; color: var(--text-3); }
+  .logc { flex: 1; padding: 11px 14px; font-size: 12px; }
+  .logc h5 { font-size: 11.5px; color: var(--text-3); font-weight: 700; margin-bottom: 5px; }
+  .logc li { display: grid; grid-template-columns: 56px 1fr; height: 21px; align-items: center; color: var(--text-2); }
+  .logc time { color: var(--text-3); font-variant-numeric: tabular-nums; font-size: 11.5px; }
+  .logc li b { color: var(--t-2); font-weight: 700; }
+
+  .res { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+  .rt { height: 46px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 14px; border-bottom: 1px solid var(--line); }
+  .rt h3 { font-size: 13.5px; font-weight: 800; }
+  .rt h3 small { font-size: 12px; color: var(--text-3); font-weight: 600; margin-left: 6px; }
+  .rt .sp { flex: 1; }
+  .rseg { display: flex; gap: 4px; }
+  .rseg b { height: 28px; display: flex; align-items: center; gap: 5px; padding: 0 10px; border-radius: 7px; font-size: 12px; font-weight: 600; color: var(--text-3); }
+  .rseg b.on { background: var(--t-soft); color: var(--t-2); }
+  .rseg b em { font-style: normal; font-weight: 700; }
+  .search { width: 200px; height: 30px; display: flex; align-items: center; gap: 7px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line-2); color: var(--text-3); font-size: 12px; }
+  .search svg { width: 14px; height: 14px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { height: 32px; text-align: left; padding: 0 12px; font-size: 11.5px; font-weight: 600; color: var(--text-3); background: #f8faf9; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td { height: 38px; padding: 0 12px; border-bottom: 1px solid var(--line); white-space: nowrap; font-size: 12.5px; }
+  tr:last-child td { border-bottom: none; }
+  td.nm { font-weight: 700; }
+  td.ph { color: var(--text-2); font-family: 'SUIT Variable', sans-serif; letter-spacing: .02em; }
+  td.ad { color: var(--text-2); }
+  td.hp svg { width: 15px; height: 15px; color: var(--t); stroke-width: 2.2; }
+  td.hp span { color: #b8c6c2; }
+  .biz { display: inline-block; font-size: 11.5px; font-weight: 600; color: var(--text-2); background: #eef2f1; padding: 2px 8px; border-radius: 6px; }
+  .src { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-3); }
+  .src i { width: 6px; height: 6px; border-radius: 50%; background: #9fb3ae; }
+  .stt { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700; }
+  .stt.ok { color: var(--t-2); background: var(--t-soft); }
+  .stt.nw { color: var(--new); background: var(--new-soft); }
+  .stt.dp { color: var(--dup); background: var(--dup-soft); }
+  tr.sel td { background: #f0faf8; }
+  tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--t); }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar">
+    <span class="win-icon"><svg viewBox="0 0 16 16"><path d="M8 1 14 4.5v7L8 15 2 11.5v-7z" fill="#0d9488"/><circle cx="8" cy="7.2" r="2.2" fill="none" stroke="#fff" stroke-width="1.4"/><path d="M8 9.4v2.6" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+    <span class="win-title">리드메이커 2.1.4 — 지역·업종별 사업자 DB 수집</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <aside class="filter">
+      <div class="brand"><svg width="26" height="26" viewBox="0 0 24 24"><path d="M12 1.5 21 6.7v10.6L12 22.5 3 17.3V6.7z" fill="#0d9488"/><path d="M12 6.5a3.6 3.6 0 0 1 3.6 3.6c0 2.8-3.6 6.4-3.6 6.4s-3.6-3.6-3.6-6.4A3.6 3.6 0 0 1 12 6.5z" fill="#fff"/><circle cx="12" cy="10.1" r="1.4" fill="#0d9488"/></svg><b>리드메이커</b><small>2.1.4</small><span class="st">수집 완료</span></div>
+
+      <div class="fs">
+        <h4>지역 <span>법정동 24곳</span></h4>
+        <div class="crumb"><svg class="i" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>서울특별시<i></i></div>
+        <div class="chips"><span class="chip">강남구<small>14동</small><i class="x"></i></span><span class="chip">서초구<small>10동</small><i class="x"></i></span><span class="chip ghost">+ 구 추가</span></div>
+      </div>
+      <div class="fs">
+        <h4>업종 키워드</h4>
+        <div class="chips" style="margin-top:0"><span class="chip">인테리어<i class="x"></i></span><span class="chip sug">+ 욕실 리모델링</span><span class="chip sug">+ 가구</span></div>
+      </div>
+      <div class="fs">
+        <h4>수집 대상</h4>
+        <div class="seg"><b class="on">오프라인 매장</b><b>온라인 쇼핑몰</b></div>
+      </div>
+      <div class="fs">
+        <h4>등록 날짜</h4>
+        <div class="seg"><b class="on">전체 기간</b><b>최근 90일</b><b>직접 지정</b></div>
+      </div>
+      <div class="fs">
+        <h4>정리 옵션</h4>
+        <div class="ck on"><i></i>중복 업체 한 줄로 정리</div>
+        <div class="ck on"><i></i>신규 등록 업체 표시</div>
+        <div class="ck on"><i></i>홈페이지 주소 포함</div>
+      </div>
+      <div class="pub">
+        <div class="ck on"><i></i>공개 정보만 수집<svg class="i" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg></div>
+        <p>포털에 공개된 사업장 정보만 모읍니다. 대표자 개인 정보는 수집하지 않습니다.</p>
+      </div>
+      <span class="go" style="margin-top:14px"><svg class="i" viewBox="0 0 24 24" style="fill:#fff;stroke:none"><path d="M7 5v14l11-7z"/></svg>수집 시작</span>
+      <div class="done"><span>마지막 수집 10:05~10:45</span><b>2,384곳</b></div>
+    </aside>
+
+    <section class="main">
+      <div class="head">
+        <div><h1>수집 결과</h1><p><b>서울 강남구·서초구</b> · 인테리어 · 오프라인 매장 · 바탕화면\서울_인테리어.xlsx</p></div>
+        <span class="sp"></span>
+        <span class="btn"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>결과 비우기</span>
+        <span class="btn pri"><svg class="i" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="m8.5 8.5 7 7M15.5 8.5l-7 7"/></svg>엑셀로 저장</span>
+      </div>
+
+      <div class="top">
+        <div class="card mapc">
+          <div class="ch"><h3>동별 수집 분포<small>육각 1칸 = 법정동 1곳</small></h3>
+            <span class="lg">적음<span><i style="background:#e4f3ef"></i><i style="background:#b8e5dc"></i><i style="background:#6fcbbb"></i><i style="background:#1fa595"></i><i style="background:#0b7a6e"></i></span>많음</span></div>
+          <div class="mapw">
+            <svg class="hex" width="412" height="298" viewBox="0 0 412 298">
+              <!-- nonhyeon 159.0,95.5 -->
+<!-- bbox 4 6 407 292 -->
+<polygon points="97.0,59.7 66.0,77.6 35.0,59.7 35.0,23.9 66.0,6.0 97.0,23.9" fill="#1fa595" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="66.0" y="35.8" text-anchor="middle" fill="#fff" font-size="12" font-weight="600" opacity=".9">반포</text>
+<text x="66.0" y="52.8" text-anchor="middle" fill="#fff" font-size="14" font-weight="800">152</text>
+<polygon points="159.0,59.7 128.0,77.6 97.0,59.7 97.0,23.9 128.0,6.0 159.0,23.9" fill="#b8e5dc" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="128.0" y="35.8" text-anchor="middle" fill="#1d4d46" font-size="12" font-weight="600" opacity=".9">잠원</text>
+<text x="128.0" y="52.8" text-anchor="middle" fill="#1d4d46" font-size="14" font-weight="800">74</text>
+<polygon points="221.0,59.7 190.0,77.6 159.0,59.7 159.0,23.9 190.0,6.0 221.0,23.9" fill="#1fa595" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="190.0" y="35.8" text-anchor="middle" fill="#fff" font-size="12" font-weight="600" opacity=".9">신사</text>
+<text x="190.0" y="52.8" text-anchor="middle" fill="#fff" font-size="14" font-weight="800">168</text>
+<polygon points="283.0,59.7 252.0,77.6 221.0,59.7 221.0,23.9 252.0,6.0 283.0,23.9" fill="#6fcbbb" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="252.0" y="35.8" text-anchor="middle" fill="#0b3b35" font-size="12" font-weight="600" opacity=".9">압구정</text>
+<text x="252.0" y="52.8" text-anchor="middle" fill="#0b3b35" font-size="14" font-weight="800">96</text>
+<polygon points="345.0,59.7 314.0,77.6 283.0,59.7 283.0,23.9 314.0,6.0 345.0,23.9" fill="#6fcbbb" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="314.0" y="35.8" text-anchor="middle" fill="#0b3b35" font-size="12" font-weight="600" opacity=".9">청담</text>
+<text x="314.0" y="52.8" text-anchor="middle" fill="#0b3b35" font-size="14" font-weight="800">142</text>
+<polygon points="66.0,113.4 35.0,131.3 4.0,113.4 4.0,77.6 35.0,59.7 66.0,77.6" fill="#1fa595" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="35.0" y="89.5" text-anchor="middle" fill="#fff" font-size="12" font-weight="600" opacity=".9">방배</text>
+<text x="35.0" y="106.5" text-anchor="middle" fill="#fff" font-size="14" font-weight="800">236</text>
+<polygon points="128.0,113.4 97.0,131.3 66.0,113.4 66.0,77.6 97.0,59.7 128.0,77.6" fill="#0b7a6e" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="97.0" y="89.5" text-anchor="middle" fill="#fff" font-size="12" font-weight="600" opacity=".9">서초</text>
+<text x="97.0" y="106.5" text-anchor="middle" fill="#fff" font-size="14" font-weight="800">268</text>
+<polygon points="190.0,113.4 159.0,131.3 128.0,113.4 128.0,77.6 159.0,59.7 190.0,77.6" fill="#0b7a6e" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="159.0" y="89.5" text-anchor="middle" fill="#fff" font-size="12" font-weight="600" opacity=".9">논현</text>
+<text x="159.0" y="106.5" text-anchor="middle" fill="#fff" font-size="14" font-weight="800">386</text>
+<polygon points="252.0,113.4 221.0,131.3 190.0,113.4 190.0,77.6 221.0,59.7 252.0,77.6" fill="#1fa595" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="221.0" y="89.5" text-anchor="middle" fill="#fff" font-size="12" font-weight="600" opacity=".9">역삼</text>
+<text x="221.0" y="106.5" text-anchor="middle" fill="#fff" font-size="14" font-weight="800">214</text>
+<polygon points="314.0,113.4 283.0,131.3 252.0,113.4 252.0,77.6 283.0,59.7 314.0,77.6" fill="#6fcbbb" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="283.0" y="89.5" text-anchor="middle" fill="#0b3b35" font-size="12" font-weight="600" opacity=".9">삼성</text>
+<text x="283.0" y="106.5" text-anchor="middle" fill="#0b3b35" font-size="14" font-weight="800">121</text>
+<polygon points="97.0,167.1 66.0,185.0 35.0,167.1 35.0,131.3 66.0,113.4 97.0,131.3" fill="#e4f3ef" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="66.0" y="143.2" text-anchor="middle" fill="#4f7a73" font-size="12" font-weight="600" opacity=".9">우면</text>
+<text x="66.0" y="160.2" text-anchor="middle" fill="#4f7a73" font-size="14" font-weight="800">22</text>
+<polygon points="159.0,167.1 128.0,185.0 97.0,167.1 97.0,131.3 128.0,113.4 159.0,131.3" fill="#6fcbbb" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="128.0" y="143.2" text-anchor="middle" fill="#0b3b35" font-size="12" font-weight="600" opacity=".9">양재</text>
+<text x="128.0" y="160.2" text-anchor="middle" fill="#0b3b35" font-size="14" font-weight="800">128</text>
+<polygon points="221.0,167.1 190.0,185.0 159.0,167.1 159.0,131.3 190.0,113.4 221.0,131.3" fill="#b8e5dc" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="190.0" y="143.2" text-anchor="middle" fill="#1d4d46" font-size="12" font-weight="600" opacity=".9">도곡</text>
+<text x="190.0" y="160.2" text-anchor="middle" fill="#1d4d46" font-size="14" font-weight="800">64</text>
+<polygon points="283.0,167.1 252.0,185.0 221.0,167.1 221.0,131.3 252.0,113.4 283.0,131.3" fill="#6fcbbb" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="252.0" y="143.2" text-anchor="middle" fill="#0b3b35" font-size="12" font-weight="600" opacity=".9">대치</text>
+<text x="252.0" y="160.2" text-anchor="middle" fill="#0b3b35" font-size="14" font-weight="800">118</text>
+<polygon points="128.0,220.8 97.0,238.7 66.0,220.8 66.0,185.0 97.0,167.1 128.0,185.0" fill="#e4f3ef" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="97.0" y="196.9" text-anchor="middle" fill="#4f7a73" font-size="12" font-weight="600" opacity=".9">원지</text>
+<text x="97.0" y="213.9" text-anchor="middle" fill="#4f7a73" font-size="14" font-weight="800">10</text>
+<polygon points="190.0,220.8 159.0,238.7 128.0,220.8 128.0,185.0 159.0,167.1 190.0,185.0" fill="#e4f3ef" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="159.0" y="196.9" text-anchor="middle" fill="#4f7a73" font-size="12" font-weight="600" opacity=".9">염곡</text>
+<text x="159.0" y="213.9" text-anchor="middle" fill="#4f7a73" font-size="14" font-weight="800">8</text>
+<polygon points="252.0,220.8 221.0,238.7 190.0,220.8 190.0,185.0 221.0,167.1 252.0,185.0" fill="#b8e5dc" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="221.0" y="196.9" text-anchor="middle" fill="#1d4d46" font-size="12" font-weight="600" opacity=".9">개포</text>
+<text x="221.0" y="213.9" text-anchor="middle" fill="#1d4d46" font-size="14" font-weight="800">52</text>
+<polygon points="314.0,220.8 283.0,238.7 252.0,220.8 252.0,185.0 283.0,167.1 314.0,185.0" fill="#b8e5dc" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="283.0" y="196.9" text-anchor="middle" fill="#1d4d46" font-size="12" font-weight="600" opacity=".9">일원</text>
+<text x="283.0" y="213.9" text-anchor="middle" fill="#1d4d46" font-size="14" font-weight="800">31</text>
+<polygon points="376.0,220.8 345.0,238.7 314.0,220.8 314.0,185.0 345.0,167.1 376.0,185.0" fill="#b8e5dc" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="345.0" y="196.9" text-anchor="middle" fill="#1d4d46" font-size="12" font-weight="600" opacity=".9">수서</text>
+<text x="345.0" y="213.9" text-anchor="middle" fill="#1d4d46" font-size="14" font-weight="800">28</text>
+<polygon points="97.0,274.5 66.0,292.4 35.0,274.5 35.0,238.7 66.0,220.8 97.0,238.7" fill="#e4f3ef" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="66.0" y="250.6" text-anchor="middle" fill="#4f7a73" font-size="12" font-weight="600" opacity=".9">신원</text>
+<text x="66.0" y="267.6" text-anchor="middle" fill="#4f7a73" font-size="14" font-weight="800">6</text>
+<polygon points="159.0,274.5 128.0,292.4 97.0,274.5 97.0,238.7 128.0,220.8 159.0,238.7" fill="#e4f3ef" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="128.0" y="250.6" text-anchor="middle" fill="#4f7a73" font-size="12" font-weight="600" opacity=".9">내곡</text>
+<text x="128.0" y="267.6" text-anchor="middle" fill="#4f7a73" font-size="14" font-weight="800">18</text>
+<polygon points="283.0,274.5 252.0,292.4 221.0,274.5 221.0,238.7 252.0,220.8 283.0,238.7" fill="#e4f3ef" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="252.0" y="250.6" text-anchor="middle" fill="#4f7a73" font-size="12" font-weight="600" opacity=".9">세곡</text>
+<text x="252.0" y="267.6" text-anchor="middle" fill="#4f7a73" font-size="14" font-weight="800">22</text>
+<polygon points="345.0,274.5 314.0,292.4 283.0,274.5 283.0,238.7 314.0,220.8 345.0,238.7" fill="#e4f3ef" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="314.0" y="250.6" text-anchor="middle" fill="#4f7a73" font-size="12" font-weight="600" opacity=".9">자곡</text>
+<text x="314.0" y="267.6" text-anchor="middle" fill="#4f7a73" font-size="14" font-weight="800">12</text>
+<polygon points="407.0,274.5 376.0,292.4 345.0,274.5 345.0,238.7 376.0,220.8 407.0,238.7" fill="#e4f3ef" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+<text x="376.0" y="250.6" text-anchor="middle" fill="#4f7a73" font-size="12" font-weight="600" opacity=".9">율현</text>
+<text x="376.0" y="267.6" text-anchor="middle" fill="#4f7a73" font-size="14" font-weight="800">8</text>
+<line x1="159.0" y1="59.7" x2="159.0" y2="23.9" stroke="#134e48" stroke-width="2.4" stroke-dasharray="5 4" stroke-linecap="round"/>
+<line x1="159.0" y1="59.7" x2="128.0" y2="77.6" stroke="#134e48" stroke-width="2.4" stroke-dasharray="5 4" stroke-linecap="round"/>
+<line x1="128.0" y1="113.4" x2="128.0" y2="77.6" stroke="#134e48" stroke-width="2.4" stroke-dasharray="5 4" stroke-linecap="round"/>
+<line x1="159.0" y1="131.3" x2="128.0" y2="113.4" stroke="#134e48" stroke-width="2.4" stroke-dasharray="5 4" stroke-linecap="round"/>
+<line x1="159.0" y1="167.1" x2="159.0" y2="131.3" stroke="#134e48" stroke-width="2.4" stroke-dasharray="5 4" stroke-linecap="round"/>
+<line x1="190.0" y1="185.0" x2="159.0" y2="167.1" stroke="#134e48" stroke-width="2.4" stroke-dasharray="5 4" stroke-linecap="round"/>
+<line x1="190.0" y1="220.8" x2="190.0" y2="185.0" stroke="#134e48" stroke-width="2.4" stroke-dasharray="5 4" stroke-linecap="round"/>
+<polygon points="190.0,113.4 159.0,131.3 128.0,113.4 128.0,77.6 159.0,59.7 190.0,77.6" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linejoin="round"/>
+
+              <g font-size="11.5" font-weight="800" fill="#134e48"><text x="8" y="292">서초구</text><text x="404" y="20" text-anchor="end">강남구</text></g>
+            </svg>
+            <div class="gu">
+              <div><p>강남구</p><strong>1,462<small>곳</small></strong></div>
+              <div><p>서초구</p><strong>922<small>곳</small></strong></div>
+              <div class="pick"><p>선택 · 논현동</p><strong style="color:#fff">386<small style="color:#8fc9be">곳</small></strong>
+                <ul><li>신규 등록<b>41</b></li><li>홈페이지 있음<b>62%</b></li></ul></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="kcol">
+          <div class="kpi">
+            <p>수집한 업체<span>중복 정리 후</span></p>
+            <strong>2,384<small>곳</small></strong>
+            <div class="split"><i style="flex:1462;background:#fff"></i><i style="flex:922;background:#99f6e4"></i></div>
+            <div class="sl"><span>강남구 <b>1,462</b></span><span>서초구 <b>922</b></span></div>
+            <svg class="deco" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><path d="M12 1.5 21 6.7v10.6L12 22.5 3 17.3V6.7z"/></svg>
+          </div>
+          <div class="tiles">
+            <div class="tile"><p>신규 등록</p><strong>143<small>곳</small></strong><em>최근 90일</em></div>
+            <div class="tile"><p>중복 정리</p><strong>96<small>곳</small></strong><em>한 줄로 합침</em></div>
+            <div class="tile"><p>홈페이지</p><strong>54<small>%</small></strong><em>1,287곳</em></div>
+          </div>
+          <div class="card logc">
+            <h5>수집 기록</h5>
+            <ul>
+              <li><time>10:05:12</time><span>'인테리어' 강남구 수집 시작</span></li>
+              <li><time>10:31:40</time><span>강남구 <b>1,462곳</b> · 서초구 이어서</span></li>
+              <li><time>10:44:51</time><span>중복 <b>96곳</b> 한 줄로 정리</span></li>
+              <li><time>10:45:02</time><span>서울_인테리어.xlsx <b>저장</b></span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card res">
+        <div class="rt"><h3>업체 목록<small>2,384곳</small></h3>
+          <div class="rseg"><b class="on">전체</b><b>신규 <em>143</em></b><b>홈페이지 있음 <em>1,287</em></b></div>
+          <span class="sp"></span>
+          <span class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>업체명·주소 검색</span></div>
+        <table>
+          <thead><tr><th>업체명</th><th>업종</th><th>대표번호</th><th>주소</th><th>홈페이지</th><th>출처</th><th>상태</th></tr></thead>
+          <tbody>
+            <tr class="sel"><td class="nm">우드앤라인 인테리어</td><td><span class="biz">인테리어</span></td><td class="ph">02-***-4821</td><td class="ad">강남구 논현동 · 학동로 ○○</td><td class="hp"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></td><td><span class="src"><i></i>포털 지도</span></td><td><span class="stt nw">신규 등록</span></td></tr>
+            <tr><td class="nm">공간담 디자인</td><td><span class="biz">인테리어 디자인</span></td><td class="ph">02-***-7730</td><td class="ad">강남구 논현동 · 논현로 ○○</td><td class="hp"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></td><td><span class="src"><i></i>포털 업체정보</span></td><td><span class="stt ok">수집 완료</span></td></tr>
+            <tr><td class="nm">하우스핏 인테리어</td><td><span class="biz">리모델링</span></td><td class="ph">02-***-1195</td><td class="ad">서초구 서초동 · 서초대로 ○○</td><td class="hp"><span>—</span></td><td><span class="src"><i></i>포털 지도</span></td><td><span class="stt ok">수집 완료</span></td></tr>
+            <tr><td class="nm">소담공간</td><td><span class="biz">인테리어</span></td><td class="ph">02-***-6402</td><td class="ad">서초구 방배동 · 방배로 ○○</td><td class="hp"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></td><td><span class="src"><i></i>포털 지도</span></td><td><span class="stt nw">신규 등록</span></td></tr>
+            <tr><td class="nm">라움스튜디오</td><td><span class="biz">인테리어 디자인</span></td><td class="ph">02-***-2287</td><td class="ad">강남구 역삼동 · 테헤란로 ○○</td><td class="hp"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></td><td><span class="src"><i></i>포털 업체정보</span></td><td><span class="stt ok">수집 완료</span></td></tr>
+            <tr><td class="nm">반포리빙 인테리어</td><td><span class="biz">인테리어</span></td><td class="ph">02-***-9014</td><td class="ad">서초구 반포동 · 사평대로 ○○</td><td class="hp"><span>—</span></td><td><span class="src"><i></i>포털 지도</span></td><td><span class="stt dp">중복 정리</span></td></tr>
+            
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>

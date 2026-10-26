@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>재고워치</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 재고워치: macOS 밝은 테마. 통합 툴바 + 소스 리스트, 계단형 재고 차트와 일 판매량 막대가 중심. 레드오렌지 강조. */
+  :root {
+    --win: #f6f5f3; --side: #ecebe8; --card: #fff; --line: rgb(0 0 0 / .08); --line-2: rgb(0 0 0 / .05);
+    --text: #1d1d1f; --text-2: #55555a; --text-3: #8e8e93;
+    --ro: #f2542d; --ro-d: #c9401e; --ro-l: #fde9e3; --ro-ll: #fff4f0; --ok: #1f9d55; --blue: #2f6fe0;
+  }
+  body { font: 400 13px/1.4 'Pretendard Variable', -apple-system, sans-serif; color: var(--text); letter-spacing: -0.01em; word-break: keep-all; }
+  .mac { background: var(--win); }
+  .n { font-variant-numeric: tabular-nums; }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  .tbar { height: 52px; flex: none; display: flex; align-items: center; gap: 6px; padding: 0 14px 0 84px; background: linear-gradient(180deg, #f7f6f4, #efeeeb); border-bottom: 1px solid rgb(0 0 0 / .1); position: relative; }
+  .tbar .mac-lights { top: 20px; }
+  .tbar h1 { font-size: 14px; font-weight: 700; margin-right: 14px; }
+  .tbar h1 small { font-size: 11.5px; font-weight: 500; color: var(--text-3); margin-left: 6px; }
+  .tbtn { height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 10px; border-radius: 7px; font-size: 12.5px; font-weight: 600; color: #3a3a3c; }
+  .tbtn:hover { background: rgb(0 0 0 / .05); }
+  .tbtn.on { background: var(--ro); color: #fff; box-shadow: 0 1px 2px rgb(242 84 45 / .45); }
+  .tbtn svg.i { width: 15px; height: 15px; }
+  .tbar .sp { flex: 1; }
+  .srch { width: 200px; height: 28px; border-radius: 7px; background: rgb(0 0 0 / .055); display: flex; align-items: center; gap: 6px; padding: 0 9px; font-size: 12.5px; color: var(--text-3); }
+
+  .side { width: 214px; flex: none; display: flex; flex-direction: column; padding: 10px 10px 12px; background: var(--side); border-right: 1px solid rgb(0 0 0 / .09); }
+  .side .cap { font-size: 11px; font-weight: 700; color: var(--text-3); padding: 10px 8px 4px; }
+  .side a { display: flex; align-items: center; gap: 9px; height: 30px; padding: 0 8px; border-radius: 6px; font-size: 13px; color: var(--text); }
+  .side a svg { color: var(--ro); width: 16px; height: 16px; }
+  .side a.on { background: rgb(0 0 0 / .08); font-weight: 600; }
+  .side a em { margin-left: auto; font-style: normal; font-size: 11.5px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .side a em.b { color: #fff; background: var(--ro); padding: 0 6px; border-radius: 8px; font-weight: 700; }
+  .side a .dot { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+  .side .al { margin-top: 2px; display: flex; flex-direction: column; gap: 2px; }
+  .side .al li { display: grid; grid-template-columns: 8px 1fr; gap: 8px; padding: 6px 8px; font-size: 12px; color: var(--text-2); line-height: 1.4; }
+  .side .al li i { width: 7px; height: 7px; border-radius: 50%; margin-top: 5px; }
+  .side .al li b { color: var(--text); font-weight: 600; }
+  .side .al li small { display: block; font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .side .acct { margin-top: auto; padding: 10px; border-radius: 9px; background: rgb(255 255 255 / .6); border: 1px solid var(--line); font-size: 11.5px; color: var(--text-2); }
+  .side .acct b { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text); font-weight: 700; }
+  .side .acct b i { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+  .side .acct p { margin-top: 4px; line-height: 1.5; font-variant-numeric: tabular-nums; }
+
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; background: #fbfbfa; }
+  .ph { flex: none; display: flex; align-items: center; gap: 14px; padding: 14px 20px 12px; }
+  .ph .pic { width: 56px; height: 56px; border-radius: 12px; display: grid; place-items: center; background: radial-gradient(circle at 35% 30%, #fff, #ffe9df 70%); border: 1px solid #f6d6ca; flex: none; }
+  .ph .pic svg { width: 44px; height: 44px; }
+  .ph h2 { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
+  .ph p { margin-top: 3px; font-size: 12px; color: var(--text-3); display: flex; align-items: center; gap: 8px; }
+  .ph p b { color: var(--text-2); font-weight: 600; }
+  .chip { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 5px; font-size: 11px; font-weight: 700; }
+  .chip.rk { background: #e8f0fd; color: var(--blue); }
+  .chip.op { background: #f1f1f2; color: var(--text-2); }
+  .ph .sp { flex: 1; }
+  .seg { display: flex; padding: 2px; border-radius: 7px; background: rgb(0 0 0 / .06); }
+  .seg b { height: 24px; display: grid; place-items: center; padding: 0 11px; border-radius: 5px; font-size: 12px; font-weight: 600; color: var(--text-2); }
+  .seg b.on { background: #fff; color: var(--text); box-shadow: 0 1px 2px rgb(0 0 0 / .15); }
+
+  .top { flex: 1; min-height: 0; display: flex; gap: 14px; padding: 0 20px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 11px; box-shadow: 0 1px 2px rgb(0 0 0 / .03); }
+  .chart { flex: 1; min-width: 0; padding: 12px 16px 8px; display: flex; flex-direction: column; }
+  .ch { display: flex; align-items: center; gap: 14px; }
+  .ch h3 { font-size: 13.5px; font-weight: 700; }
+  .ch .lg { display: flex; gap: 14px; font-size: 11.5px; color: var(--text-2); margin-left: auto; }
+  .ch .lg span { display: flex; align-items: center; gap: 5px; }
+  .ch .lg i { width: 12px; height: 3px; border-radius: 2px; }
+  #chart { flex: 1; min-height: 0; width: 100%; margin-top: 4px; }
+  #chart text { font-family: 'Pretendard Variable', sans-serif; font-size: 11px; fill: var(--text-3); font-variant-numeric: tabular-nums; }
+
+  .stats { width: 262px; flex: none; display: flex; flex-direction: column; gap: 10px; }
+  .st { padding: 12px 14px; }
+  .st p { font-size: 12px; color: var(--text-3); display: flex; justify-content: space-between; }
+  .st strong { display: block; margin-top: 3px; font-size: 22px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .st strong small { font-size: 13px; font-weight: 600; color: var(--text-3); margin-left: 3px; letter-spacing: 0; }
+  .st em { font-style: normal; font-size: 11.5px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .st.hero { background: linear-gradient(150deg, #ff6a3d, #e8431c); border: 0; color: #fff; box-shadow: 0 10px 22px -12px rgb(242 84 45 / .75); }
+  .st.hero p { color: rgb(255 255 255 / .85); font-weight: 600; }
+  .st.hero strong { font-size: 40px; line-height: 1.05; margin-top: 4px; }
+  .st.hero strong small { color: rgb(255 255 255 / .85); font-size: 16px; }
+  .st.hero .row { display: flex; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgb(255 255 255 / .25); font-size: 12px; color: rgb(255 255 255 / .9); font-variant-numeric: tabular-nums; }
+  .st.hero .row b { font-weight: 700; color: #fff; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .st .dn { color: var(--ro-d); font-weight: 700; }
+  .opt { margin-top: 8px; display: flex; flex-direction: column; gap: 5px; }
+  .opt div { display: grid; grid-template-columns: 58px 1fr 28px; gap: 8px; align-items: center; font-size: 11.5px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .opt i { height: 7px; border-radius: 4px; background: var(--ro); }
+  .opt b { text-align: right; font-weight: 700; color: var(--text); }
+  .opt .low { color: var(--ro-d); }
+
+  .tbl { flex: none; margin: 14px 20px 0; overflow: hidden; }
+  .tbl-h { display: flex; align-items: center; gap: 10px; padding: 10px 14px 8px; }
+  .tbl-h h3 { font-size: 13.5px; font-weight: 700; }
+  .tbl-h span { font-size: 11.5px; color: var(--text-3); }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th { height: 28px; font-size: 11.5px; font-weight: 600; color: var(--text-3); text-align: right; padding: 0 12px; background: #fafafa; border-top: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2); }
+  th:first-child, td:first-child { text-align: left; padding-left: 14px; }
+  td { height: 33px; font-size: 12.5px; text-align: right; padding: 0 12px; border-bottom: 1px solid var(--line-2); white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  tr.sel td { background: var(--ro-ll); }
+  tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--ro); }
+  td .pn { display: flex; align-items: center; gap: 9px; font-weight: 600; }
+  td .pn i { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; flex: none; }
+  td .pn i svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 2; }
+  td .pn small { color: var(--text-3); font-weight: 500; font-size: 11px; }
+  td.sold b { font-weight: 800; }
+  td .re { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 7px; border-radius: 5px; background: #e6f0fd; color: var(--blue); font-size: 11.5px; font-weight: 700; }
+  td .zero { color: var(--text-3); }
+  td.sp svg { display: inline-block; vertical-align: middle; }
+  td.sp { width: 110px; }
+  .stt { font-size: 11.5px; font-weight: 600; }
+
+  .status { height: 26px; flex: none; display: flex; align-items: center; gap: 16px; padding: 0 16px; margin-top: 12px; border-top: 1px solid var(--line); background: #f3f2f0; font-size: 11.5px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .status b { display: flex; align-items: center; gap: 6px; color: var(--ok); font-weight: 700; }
+  .status b i { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+  .status .r { margin-left: auto; color: var(--text-3); }
+</style>
+</head>
+<body>
+<div class="mac">
+  <header class="tbar">
+    <span class="mac-lights"><i></i><i></i><i></i></span>
+    <h1>재고워치<small>1.9.2</small></h1>
+    <span class="tbtn on"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>수집 시작</span>
+    <span class="tbtn"><svg class="i" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>중지</span>
+    <span class="tbtn"><svg class="i" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>링크 등록</span>
+    <span class="tbtn"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>엑셀 저장</span>
+    <span class="sp"></span>
+    <span class="srch"><svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>상품명 검색</span>
+  </header>
+  <main class="mac-body">
+    <aside class="side">
+      <p class="cap">관심 상품</p>
+      <a class="on"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>전체 상품<em>100</em></a>
+      <a><span class="dot" style="background:#f2542d"></span>겨울 시즌<em>18</em></a>
+      <a><span class="dot" style="background:#2f6fe0"></span>충전·디지털<em>24</em></a>
+      <a><span class="dot" style="background:#e5a21a"></span>주방·생활<em>31</em></a>
+      <a><span class="dot" style="background:#3aa86b"></span>캠핑·아웃도어<em>12</em></a>
+      <a><span class="dot" style="background:#8e6bd8"></span>차량용품<em>15</em></a>
+      <p class="cap">스마트 목록</p>
+      <a><svg class="i" viewBox="0 0 24 24"><path d="M3 8l9-5 9 5v10l-9 5-9-5z"/><path d="M12 13v10M3 8l9 5 9-5"/></svg>재입고 감지<em class="b">1</em></a>
+      <a><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>품절 옵션<em>3</em></a>
+      <a><svg class="i" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>판매 급증<em>5</em></a>
+      <a><svg class="i" viewBox="0 0 24 24"><path d="M12 8v5l3 2"/><circle cx="12" cy="12" r="9"/></svg>소진 임박<em>4</em></a>
+      <p class="cap">오늘 알림</p>
+      <ul class="al">
+        <li><i style="background:#2f6fe0"></i><span><b>무선 충전기</b> 재입고 +432<small>09:03 · 입고량 따로 기록</small></span></li>
+        <li><i style="background:#f2542d"></i><span><b>손난로 민트</b> 재고 38개<small>하루 12개 · 3일 안에 품절 예상</small></span></li>
+        <li><i style="background:#b9b9be"></i><span><b>LED 스탠드</b> 3일째 판매 0<small>재고 97개 그대로</small></span></li>
+      </ul>
+      <div class="acct">
+        <b><i></i>Wing 계정 연결됨</b>
+        <p>28일 판매·조회수 분석 사용 중<br>예약 수집 매일 09:00 · 옵션별</p>
+      </div>
+    </aside>
+
+    <section class="main">
+      <div class="ph">
+        <span class="pic"><svg viewBox="0 0 48 48" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17 9c1.6-1.6 1.6-3.4 0-5M24 9c1.6-1.6 1.6-3.4 0-5M31 9c1.6-1.6 1.6-3.4 0-5" stroke="#f2542d" stroke-width="1.8" opacity=".7"/><rect x="11" y="12" width="26" height="32" rx="11" fill="#f26a43"/><rect x="11" y="12" width="26" height="32" rx="11" fill="url(#pg)"/><rect x="19" y="18" width="10" height="2.4" rx="1.2" fill="#fff" opacity=".9"/><circle cx="20" cy="25" r="1.1" fill="#fff"/><circle cx="24" cy="25" r="1.1" fill="#fff"/><circle cx="28" cy="25" r="1.1" fill="#fff" opacity=".45"/><rect x="21" y="40" width="6" height="2" rx="1" fill="#9c2f14"/><defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#7a1f08" stop-opacity=".25"/></linearGradient></defs></svg></span>
+        <div>
+          <h2>충전식 손난로 보조배터리 10000mAh</h2>
+          <p><span class="chip rk">로켓그로스</span><span class="chip op">옵션 4개 추적</span>판매가 <b>19,900원</b> · 그룹 <b>겨울 시즌</b> · 09:03 갱신</p>
+        </div>
+        <span class="sp"></span>
+        <div class="seg"><b class="on">14일</b><b>28일</b><b>90일</b></div>
+      </div>
+
+      <div class="top">
+        <div class="card chart">
+          <div class="ch"><h3>재고 흐름과 하루 판매량</h3>
+            <div class="lg"><span><i style="background:#f2542d"></i>재고 (매일 09:00)</span><span><i style="background:#f6a58c;height:8px;width:8px"></i>추정 판매량</span><span><i style="background:#2f6fe0"></i>입고 감지</span></div></div>
+          <svg id="chart"></svg>
+        </div>
+
+        <aside class="stats">
+          <div class="card st hero">
+            <p><span>어제 판매 추정</span><span>10/25 09시 → 10/26 09시</span></p>
+            <strong>132<small>개</small></strong>
+            <div class="row"><span>재고 1,679 → <b>1,547</b></span><span>추정 매출 <b>262.7만</b></span></div>
+          </div>
+          <div class="two">
+            <div class="card st"><p>7일 평균</p><strong>120<small>개</small></strong><em>입고일 제외</em></div>
+            <div class="card st"><p>재고 소진 예상</p><strong style="color:#c9401e">11월 8일</strong><em>13일 뒤 · 일요일</em></div>
+          </div>
+          <div class="card st">
+            <p><span>옵션별 어제 판매</span><span>남은 재고</span></p>
+            <div class="opt">
+              <div><span>코랄</span><i style="width:100%"></i><b>52</b></div>
+              <div><span>크림</span><i style="width:79%;opacity:.8"></i><b>41</b></div>
+              <div><span>차콜</span><i style="width:52%;opacity:.6"></i><b>27</b></div>
+              <div><span class="low">민트 · 38개</span><i style="width:23%;opacity:.45"></i><b class="low">12</b></div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="card tbl">
+        <div class="tbl-h"><h3>관심 상품</h3><span>전체 100개 중 판매량 순 · 오늘 09:00 수집 기준</span></div>
+        <table>
+          <thead><tr><th>상품</th><th>14일 재고</th><th>어제 재고</th><th>오늘 재고</th><th>하루 판매량</th><th>배송</th><th>상태</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+
+      <footer class="status"><b><i></i>완료</b><span>추적 상품 100개 갱신 09:05</span><span>재입고 1건 · 무선 충전기 +432</span><span>날짜별 이력 누적 · 엑셀 저장 가능</span><span class="r">다음 수집 내일 09:00</span></footer>
+    </section>
+  </main>
+</div>
+<script>
+  // 10/13 ~ 10/26 매일 09:00 재고. 10/21 입고(+1,414) — 그날 판매량은 계산하지 않는다.
+  const STOCK = [1420, 1342, 1257, 1165, 1077, 973, 863, 766, 2180, 2064, 1943, 1818, 1679, 1547];
+  const SALES = STOCK.map((v, i) => (i === 0 || v > STOCK[i - 1]) ? null : STOCK[i - 1] - v);
+
+  (function rows() {
+    const R = [
+      ['충전식 손난로 보조배터리', '코랄 외 3', '#f2542d', 'M8 6h8a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4v-8a4 4 0 0 1 4-4zM10 10h4', [1420, 1257, 1077, 863, 2180, 1943, 1679, 1547], 1679, 1547, '132', '로켓그로스', ['판매 급증', '#c9401e'], true],
+      ['보조배터리 20000mAh', '블랙', '#2f6fe0', 'M7 4h10v16H7zM10 2h4', [1720, 1640, 1560, 1480, 1400, 1320, 1240, 1173], 1240, 1173, '67', '로켓배송', ['정상', '#8e8e93']],
+      ['무선 충전기 15W', '화이트', '#3aa86b', 'M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16zM12 9v6', [240, 210, 180, 150, 120, 100, 88, 520], 88, 520, 're', '로켓배송', ['재입고 감지', '#2f6fe0']],
+      ['욕실 매트 규조토', '그레이', '#e5a21a', 'M4 8h16v8H4zM8 8v8M12 8v8M16 8v8', [810, 770, 720, 680, 620, 570, 530, 489], 530, 489, '41', '로켓그로스', ['정상', '#8e8e93']],
+      ['텀블러 500ml', '스테인리스', '#8e6bd8', 'M7 4h10l-1.5 16h-7zM7 8h10', [610, 580, 540, 500, 460, 420, 386, 352], 386, 352, '34', '로켓배송', ['정상', '#8e8e93']],
+    ];
+    document.getElementById('rows').innerHTML = R.map(([n, o, c, d, sp, y, t, s, ship, st, sel]) => {
+      const mx = Math.max(...sp), mn = Math.min(...sp);
+      const pts = sp.map((v, i) => `${i * 13},${18 - (v - mn) / (mx - mn || 1) * 16 + 1}`).join(' ');
+      const sold = s === 're' ? '<span class="re">+432 재입고</span>' : `<b>${s}개</b>`;
+      return `<tr class="${sel ? 'sel' : ''}"><td><span class="pn"><i style="background:${c}"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg></i>${n} <small>${o}</small></span></td>
+        <td class="sp"><svg width="92" height="20"><polyline points="${pts}" fill="none" stroke="${sel ? '#f2542d' : '#b9b9be'}" stroke-width="1.6" stroke-linejoin="round"/></svg></td>
+        <td>${y.toLocaleString()}</td><td>${t.toLocaleString()}</td><td class="sold">${sold}</td><td style="color:#55555a">${ship}</td><td><span class="stt" style="color:${st[1]}">${st[0]}</span></td></tr>`;
+    }).join('');
+  })();
+
+  (function chart() {
+    const el = document.getElementById('chart');
+    const rc = el.getBoundingClientRect(), W = Math.round(rc.width), H = Math.round(rc.height);
+    el.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    const L = 44, R = 48, T = 16, n = 14;
+    const split = Math.round(H * 0.64), B1 = split - 6, T2 = split + 18, B2 = H - 20;
+    const x = (i) => L + (W - L - R) * (i + 0.5) / n, cw = (W - L - R) / n;
+    const ys = (v) => T + (B1 - T) * (1 - v / 2400);
+    const yb = (v) => B2 - (B2 - T2) * v / 160;
+    let s = '';
+    [0, 600, 1200, 1800, 2400].forEach((v) => s += `<line x1="${L}" x2="${W - R}" y1="${ys(v)}" y2="${ys(v)}" stroke="${v ? '#f0f0f0' : '#e2e2e2'}"/><text x="${L - 8}" y="${ys(v) + 4}" text-anchor="end">${v.toLocaleString()}</text>`);
+    // 계단형 재고
+    let d = `M${L},${ys(STOCK[0])}`;
+    STOCK.forEach((v, i) => { const x0 = L + cw * i; d += `L${x0},${ys(v)}L${x0 + cw},${ys(v)}`; });
+    s += `<path d="${d}L${W - R},${ys(0)}L${L},${ys(0)}Z" fill="url(#ga)"/>`;
+    s += `<path d="${d}" fill="none" stroke="#f2542d" stroke-width="2.2" stroke-linejoin="round"/>`;
+    // 입고 표시
+    const ri = 8, rx = L + cw * ri;
+    s += `<line x1="${rx}" x2="${rx}" y1="${ys(766)}" y2="${ys(2180)}" stroke="#2f6fe0" stroke-width="2.4"/><path d="M${rx - 5},${ys(2180) + 8}L${rx},${ys(2180) + 1}L${rx + 5},${ys(2180) + 8}" fill="none" stroke="#2f6fe0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;
+    s += `<g transform="translate(${rx + 8},${ys(2180) - 26})"><rect width="96" height="22" rx="6" fill="#2f6fe0"/><text x="48" y="15" text-anchor="middle" style="fill:#fff;font-weight:700">10/21 입고 +1,414</text></g>`;
+    // 마지막 값
+    const lx = W - R, ly = ys(STOCK[13]);
+    s += `<circle cx="${lx}" cy="${ly}" r="4.5" fill="#fff" stroke="#f2542d" stroke-width="2.4"/><text x="${lx + 7}" y="${ly + 4}" style="fill:#c9401e;font-weight:800">1,547</text>`;
+    // 소진 예상 점선
+    s += `<text x="${L + 6}" y="${T + 12}" style="fill:#55555a;font-weight:600">재고 (개)</text>`;
+    // 판매량 막대
+    s += `<text x="${L + 6}" y="${T2 - 4}" style="fill:#55555a;font-weight:600">하루 판매량 (개)</text>`;
+    [0, 80, 160].forEach((v) => s += `<line x1="${L}" x2="${W - R}" y1="${yb(v)}" y2="${yb(v)}" stroke="${v ? '#f3f3f3' : '#e2e2e2'}"/><text x="${L - 8}" y="${yb(v) + 4}" text-anchor="end">${v}</text>`);
+    const bw = cw * 0.56;
+    SALES.forEach((v, i) => {
+      const bx = x(i) - bw / 2;
+      if (i === 0) return;
+      if (v === null) { s += `<rect x="${bx}" y="${yb(160)}" width="${bw}" height="${yb(0) - yb(160)}" rx="3" fill="url(#hatch)"/><text x="${x(i)}" y="${yb(80) + 4}" text-anchor="middle" style="fill:#2f6fe0;font-weight:700">입고</text>`; return; }
+      const last = i === 13;
+      s += `<rect x="${bx}" y="${yb(v)}" width="${bw}" height="${yb(0) - yb(v)}" rx="3" fill="${last ? '#f2542d' : '#f6a58c'}"/>`;
+      if (last || i === 12 || i === 7) s += `<text x="${x(i)}" y="${yb(v) - 5}" text-anchor="middle" style="fill:${last ? '#c9401e' : '#8e8e93'};font-weight:700">${v}</text>`;
+    });
+    // x 축 날짜
+    for (let i = 0; i < n; i++) { const dt = new Date(2026, 9, 13 + i); s += `<text x="${x(i)}" y="${H - 4}" text-anchor="middle" style="${i === 13 ? 'fill:#1d1d1f;font-weight:700' : ''}">${i === 13 ? '오늘' : `${dt.getMonth() + 1}/${dt.getDate()}`}</text>`; }
+    s += `<defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2542d" stop-opacity=".16"/><stop offset="1" stop-color="#f2542d" stop-opacity=".02"/></linearGradient>
+      <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#eef3fd"/><line x1="0" y1="0" x2="0" y2="6" stroke="#c4d6f7" stroke-width="2.5"/></pattern></defs>`;
+    el.innerHTML = s;
+  })();
+</script>
+</body>
+</html>

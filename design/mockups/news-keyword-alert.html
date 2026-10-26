@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>뉴스벨</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 뉴스벨: 켜 두고 잊어도 되는 뉴스 감시 앱. 흰 바탕에 하늘색 하나, 기사 카드가 주인공이고 휴대폰으로 알림이 도착한다. */
+  :root {
+    --bg: #ffffff; --soft: #f6f9fc; --line: #e8edf3; --line-2: #dbe3ec;
+    --text: #0f1b2a; --text-2: #4b5a6c; --text-3: #8392a5;
+    --sky: #0ea5e9; --sky-2: #0284c7; --sky-soft: #e6f6fe; --sky-mark: #cdeefd;
+    --k1: #0ea5e9; --k2: #8b5cf6; --k3: #10b981; --k4: #f59e0b;
+  }
+  body { font: 400 13px/1.45 'Pretendard Variable', 'Segoe UI', sans-serif; color: var(--text); background: var(--bg); letter-spacing: -0.01em; }
+  .win { --bar: #ffffff; --bar-fg: #334155; background: var(--bg); }
+  .win-bar { border-bottom: 1px solid var(--line); }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* 왼쪽 */
+  .side { width: 252px; flex: none; background: var(--soft); border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 16px 14px 14px; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 0 4px; }
+  .brand .ic { width: 32px; height: 32px; border-radius: 10px; background: var(--sky); display: grid; place-items: center; color: #fff; box-shadow: 0 6px 14px -6px rgb(14 165 233 / .7); }
+  .brand .ic svg { width: 18px; height: 18px; stroke-width: 2; }
+  .brand b { font-size: 16px; font-weight: 800; letter-spacing: -0.03em; }
+  .brand small { font-size: 11px; color: var(--text-3); margin-left: 2px; }
+  .live { margin-top: 16px; padding: 13px 14px; border-radius: 12px; background: #fff; border: 1px solid var(--line-2); }
+  .live .row { display: flex; align-items: center; gap: 10px; }
+  .pulse { position: relative; width: 10px; height: 10px; border-radius: 50%; background: var(--sky); box-shadow: 0 0 0 4px rgb(14 165 233 / .18), 0 0 0 9px rgb(14 165 233 / .07); }
+  .live b { font-size: 14px; font-weight: 700; }
+  .live .ring { margin-left: auto; position: relative; width: 36px; height: 36px; }
+  .live .ring svg { width: 36px; height: 36px; }
+  .live .ring span { position: absolute; inset: 0; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: var(--sky-2); font-variant-numeric: tabular-nums; }
+  .live p { font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
+  .live .btns { display: flex; gap: 6px; margin-top: 11px; }
+  .live .btns span { flex: 1; height: 30px; display: flex; align-items: center; justify-content: center; gap: 5px; border-radius: 8px; border: 1px solid var(--line-2); font-size: 12px; font-weight: 600; color: var(--text-2); }
+  .live .btns span svg { width: 13px; height: 13px; }
+
+  .sh { display: flex; align-items: center; justify-content: space-between; margin: 18px 4px 8px; font-size: 12px; font-weight: 700; color: var(--text-2); }
+  .sh a { display: flex; align-items: center; gap: 3px; color: var(--sky-2); font-weight: 600; }
+  .sh a svg { width: 13px; height: 13px; }
+  .kws li { display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 10px; border-radius: 10px; }
+  .kws li.on { background: #fff; box-shadow: 0 1px 0 var(--line-2), 0 0 0 1px var(--line); }
+  .kws li .d { width: 8px; height: 8px; border-radius: 3px; flex: none; }
+  .kws li b { flex: 1; font-weight: 600; font-size: 13px; }
+  .kws li em { font-style: normal; font-size: 11.5px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .kws li em strong { color: var(--text); font-weight: 700; }
+  .kws li.off b, .kws li.off em { color: #a7b3c2; }
+  .tg { width: 30px; height: 18px; border-radius: 9px; background: #cfd8e3; position: relative; flex: none; }
+  .tg::after { content: ""; position: absolute; left: 2px; top: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / .2); }
+  .tg.on { background: var(--sky); }
+  .tg.on::after { left: 14px; }
+
+  .kv { margin: 0 4px; }
+  .kv li { display: flex; justify-content: space-between; align-items: center; height: 30px; border-bottom: 1px dashed var(--line-2); font-size: 12px; }
+  .kv li:last-child { border-bottom: none; }
+  .kv li span { color: var(--text-3); }
+  .kv li b { font-weight: 600; color: var(--text-2); }
+  .opts { margin-top: auto; padding: 12px; border-radius: 12px; background: #fff; border: 1px solid var(--line); }
+  .opts .to { display: flex; align-items: center; gap: 9px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  .opts .to .av { width: 28px; height: 28px; border-radius: 50%; background: var(--sky-soft); color: var(--sky-2); display: grid; place-items: center; }
+  .opts .to .av svg { width: 15px; height: 15px; }
+  .opts .to b { display: block; font-size: 12.5px; font-weight: 700; }
+  .opts .to small { font-size: 11px; color: var(--text-3); }
+  .opts .to i { margin-left: auto; font-style: normal; font-size: 11px; font-weight: 700; color: #059669; background: #e7f8f1; padding: 3px 7px; border-radius: 6px; }
+  .ck { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 12px; color: var(--text-2); }
+  .ck i { width: 15px; height: 15px; border-radius: 4px; border: 1.5px solid #b9c5d3; flex: none; display: grid; place-items: center; }
+  .ck.on i { background: var(--sky); border-color: var(--sky); }
+  .ck.on i::after { content: ""; width: 7px; height: 4px; border-left: 1.8px solid #fff; border-bottom: 1.8px solid #fff; rotate: -45deg; translate: 0 -1px; }
+
+  /* 가운데 피드 */
+  .feed { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 18px 26px 0 26px; }
+  .fh { display: flex; align-items: flex-end; gap: 12px; }
+  .fh h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.03em; }
+  .fh p { font-size: 12.5px; color: var(--text-3); margin-top: 3px; }
+  .fh p b { color: var(--text-2); font-weight: 600; }
+  .fh .sp { flex: 1; }
+  .sel { height: 32px; display: flex; align-items: center; gap: 8px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line-2); font-size: 12px; color: var(--text-2); }
+  .sel i { width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; rotate: 45deg; translate: 0 -2px; }
+  .tabs { display: flex; gap: 4px; margin-top: 14px; border-bottom: 1px solid var(--line); }
+  .tabs span { height: 36px; display: flex; align-items: center; gap: 6px; padding: 0 12px; font-weight: 600; color: var(--text-3); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tabs span em { font-style: normal; font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 9px; background: #eef2f6; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .tabs span.on { color: var(--text); border-bottom-color: var(--sky); }
+  .tabs span.on em { background: var(--sky); color: #fff; }
+
+  .cards { display: flex; flex-direction: column; gap: 11px; padding-top: 14px; }
+  .card { position: relative; display: grid; grid-template-columns: 40px 1fr auto; gap: 0 14px; padding: 16px 16px; border-radius: 14px; border: 1px solid var(--line); background: #fff; }
+  .card.new { border-color: #a5dcf6; box-shadow: 0 8px 24px -14px rgb(14 165 233 / .55); }
+  .card.new::before { content: ""; position: absolute; left: -1px; top: 16px; bottom: 16px; width: 3px; border-radius: 0 3px 3px 0; background: var(--sky); }
+  .press { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; font-weight: 800; font-size: 15px; color: #fff; letter-spacing: -0.04em; }
+  .meta { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-3); }
+  .meta b { color: var(--text-2); font-weight: 700; }
+  .meta .ago { color: var(--sky-2); font-weight: 700; }
+  .meta .tag { font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 6px; }
+  .meta .nw { font-size: 11px; font-weight: 800; color: #fff; background: var(--sky); padding: 1px 6px; border-radius: 5px; letter-spacing: .02em; }
+  .card h3 { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card h3 mark { background: var(--sky-mark); color: #075985; padding: 0 3px; border-radius: 4px; }
+  .card .sn { font-size: 12.5px; color: var(--text-3); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card .sn mark { background: none; color: var(--sky-2); font-weight: 600; }
+  .sent { align-self: center; text-align: right; font-size: 11.5px; color: var(--text-3); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .sent b { display: flex; align-items: center; justify-content: flex-end; gap: 4px; color: var(--sky-2); font-weight: 700; font-size: 12px; }
+  .sent b svg { width: 14px; height: 14px; stroke-width: 2.4; }
+  .sent.skip b { color: var(--text-3); }
+  .dup { grid-column: 2 / 4; margin-top: 9px; display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-3); padding: 6px 10px; border-radius: 8px; background: var(--soft); }
+  .dup svg { width: 13px; height: 13px; }
+
+  /* 오른쪽 */
+  .right { width: 352px; flex: none; position: relative; background: linear-gradient(180deg, #f2fafe, #e6f4fc); border-left: 1px solid var(--line); padding: 18px 22px; }
+  .stat { padding: 16px; border-radius: 14px; background: #fff; border: 1px solid #d6ebf6; }
+  .stat h4 { font-size: 12px; font-weight: 700; color: var(--text-2); display: flex; justify-content: space-between; }
+  .stat h4 span { color: var(--text-3); font-weight: 500; }
+  .nums { display: grid; grid-template-columns: 1fr 1fr 1fr; margin-top: 10px; }
+  .nums div + div { border-left: 1px solid var(--line); padding-left: 12px; }
+  .nums p { font-size: 11px; color: var(--text-3); }
+  .nums strong { display: block; font-size: 24px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .nums strong small { font-size: 12px; font-weight: 600; color: var(--text-3); margin-left: 1px; }
+  .nums .sk strong { color: var(--sky-2); }
+  .hours { display: flex; align-items: flex-end; gap: 8px; height: 62px; margin-top: 14px; padding-top: 4px; }
+  .hours div { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .hours i { width: 100%; border-radius: 4px 4px 2px 2px; background: #cdeefd; }
+  .hours div.now i { background: var(--sky); }
+  .hours div.now { color: var(--sky-2); font-weight: 700; }
+  .hours b { font-size: 11px; color: var(--text-2); font-weight: 700; }
+
+  /* 휴대폰 */
+  .phone { --screen: #eef3f8; }
+  .ph-head { flex: none; display: flex; align-items: center; gap: 10px; padding: 6px 14px 10px; background: #fff; border-bottom: 1px solid #e2e8f0; }
+  .ph-head .bk { width: 9px; height: 9px; border-left: 2px solid #334155; border-bottom: 2px solid #334155; rotate: 45deg; margin: 0 2px 0 4px; }
+  .ph-head .av { width: 34px; height: 34px; border-radius: 50%; background: var(--sky); display: grid; place-items: center; color: #fff; }
+  .ph-head .av svg { width: 17px; height: 17px; stroke-width: 2; }
+  .ph-head b { display: block; font-size: 14px; font-weight: 700; }
+  .ph-head small { font-size: 11px; color: var(--text-3); }
+  .ph-head .mn { margin-left: auto; color: #64748b; }
+  .ph-head .mn svg { width: 18px; height: 18px; }
+  .chat { flex: 1; padding: 10px 12px; display: flex; flex-direction: column; gap: 10px; position: relative; }
+  .day { align-self: center; font-size: 11px; color: #64748b; background: rgb(255 255 255 / .8); padding: 3px 10px; border-radius: 10px; }
+  .msg { display: flex; align-items: flex-end; gap: 6px; }
+  .bub { width: 214px; background: #fff; border-radius: 4px 14px 14px 14px; padding: 10px 11px 9px; box-shadow: 0 1px 1px rgb(15 27 42 / .06); }
+  .bub .tg2 { display: inline-block; font-size: 11px; font-weight: 800; padding: 1px 6px; border-radius: 5px; }
+  .bub b { display: block; font-size: 13px; font-weight: 700; line-height: 1.35; margin-top: 5px; letter-spacing: -0.02em; }
+  .bub p { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+  .bub .lk { margin-top: 8px; padding-top: 7px; border-top: 1px solid #eef2f6; font-size: 11.5px; font-weight: 700; color: var(--sky-2); display: flex; justify-content: space-between; }
+  .msg time { font-size: 11px; color: #94a3b8; font-variant-numeric: tabular-nums; }
+
+  .banner { position: absolute; left: 8px; right: 8px; top: 48px; z-index: 3; padding: 11px 12px; border-radius: 18px; background: #fff; box-shadow: 0 16px 34px -10px rgb(15 27 42 / .4), 0 0 0 1px rgb(15 27 42 / .06); }
+  .banner .t { display: flex; align-items: center; gap: 7px; font-size: 11px; color: #64748b; }
+  .banner .t i { width: 20px; height: 20px; border-radius: 6px; background: var(--sky); display: grid; place-items: center; color: #fff; }
+  .banner .t i svg { width: 12px; height: 12px; stroke-width: 2.2; }
+  .banner .t b { color: #0f1b2a; font-weight: 700; }
+  .banner .t span { margin-left: auto; }
+  .banner strong { display: block; margin-top: 6px; font-size: 13.5px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.35; }
+  .banner p { font-size: 11.5px; color: var(--text-3); margin-top: 2px; }
+
+  .status { position: absolute; left: 252px; right: 352px; bottom: 0; height: 30px; display: flex; align-items: center; gap: 16px; padding: 0 26px; border-top: 1px solid var(--line); background: #fff; font-size: 11.5px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .status b { color: var(--sky-2); font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .status b i { width: 7px; height: 7px; border-radius: 50%; background: var(--sky); }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar">
+    <span class="win-icon"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="4" fill="#0ea5e9"/><path d="M5 10.5h6c-.6-.5-1-1.2-1-2.5V7a2 2 0 0 0-4 0v1c0 1.3-.4 2-1 2.5zM7.2 12.2a.9.9 0 0 0 1.6 0" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <span class="win-title">뉴스벨 2.2.1 — 실시간 키워드 감시</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <aside class="side">
+      <div class="brand"><span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></span><b>뉴스벨</b><small>2.2.1</small></div>
+      <div class="live">
+        <div class="row"><span class="pulse"></span><div><b>감시 중</b><p>1분마다 · 뉴스 검색 최신순</p></div>
+          <span class="ring"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#e6f6fe" stroke-width="3.5"/><circle cx="18" cy="18" r="15" fill="none" stroke="#0ea5e9" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="94.2" stroke-dashoffset="28" transform="rotate(-90 18 18)"/></svg><span>0:42</span></span></div>
+        <div class="btns"><span><svg class="i" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>중지</span><span><svg class="i" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>알림 테스트</span></div>
+      </div>
+
+      <div class="sh">감시 키워드 <a><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>추가</a></div>
+      <ul class="kws">
+        <li class="on"><i class="d" style="background:#0ea5e9"></i><b>2차전지</b><em>오늘 <strong>6</strong></em><i class="tg on"></i></li>
+        <li class="on"><i class="d" style="background:#8b5cf6"></i><b>반도체</b><em>오늘 <strong>9</strong></em><i class="tg on"></i></li>
+        <li class="on"><i class="d" style="background:#10b981"></i><b>로봇</b><em>오늘 <strong>3</strong></em><i class="tg on"></i></li>
+        <li class="on"><i class="d" style="background:#f59e0b"></i><b>경쟁사</b><em>오늘 <strong>2</strong></em><i class="tg on"></i></li>
+        <li class="off"><i class="d" style="background:#cbd5e1"></i><b>해운 운임</b><em>꺼짐</em><i class="tg"></i></li>
+      </ul>
+
+      <div class="sh">알림 설정</div>
+      <ul class="kv">
+        <li><span>확인 간격</span><b>1분마다</b></li>
+        <li><span>알림 내용</span><b>제목·언론사·시각·링크</b></li>
+        <li><span>검색 범위</span><b>뉴스 검색 · 최신순</b></li>
+      </ul>
+
+      <div class="opts">
+        <div class="to"><span class="av"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z"/></svg></span><div><b>뉴스벨 알림방</b><small>메신저 봇 · 내 휴대폰</small></div><i>연결됨</i></div>
+        <div class="ck on"><i></i>보낸 기사 다시 안 보냄</div>
+        <div class="ck on"><i></i>보도 시각 함께 표시</div>
+        <div class="ck"><i></i>제목에 키워드 있을 때만</div>
+      </div>
+    </aside>
+
+    <section class="feed">
+      <div class="fh">
+        <div><h1>실시간 기사</h1><p>오늘 확인 <b>27건</b> · 새 기사 <b>20건</b> 알림 · 중복 <b>7건</b> 건너뜀</p></div>
+        <span class="sp"></span>
+        <span class="sel">최신순<i></i></span>
+      </div>
+      <div class="tabs"><span class="on">전체 <em>20</em></span><span>2차전지 <em>6</em></span><span>반도체 <em>9</em></span><span>로봇 <em>3</em></span><span>경쟁사 <em>2</em></span></div>
+
+      <div class="cards">
+        <article class="card new">
+          <span class="press" style="background:#1e3a5f">바른</span>
+          <div><div class="meta"><span class="nw">NEW</span><b>바른일보</b>·<span class="ago">3분 전</span>· 보도 10:04<span class="tag" style="color:#b45309;background:#fef3c7">경쟁사</span></div>
+            <h3><mark>경쟁사</mark> 신제품 출시 발표회 개최… 하반기 라인업 공개</h3>
+            <p class="sn">다음 달 초 서울에서 발표회를 열고 주력 제품 3종을 공개한다고 밝혔다. <mark>경쟁사</mark> 측은 가격대를…</p></div>
+          <div class="sent"><b><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>알림 보냄</b>10:04:37</div>
+        </article>
+        <article class="card">
+          <span class="press" style="background:#5b3fc4">누리</span>
+          <div><div class="meta"><b>누리통신</b>·<span class="ago" style="color:var(--text-3);font-weight:500">19분 전</span>· 보도 09:48<span class="tag" style="color:#6d28d9;background:#ede9fe">반도체</span></div>
+            <h3><mark>반도체</mark> 장비 수출 3개월 연속 증가… 10월 들어 증가 폭 커져</h3>
+            <p class="sn">관세청 잠정 집계에 따르면 이달 1~20일 <mark>반도체</mark> 제조장비 수출액은 전년 같은 기간보다…</p></div>
+          <div class="sent"><b><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>알림 보냄</b>09:48:02</div>
+          <div class="dup"><svg class="i" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"/></svg>같은 내용의 다른 매체 기사 2건은 이미 보낸 소식이라 건너뜀</div>
+        </article>
+        <article class="card">
+          <span class="press" style="background:#047857">테크</span>
+          <div><div class="meta"><b>테크브리프</b>·<span class="ago" style="color:var(--text-3);font-weight:500">36분 전</span>· 보도 09:31<span class="tag" style="color:#047857;background:#d1fae5">로봇</span></div>
+            <h3>국내 <mark>로봇</mark> 스타트업, 시리즈B 투자 유치</h3>
+            <p class="sn">물류센터용 자율주행 <mark>로봇</mark>을 만드는 이 회사는 이번 투자로 생산 설비를 늘린다.</p></div>
+          <div class="sent"><b><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>알림 보냄</b>09:31:20</div>
+        </article>
+        <article class="card">
+          <span class="press" style="background:#5b3fc4">누리</span>
+          <div><div class="meta"><b>누리통신</b>·<span class="ago" style="color:var(--text-3);font-weight:500">52분 전</span>· 보도 09:15<span class="tag" style="color:#6d28d9;background:#ede9fe">반도체</span></div>
+            <h3>정부, <mark>반도체</mark> 장비 세액공제 확대 검토</h3>
+            <p class="sn">설비 투자 세액공제율을 높이는 방안이 다음 주 관계부처 회의 안건으로 오를 예정이다.</p></div>
+          <div class="sent"><b><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>알림 보냄</b>09:15:44</div>
+        </article>
+        <article class="card">
+          <span class="press" style="background:#0369a1">한결</span>
+          <div><div class="meta"><b>한결경제</b>·<span class="ago" style="color:var(--text-3);font-weight:500">1시간 전</span>· 보도 09:02<span class="tag" style="color:#0369a1;background:#e0f2fe">2차전지</span></div>
+            <h3>중견 소재사, 북미 배터리 공급 계약… <mark>2차전지</mark> 소재 수주 확대</h3>
+            <p class="sn">계약 기간은 5년으로, 현지 공장 가동에 맞춰 양극재 소재를 공급한다.</p></div>
+          <div class="sent"><b><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>알림 보냄</b>09:02:31</div>
+        </article>
+      </div>
+    </section>
+
+    <aside class="right">
+      <div class="stat">
+        <h4>오늘의 감시<span>06:00 이후</span></h4>
+        <div class="nums">
+          <div><p>확인한 기사</p><strong>27<small>건</small></strong></div>
+          <div class="sk"><p>알림 보냄</p><strong>20<small>건</small></strong></div>
+          <div><p>중복 건너뜀</p><strong>7<small>건</small></strong></div>
+        </div>
+        <div class="hours">
+          <div><b>0</b><i style="height:3px"></i>6시</div>
+          <div><b>2</b><i style="height:8px"></i>7시</div>
+          <div><b>5</b><i style="height:20px"></i>8시</div>
+          <div><b>9</b><i style="height:36px"></i>9시</div>
+          <div class="now"><b>4</b><i style="height:16px"></i>10시</div>
+        </div>
+      </div>
+    </aside>
+
+    <footer class="status"><b><i></i>실행 중</b><span>키워드 4개</span><span>오늘 알림 20건</span><span>마지막 확인 10:07:18</span><span style="margin-left:auto">다음 확인까지 0:42</span></footer>
+
+    <div class="phone" style="right:30px; bottom:-104px">
+      <div class="ph-screen">
+        <div class="ph-status"><span>10:07</span><i class="ph-island"></i><span class="ph-icons"></span></div>
+        <div class="ph-head"><i class="bk"></i><span class="av"><svg class="i" viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></span><div><b>뉴스벨 알림</b><small>봇 · 키워드 4개 감시 중</small></div><span class="mn"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></span></div>
+        <div class="banner">
+          <div class="t"><i><svg class="i" viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/></svg></i><b>뉴스벨 알림</b><span>지금</span></div>
+          <strong>[경쟁사] 경쟁사 신제품 출시 발표회 개최… 하반기 라인업 공개</strong>
+          <p>바른일보 · 보도 10:04</p>
+        </div>
+        <div class="chat">
+          <span class="day">10월 26일 월요일</span>
+          <div class="msg"><div class="bub"><span class="tg2" style="color:#6d28d9;background:#ede9fe">반도체</span><b>정부, 반도체 장비 세액공제 확대 검토</b><p>누리통신 · 보도 09:15</p><div class="lk">기사 열기<span>›</span></div></div><time>09:15</time></div>
+          <div class="msg"><div class="bub"><span class="tg2" style="color:#047857;background:#d1fae5">로봇</span><b>국내 로봇 스타트업, 시리즈B 투자 유치</b><p>테크브리프 · 보도 09:31</p><div class="lk">기사 열기<span>›</span></div></div><time>09:31</time></div>
+          <div class="msg"><div class="bub"><span class="tg2" style="color:#6d28d9;background:#ede9fe">반도체</span><b>반도체 장비 수출 3개월 연속 증가</b><p>누리통신 · 보도 09:48</p><div class="lk">기사 열기<span>›</span></div></div><time>09:48</time></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

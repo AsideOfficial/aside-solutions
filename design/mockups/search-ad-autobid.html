@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>애드키퍼</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 애드키퍼: 서버에서 도는 검색광고 자동입찰 웹 콘솔. 밝은 업무용 테마, 그린 강조, 숫자는 Inter. */
+  :root {
+    --g: #16A34A; --g-2: #15803D; --g-soft: #E8F6EE; --g-line: #BFE5CD;
+    --bg: #F4F6F5; --card: #fff; --line: #E3E8E5; --line-2: #EEF1EF;
+    --t1: #0F1A14; --t2: #4B5A52; --t3: #84918A;
+    --red: #DC2626; --red-soft: #FDECEC; --amb: #C2410C; --amb-soft: #FFF1E6; --blue: #2563EB; --blue-soft: #EAF1FF;
+  }
+  body { font: 400 13px/1.4 'Pretendard Variable', sans-serif; color: var(--t1); letter-spacing: -0.01em; }
+  .num { font-family: 'Inter', 'Pretendard Variable', sans-serif; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  .browser { --bar: #E4E8E6; --tool: #fff; --fav: var(--g); --page: var(--bg); }
+  .br-fav { display: grid; place-items: center; }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  .br-body { flex-direction: column; }
+  .appbar { height: 52px; flex: none; display: flex; align-items: center; gap: 28px; padding: 0 20px; background: #fff; border-bottom: 1px solid var(--line); }
+  .logo { display: flex; align-items: center; gap: 9px; }
+  .logo i { width: 28px; height: 28px; border-radius: 8px; background: var(--g); display: grid; place-items: center; }
+  .logo i svg { width: 17px; height: 17px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .logo b { font-size: 15px; font-weight: 800; letter-spacing: -0.03em; }
+  .logo small { font: 600 11px 'Inter'; color: var(--t3); margin-left: 2px; }
+  .nav { display: flex; gap: 4px; align-self: stretch; }
+  .nav a { display: flex; align-items: center; padding: 0 12px; font-weight: 600; color: var(--t2); font-size: 13px; position: relative; }
+  .nav a.on { color: var(--t1); }
+  .nav a.on::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 2px; border-radius: 2px; background: var(--g); }
+  .nav a em { font-style: normal; font: 700 10.5px 'Inter'; color: var(--g-2); background: var(--g-soft); padding: 1px 6px; border-radius: 9px; margin-left: 6px; }
+  .appbar .sp { flex: 1; }
+  .server { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 15px; background: var(--g-soft); color: var(--g-2); font-weight: 700; font-size: 12px; }
+  .server i { width: 7px; height: 7px; border-radius: 50%; background: var(--g); box-shadow: 0 0 0 3px rgb(22 163 74 / .2); }
+  .server span { color: var(--t2); font-weight: 500; }
+  .acct { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--t2); }
+  .acct i { width: 28px; height: 28px; border-radius: 50%; background: #DDE7E1; display: grid; place-items: center; color: var(--g-2); font-weight: 800; font-size: 12px; }
+  .acct b { display: block; color: var(--t1); font-size: 12.5px; font-weight: 700; }
+
+  .page { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 14px; }
+  .head { height: 44px; flex: none; display: flex; align-items: center; gap: 22px; }
+  .head h1 { font-size: 19px; font-weight: 800; letter-spacing: -0.03em; }
+  .head h1 small { display: block; font-size: 11.5px; font-weight: 500; color: var(--t3); letter-spacing: -0.01em; margin-top: 1px; }
+  .stats { display: flex; align-items: center; height: 40px; border-left: 1px solid var(--line); padding-left: 22px; gap: 26px; }
+  .stats div p { font-size: 11.5px; color: var(--t3); }
+  .stats div b { font: 700 17px/1.2 'Inter'; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .stats div b small { font: 600 12px 'Pretendard Variable'; color: var(--t2); margin-left: 2px; }
+  .stats div b em { font: 600 11px 'Inter'; font-style: normal; color: var(--g-2); margin-left: 5px; }
+  .stats .warn b { color: var(--red); }
+  .head .sp { flex: 1; }
+  .btn { height: 32px; display: flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line); background: #fff; font-weight: 600; font-size: 12.5px; color: var(--t2); }
+  .btn.ic { width: 32px; padding: 0; justify-content: center; }
+  .btn.pri { background: var(--g); border-color: var(--g); color: #fff; }
+  .btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+  .focus { height: 204px; flex: none; display: flex; }
+  .kw { width: 236px; flex: none; padding: 14px 18px 13px; border-right: 1px solid var(--line-2); display: flex; flex-direction: column; }
+  .lbl { font-size: 11.5px; color: var(--t3); font-weight: 600; }
+  .kw h2 { margin-top: 3px; font-size: 18px; font-weight: 800; letter-spacing: -0.03em; }
+  .chips { display: flex; gap: 5px; margin-top: 5px; }
+  .chip { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 5px; background: #F0F3F1; color: var(--t2); }
+  .chip.g { background: var(--g-soft); color: var(--g-2); }
+  .kv { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 7px 12px; }
+  .kv p { font-size: 11px; color: var(--t3); }
+  .kv b { display: block; margin-top: 1px; font: 700 17px/1.2 'Inter'; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .kv b small { font: 600 11.5px 'Pretendard Variable'; color: var(--t2); margin-left: 1px; }
+  .kv .ok { color: var(--g); }
+  .capbar { margin-top: auto; }
+  .capbar .bar { height: 6px; border-radius: 3px; background: #EDF1EE; overflow: hidden; }
+  .capbar .bar i { display: block; height: 100%; width: 87.5%; border-radius: 3px; background: linear-gradient(90deg, #4ADE80, var(--g)); }
+  .capbar p { display: flex; justify-content: space-between; margin-top: 5px; font-size: 11px; color: var(--t3); }
+  .capbar p b { color: var(--t2); font-weight: 600; }
+
+  .plot { flex: 1; min-width: 0; padding: 13px 16px 8px; display: flex; flex-direction: column; }
+  .plot-top { display: flex; align-items: center; gap: 14px; }
+  .plot-top h3 { font-size: 13px; font-weight: 700; }
+  .lg { display: flex; gap: 12px; font-size: 11px; color: var(--t3); }
+  .lg span { display: flex; align-items: center; gap: 5px; }
+  .lg i { width: 14px; height: 0; border-top: 2px solid var(--g); }
+  .lg i.rk { border-top: 2px dashed #7C8A83; }
+  .lg i.cap { border-top: 1.5px dashed var(--red); }
+  .rule { margin-left: auto; display: flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px 0 8px; border-radius: 7px; background: var(--g-soft); border: 1px solid var(--g-line); color: var(--g-2); font-size: 11.5px; font-weight: 700; }
+  .rule svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .rule span { color: var(--t2); font-weight: 500; }
+  .plot svg.ch { margin-top: 6px; }
+  .ch text { font: 500 10.5px 'Inter', 'Pretendard Variable'; fill: #8D9893; font-variant-numeric: tabular-nums; }
+
+  .recent { width: 252px; flex: none; padding: 14px 16px 10px; border-left: 1px solid var(--line-2); display: flex; flex-direction: column; }
+  .recent .lbl { display: flex; justify-content: space-between; }
+  .recent .lbl a { color: var(--g-2); }
+  .recent ul { margin-top: 8px; display: flex; flex-direction: column; }
+  .recent li { display: grid; grid-template-columns: 40px 34px 1fr auto; align-items: center; gap: 6px; height: 27px; border-bottom: 1px dashed var(--line-2); font-size: 12px; }
+  .recent li:last-child { border-bottom: 0; }
+  .recent time { font: 500 11.5px 'Inter'; color: var(--t3); font-variant-numeric: tabular-nums; }
+  .rk { display: inline-grid; place-items: center; height: 19px; border-radius: 5px; font-size: 11px; font-weight: 700; background: #F0F3F1; color: var(--t2); }
+  .rk.ok { background: var(--g-soft); color: var(--g-2); }
+  .rk.lo { background: var(--amb-soft); color: var(--amb); }
+  .rk.hi { background: var(--blue-soft); color: var(--blue); }
+  .recent .bid { font: 600 12px 'Inter'; color: var(--t1); font-variant-numeric: tabular-nums; }
+  .d { font: 700 11px 'Inter'; padding: 2px 6px; border-radius: 5px; font-variant-numeric: tabular-nums; }
+  .d.up { background: var(--amb-soft); color: var(--amb); }
+  .d.dn { background: var(--blue-soft); color: var(--blue); }
+  .d.hold { background: #F0F3F1; color: var(--t3); font-family: 'Pretendard Variable'; }
+
+  .tbl { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+  .tbl-top { height: 46px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 14px; border-bottom: 1px solid var(--line); }
+  .seg { display: flex; gap: 2px; padding: 3px; border-radius: 8px; background: #F1F4F2; }
+  .seg b { height: 27px; display: flex; align-items: center; gap: 5px; padding: 0 11px; border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--t2); }
+  .seg b span { font: 600 11.5px 'Inter'; color: var(--t3); }
+  .seg b.on { background: #fff; color: var(--t1); box-shadow: 0 1px 2px rgb(0 0 0 / .08); }
+  .seg b.on span { color: var(--g-2); }
+  .seg b.r span { color: var(--red); }
+  .flt { height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 12px; color: var(--t2); }
+  .flt b { color: var(--t1); font-weight: 600; }
+  .flt svg { width: 12px; height: 12px; fill: none; stroke: var(--t3); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .srch { margin-left: auto; width: 210px; height: 30px; display: flex; align-items: center; gap: 7px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; color: var(--t3); font-size: 12px; }
+  .srch svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th { height: 31px; text-align: left; padding: 0 12px; font-size: 11.5px; font-weight: 600; color: var(--t3); background: #FAFBFA; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td { height: 36px; padding: 0 12px; border-bottom: 1px solid var(--line-2); white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  th.r, td.r { text-align: right; }
+  tr.sel td { background: #F3FBF6; }
+  tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--g); }
+  .sw { width: 28px; height: 16px; border-radius: 8px; background: var(--g); position: relative; display: block; }
+  .sw::after { content: ""; position: absolute; right: 2px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; }
+  .kwc b { font-weight: 700; font-size: 13px; }
+  .med { font-size: 12px; color: var(--t2); }
+  .med i { display: inline-block; width: 6px; height: 6px; border-radius: 2px; margin-right: 6px; vertical-align: 1px; background: var(--g); }
+  .med i.shop { background: #0EA5E9; }
+  .med small { color: var(--t3); font-size: 11.5px; }
+  .tgt { font: 700 12px 'Inter', 'Pretendard Variable'; color: var(--t2); }
+  .lad { display: flex; align-items: center; gap: 10px; }
+  .lad span.cells { display: flex; gap: 3px; }
+  .lad span.cells i { width: 12px; height: 12px; border-radius: 3px; background: #EEF2EF; position: relative; }
+  .lad span.cells i.t { box-shadow: inset 0 0 0 1.5px var(--g); background: #fff; }
+  .lad span.cells i.c { background: var(--g); box-shadow: none; }
+  .lad span.cells i.c.hi { background: var(--blue); }
+  .lad span.cells i.c.lo { background: #F59E0B; }
+  .lad b { font: 700 13px 'Inter', 'Pretendard Variable'; min-width: 26px; }
+  .lad em { font: 700 10.5px 'Inter'; font-style: normal; }
+  .lad em.u { color: var(--g); } .lad em.dn { color: var(--amb); }
+  .bidc { font: 700 13.5px 'Inter'; font-variant-numeric: tabular-nums; }
+  .bidc small { font: 500 11.5px 'Pretendard Variable'; color: var(--t3); margin-left: 2px; }
+  .capc { display: flex; align-items: center; gap: 10px; }
+  .capc .bar { width: 84px; height: 5px; border-radius: 3px; background: #EDF1EE; overflow: hidden; }
+  .capc .bar i { display: block; height: 100%; background: #86D9A6; border-radius: 3px; }
+  .capc .bar i.full { background: var(--red); }
+  .capc span { font: 600 12.5px 'Inter'; color: var(--t2); font-variant-numeric: tabular-nums; }
+  .capc span.full { color: var(--red); }
+  .last { display: flex; align-items: center; gap: 7px; }
+  .last time { font: 500 12px 'Inter'; color: var(--t3); font-variant-numeric: tabular-nums; }
+  .st { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; }
+  .st i { width: 7px; height: 7px; border-radius: 50%; }
+  .st.ok { color: var(--g-2); } .st.ok i { background: var(--g); }
+  .st.dn { color: var(--blue); } .st.dn i { background: var(--blue); }
+  .st.cap { color: var(--red); } .st.cap i { background: var(--red); }
+  .st.up { color: var(--amb); } .st.up i { background: #F59E0B; }
+</style>
+</head>
+<body>
+<div class="browser">
+  <header class="br-tabs"><span class="mac-lights"><i></i><i></i><i></i></span>
+    <span class="br-tab"><i class="br-fav"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m4 16 6-6 4 4 6-7"/></svg></i>애드키퍼 3.0.2 · 자동입찰</span>
+    <span class="br-tab off">변경 기록 · 애드키퍼</span>
+  </header>
+  <div class="br-tool"><span class="br-nav"><i></i><i></i><i></i></span><span class="br-url"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7079" stroke-width="2.2" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>solutions.asidepartners.kr</b>/adkeeper/bids</span></div>
+  <main class="br-body">
+    <div class="appbar">
+      <div class="logo"><i><svg viewBox="0 0 24 24"><path d="m4 16 6-6 4 4 6-7"/><path d="M15 7h5v5"/></svg></i><b>애드키퍼</b><small>3.0.2</small></div>
+      <nav class="nav"><a class="on">자동입찰</a><a>변경 기록<em>214</em></a><a>키워드 그룹</a><a>리포트</a><a>설정</a></nav>
+      <span class="sp"></span>
+      <span class="server"><i></i>서버 구동 중 <span class="num">· 다음 확인 09:50</span></span>
+      <div class="acct"><i><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-5 7 5v13"/><path d="M10 21v-6h4v6"/></svg></i><div><b>○○인테리어</b>광고 계정 1 · API 연결됨</div></div>
+    </div>
+
+    <div class="page">
+      <div class="head">
+        <h1>자동입찰 현황<small>10월 26일 (월) 09:46 기준 · 10분마다 확인</small></h1>
+        <div class="stats">
+          <div><p>관리 키워드</p><b>86<small>개</small></b></div>
+          <div><p>목표 순위 유지</p><b>79<small>개</small><em>91.9%</em></b></div>
+          <div><p>오늘 입찰 조정</p><b>214<small>회</small></b></div>
+          <div class="warn"><p>상한가 도달</p><b>3<small>개</small></b></div>
+        </div>
+        <span class="sp"></span>
+        <span class="btn ic"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></span>
+        <span class="btn"><svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>일시정지</span>
+        <span class="btn pri"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>키워드 추가</span>
+      </div>
+
+      <section class="card focus">
+        <div class="kw">
+          <p class="lbl">선택 키워드</p>
+          <h2>인테리어 견적</h2>
+          <div class="chips"><span class="chip g">파워링크</span><span class="chip">핵심 그룹</span><span class="chip">PC·모바일</span></div>
+          <div class="kv">
+            <div><p>목표 순위</p><b>2<small>위</small></b></div>
+            <div><p>현재 순위</p><b class="ok">2<small>위</small></b></div>
+            <div><p>현재 입찰가</p><b>2,100<small>원</small></b></div>
+            <div><p>입찰 상한가</p><b>2,400<small>원</small></b></div>
+          </div>
+          <div class="capbar"><div class="bar"><i></i></div><p><span>상한가 대비</span><b class="num">87.5% · 여유 300원</b></p></div>
+        </div>
+
+        <div class="plot">
+          <div class="plot-top">
+            <h3>최근 24시간</h3>
+            <div class="lg"><span><i></i>입찰가</span><span><i class="rk"></i>노출 순위</span><span><i class="cap"></i>상한가</span></div>
+            <span class="rule"><svg viewBox="0 0 24 24"><path d="M12 3 19 6v5c0 4.4-3 8.1-7 10-4-1.9-7-5.6-7-10V6z"/><path d="m9 12 2 2 4-4"/></svg>상한가 안에서만 조정<span>· 1회 ±50원</span></span>
+          </div>
+          <svg class="ch" width="692" height="152" viewBox="0 0 692 152">
+            <defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16A34A" stop-opacity=".16"/><stop offset="1" stop-color="#16A34A" stop-opacity="0"/></linearGradient></defs>
+            <rect x="414.3" y="12" width="155" height="122" fill="#F3F5F8"/>
+            <text x="491.8" y="128" text-anchor="middle" style="font-size:10px;fill:#A3ADA8">야간 · 경쟁 적음</text>
+            <g stroke="#EDF1EE"><line x1="44" y1="57.8" x2="664" y2="57.8"/><line x1="44" y1="88.3" x2="664" y2="88.3"/><line x1="44" y1="118.8" x2="664" y2="118.8"/><line x1="44" y1="134" x2="664" y2="134" stroke="#DCE2DE"/></g>
+            <text x="38" y="31" text-anchor="end">2,400</text><text x="38" y="61" text-anchor="end">2,200</text><text x="38" y="92" text-anchor="end">2,000</text><text x="38" y="122" text-anchor="end">1,800</text>
+            <text x="670" y="19">1위</text><text x="670" y="47">2위</text><text x="670" y="75">3위</text><text x="670" y="103">4위</text>
+            <line x1="44" y1="27.3" x2="664" y2="27.3" stroke="#DC2626" stroke-width="1.3" stroke-dasharray="5 4"/>
+            <rect x="48" y="16" width="86" height="16" rx="4" fill="#FDECEC"/><text x="91" y="27.5" text-anchor="middle" style="fill:#DC2626;font-weight:700">상한가 2,400원</text>
+            <path d="M44,73H108.6V65.4H250.7V73H255V80.6H358.3V88.3H362.6V95.9H435.8V103.5H500.4V111.1H577.9V103.5H582.2V95.9H603.7V88.3H625.3V80.6H629.6V73H664V134H44Z" fill="url(#ga)"/>
+            <path d="M44,44H104.3V72H112.9V44H246.4V16H259.3V44H354V16H366.9V44H431.5V16H440.1V44H496.1V16H504.7V44H573.6V72H586.5V44H599.4V72H608V44H625.3V100H629.6V72H633.9V44H664" fill="none" stroke="#7C8A83" stroke-width="1.4" stroke-dasharray="3 3" stroke-linejoin="round"/>
+            <path d="M44,73H108.6V65.4H250.7V73H255V80.6H358.3V88.3H362.6V95.9H435.8V103.5H500.4V111.1H577.9V103.5H582.2V95.9H603.7V88.3H625.3V80.6H629.6V73H664" fill="none" stroke="#16A34A" stroke-width="2.2" stroke-linejoin="round"/>
+            <g fill="#fff" stroke="#16A34A" stroke-width="1.6"><circle cx="108.6" cy="65.4" r="2.6"/><circle cx="255" cy="80.6" r="2.6"/><circle cx="362.6" cy="95.9" r="2.6"/><circle cx="435.8" cy="103.5" r="2.6"/><circle cx="500.4" cy="111.1" r="2.6"/><circle cx="582.2" cy="95.9" r="2.6"/><circle cx="603.7" cy="88.3" r="2.6"/><circle cx="625.3" cy="80.6" r="2.6"/></g>
+            <circle cx="629.6" cy="73" r="4" fill="#16A34A" stroke="#fff" stroke-width="2"/>
+            <circle cx="625.3" cy="100" r="3.2" fill="#C2410C" stroke="#fff" stroke-width="1.5"/>
+            <g transform="translate(588 106)"><rect width="62" height="18" rx="4" fill="#FFF1E6"/><text x="31" y="12.5" text-anchor="middle" style="fill:#C2410C;font-weight:700">09:10 4위</text></g>
+            <g transform="translate(634 77)"><rect x="-1" width="27" height="15" rx="3" fill="#16A34A"/><text x="12.5" y="11" text-anchor="middle" style="fill:#fff;font-weight:700;font-size:9.5px">지금</text></g>
+            <g text-anchor="middle"><text x="104.3" y="148">12시</text><text x="181.8" y="148">15시</text><text x="259.3" y="148">18시</text><text x="336.8" y="148">21시</text><text x="414.3" y="148">0시</text><text x="491.8" y="148">3시</text><text x="569.3" y="148">6시</text><text x="646.8" y="148">9시</text></g>
+          </svg>
+        </div>
+
+        <div class="recent">
+          <p class="lbl">이 키워드 최근 확인 <a>전체 기록</a></p>
+          <ul>
+            <li><time>09:40</time><span class="rk ok">2위</span><span class="bid">2,100</span><span class="d hold">유지</span></li>
+            <li><time>09:30</time><span class="rk ok">2위</span><span class="bid">2,100</span><span class="d hold">유지</span></li>
+            <li><time>09:20</time><span class="rk lo">3위</span><span class="bid">2,100</span><span class="d up">+50</span></li>
+            <li><time>09:10</time><span class="rk lo">4위</span><span class="bid">2,050</span><span class="d up">+50</span></li>
+            <li><time>08:10</time><span class="rk lo">3위</span><span class="bid">2,000</span><span class="d up">+50</span></li>
+            <li><time>03:10</time><span class="rk hi">1위</span><span class="bid">1,850</span><span class="d dn">−50</span></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="card tbl">
+        <div class="tbl-top">
+          <div class="seg"><b class="on">전체<span>86</span></b><b>목표 유지<span>79</span></b><b>순위 밀림<span>4</span></b><b class="r">상한가 도달<span>3</span></b></div>
+          <span class="flt">매체 <b>전체</b><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></span>
+          <span class="flt">그룹 <b>전체</b><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></span>
+          <span class="srch"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>키워드 검색</span>
+        </div>
+        <table>
+          <thead><tr><th style="width:52px">자동</th><th>키워드</th><th>매체 · 그룹</th><th>목표 순위</th><th>현재 순위</th><th class="r">현재 입찰가</th><th>입찰 상한가</th><th>마지막 조정</th><th>상태</th></tr></thead>
+          <tbody>
+            <tr class="sel">
+              <td><i class="sw"></i></td><td class="kwc"><b>인테리어 견적</b></td>
+              <td class="med"><i></i>파워링크 <small>· 핵심</small></td><td class="tgt">2위</td>
+              <td><div class="lad"><span class="cells"><i></i><i class="t c"></i><i></i><i></i><i></i><i></i></span><b>2위</b><em class="u">▲1</em></div></td>
+              <td class="r bidc">2,100<small>원</small></td>
+              <td><div class="capc"><span class="bar"><i style="width:87.5%"></i></span><span>2,400</span></div></td>
+              <td><div class="last"><span class="d up">+50</span><time>09:20</time></div></td>
+              <td><span class="st ok"><i></i>목표 유지</span></td>
+            </tr>
+            <tr>
+              <td><i class="sw"></i></td><td class="kwc"><b>욕실 리모델링</b></td>
+              <td class="med"><i></i>파워링크 <small>· 핵심</small></td><td class="tgt">2위</td>
+              <td><div class="lad"><span class="cells"><i class="c hi"></i><i class="t"></i><i></i><i></i><i></i><i></i></span><b>1위</b></div></td>
+              <td class="r bidc">1,750<small>원</small></td>
+              <td><div class="capc"><span class="bar"><i style="width:79.5%"></i></span><span>2,200</span></div></td>
+              <td><div class="last"><span class="d dn">−50</span><time>09:40</time></div></td>
+              <td><span class="st dn"><i></i>여유 · 낮추는 중</span></td>
+            </tr>
+            <tr>
+              <td><i class="sw"></i></td><td class="kwc"><b>주방 인테리어</b></td>
+              <td class="med"><i></i>파워링크 <small>· 핵심</small></td><td class="tgt">2위</td>
+              <td><div class="lad"><span class="cells"><i></i><i class="t"></i><i class="c lo"></i><i></i><i></i><i></i></span><b>3위</b></div></td>
+              <td class="r bidc">2,600<small>원</small></td>
+              <td><div class="capc"><span class="bar"><i class="full" style="width:100%"></i></span><span class="full">2,600</span></div></td>
+              <td><div class="last"><span class="d up">+50</span><time>08:50</time></div></td>
+              <td><span class="st cap"><i></i>상한가 도달 · 유지</span></td>
+            </tr>
+            <tr>
+              <td><i class="sw"></i></td><td class="kwc"><b>아파트 인테리어</b></td>
+              <td class="med"><i></i>파워링크 <small>· 핵심</small></td><td class="tgt">2위</td>
+              <td><div class="lad"><span class="cells"><i></i><i class="t c"></i><i></i><i></i><i></i><i></i></span><b>2위</b></div></td>
+              <td class="r bidc">3,050<small>원</small></td>
+              <td><div class="capc"><span class="bar"><i style="width:87.1%"></i></span><span>3,500</span></div></td>
+              <td><div class="last"><span class="d dn">−50</span><time>07:10</time></div></td>
+              <td><span class="st ok"><i></i>목표 유지</span></td>
+            </tr>
+            <tr>
+              <td><i class="sw"></i></td><td class="kwc"><b>30평 인테리어 비용</b></td>
+              <td class="med"><i></i>파워링크 <small>· 보조</small></td><td class="tgt">5위</td>
+              <td><div class="lad"><span class="cells"><i></i><i></i><i></i><i></i><i class="t c"></i><i></i></span><b>5위</b></div></td>
+              <td class="r bidc">880<small>원</small></td>
+              <td><div class="capc"><span class="bar"><i style="width:73.3%"></i></span><span>1,200</span></div></td>
+              <td><div class="last"><span class="d up">+50</span><time>09:00</time></div></td>
+              <td><span class="st ok"><i></i>목표 유지</span></td>
+            </tr>
+            <tr>
+              <td><i class="sw"></i></td><td class="kwc"><b>도배 장판 시공</b></td>
+              <td class="med"><i></i>파워링크 <small>· 보조</small></td><td class="tgt">5위</td>
+              <td><div class="lad"><span class="cells"><i></i><i></i><i></i><i></i><i class="t"></i><i class="c lo"></i></span><b>6위</b><em class="dn">▼1</em></div></td>
+              <td class="r bidc">640<small>원</small></td>
+              <td><div class="capc"><span class="bar"><i style="width:71.1%"></i></span><span>900</span></div></td>
+              <td><div class="last"><span class="d up">+50</span><time>09:40</time></div></td>
+              <td><span class="st up"><i></i>밀림 · 올리는 중</span></td>
+            </tr>
+            <tr>
+              <td><i class="sw"></i></td><td class="kwc"><b>붙박이장 제작</b></td>
+              <td class="med"><i class="shop"></i>쇼핑검색 <small>· 가구</small></td><td class="tgt">3위</td>
+              <td><div class="lad"><span class="cells"><i></i><i></i><i class="t c"></i><i></i><i></i><i></i></span><b>3위</b></div></td>
+              <td class="r bidc">410<small>원</small></td>
+              <td><div class="capc"><span class="bar"><i style="width:68.3%"></i></span><span>600</span></div></td>
+              <td><div class="last"><span class="d dn">−50</span><time>어제 23:10</time></div></td>
+              <td><span class="st ok"><i></i>목표 유지</span></td>
+            </tr>
+            <tr>
+              <td><i class="sw"></i></td><td class="kwc"><b>원목 식탁 6인용</b></td>
+              <td class="med"><i class="shop"></i>쇼핑검색 <small>· 가구</small></td><td class="tgt">3위</td>
+              <td><div class="lad"><span class="cells"><i></i><i></i><i class="t"></i><i class="c lo"></i><i></i><i></i></span><b>4위</b><em class="dn">▼1</em></div></td>
+              <td class="r bidc">450<small>원</small></td>
+              <td><div class="capc"><span class="bar"><i style="width:64.3%"></i></span><span>700</span></div></td>
+              <td><div class="last"><span class="d up">+50</span><time>09:40</time></div></td>
+              <td><span class="st up"><i></i>밀림 · 올리는 중</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>비드파일럿</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2.0.5/fonts/variable/woff2/SUIT-Variable.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 비드파일럿: 리셀러용 macOS 앱. 그래파이트 다크 + 일렉트릭 바이올렛, 반투명 사이드바와 카드형 입찰 목록. */
+  :root {
+    --bg: #121316; --bg-2: #17181c; --card: #1b1c21; --card-2: #212228; --line: rgb(255 255 255 / .065); --line-2: rgb(255 255 255 / .11);
+    --text: #eeeef3; --text-2: #a6a8b4; --text-3: #6e707c;
+    --vi: #8b7cff; --vi-2: #b3a9ff; --ok: #3ddc97; --wa: #f7b955; --dn: #ff6f7d;
+  }
+  body { font: 400 13px/1.4 'SUIT Variable', 'Pretendard Variable', sans-serif; color: var(--text); background: var(--bg); letter-spacing: -0.01em; }
+  .mac { background: var(--bg); }
+  .tnum, .n { font-variant-numeric: tabular-nums; }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  /* 사이드바 (vibrancy 흉내) */
+  .side { width: 228px; flex: none; position: relative; display: flex; flex-direction: column; padding: 46px 12px 12px;
+    background: radial-gradient(120% 60% at 0% 0%, rgb(139 124 255 / .16), transparent 60%), radial-gradient(90% 50% at 100% 100%, rgb(80 120 255 / .08), transparent 70%), linear-gradient(180deg, rgb(38 37 48 / .96), rgb(26 26 32 / .98));
+    border-right: 1px solid rgb(0 0 0 / .5); box-shadow: inset -1px 0 0 rgb(255 255 255 / .04); }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 16px; }
+  .brand .logo { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: linear-gradient(145deg, #a497ff, #6a58f0); box-shadow: 0 6px 16px -6px rgb(139 124 255 / .8), inset 0 1px 0 rgb(255 255 255 / .3); }
+  .brand b { font-size: 15px; font-weight: 800; letter-spacing: -0.02em; }
+  .brand small { display: block; font-size: 11px; color: var(--text-3); margin-top: 1px; }
+  .grp { font-size: 11px; font-weight: 700; color: var(--text-3); padding: 12px 10px 6px; letter-spacing: 0.02em; }
+  .nav a { display: flex; align-items: center; gap: 10px; height: 32px; padding: 0 10px; border-radius: 7px; color: #c9cad3; font-size: 13px; font-weight: 600; }
+  .nav a svg { color: var(--vi-2); }
+  .nav a.on { background: rgb(255 255 255 / .09); color: #fff; box-shadow: inset 0 0 0 .5px rgb(255 255 255 / .06); }
+  .nav a em { margin-left: auto; font-style: normal; font-size: 11px; font-weight: 700; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .nav a em.b { color: #fff; background: var(--vi); padding: 1px 7px; border-radius: 9px; }
+  .acct { margin-top: 4px; padding: 11px 11px; border-radius: 10px; background: rgb(255 255 255 / .045); border: 1px solid var(--line); }
+  .acct .row { display: flex; align-items: center; gap: 9px; }
+  .acct .av { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: #2c2b3a; color: var(--vi-2); font-size: 12px; font-weight: 800; position: relative; }
+  .acct .av::after { content: ""; position: absolute; right: -1px; bottom: -1px; width: 9px; height: 9px; border-radius: 50%; background: var(--ok); border: 2px solid #23222c; }
+  .acct b { font-size: 12.5px; font-weight: 700; display: block; }
+  .acct small { font-size: 11px; color: var(--text-3); }
+  .acct dl { margin-top: 10px; display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; font-size: 11.5px; }
+  .acct dt { color: var(--text-3); }
+  .acct dd { text-align: right; color: var(--text-2); font-weight: 600; }
+  .stor { margin-top: 2px; padding: 11px; border-radius: 10px; background: rgb(255 255 255 / .045); border: 1px solid var(--line); }
+  .stor .hd { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; color: var(--text-2); font-weight: 600; }
+  .stor .hd b { font-size: 18px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+  .stor .hd b small { font-size: 12px; color: var(--text-3); font-weight: 600; margin-left: 2px; }
+  .stor .b3 { display: flex; gap: 3px; height: 6px; margin-top: 9px; }
+  .stor .b3 i { border-radius: 3px; background: var(--vi); }
+  .stor .b3 i + i { background: rgb(139 124 255 / .3); }
+  .stor .lg { display: flex; gap: 12px; margin-top: 8px; font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .stor .lg em { font-style: normal; color: var(--text-2); font-weight: 700; }
+  .opts { margin-top: auto; display: flex; flex-direction: column; gap: 8px; padding: 12px 10px 4px; border-top: 1px solid var(--line); }
+  .opt { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--text-2); }
+  .tg { width: 28px; height: 16px; border-radius: 8px; background: #3a3a44; position: relative; flex: none; }
+  .tg::after { content: ""; position: absolute; left: 2px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: #9a9ba5; }
+  .tg.on { background: var(--vi); }
+  .tg.on::after { left: 14px; background: #fff; }
+
+  /* 메인 */
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; background: linear-gradient(180deg, #15161a, var(--bg) 220px); }
+  .tool { height: 54px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 20px; border-bottom: 1px solid var(--line); }
+  .tool h1 { font-size: 16px; font-weight: 800; letter-spacing: -0.02em; margin-right: 8px; }
+  .tb { height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 11px; border-radius: 7px; background: rgb(255 255 255 / .06); border: 1px solid var(--line); color: #d4d5dd; font-size: 12px; font-weight: 700; }
+  .tb.stop { color: #ffb3ba; }
+  .tb svg.i { width: 14px; height: 14px; }
+  .tool .sp { flex: 1; }
+  .srch { width: 210px; height: 30px; border-radius: 7px; background: rgb(255 255 255 / .05); border: 1px solid var(--line); display: flex; align-items: center; gap: 7px; padding: 0 10px; color: var(--text-3); font-size: 12px; }
+
+  .hero { flex: none; display: grid; grid-template-columns: 1fr 352px; gap: 16px; padding: 18px 20px 14px; }
+  .sum { position: relative; padding: 18px 20px 16px; border-radius: 14px; overflow: hidden;
+    background: radial-gradient(80% 140% at 100% 0%, rgb(139 124 255 / .28), transparent 60%), linear-gradient(135deg, #24213a, #1b1b22 70%); border: 1px solid rgb(139 124 255 / .28); }
+  .sum .lbl { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #bdb6ff; font-weight: 700; }
+  .sum .lbl i { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px rgb(61 220 151 / .18); }
+  .big { display: flex; align-items: baseline; gap: 14px; margin-top: 8px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .big strong { font-size: 38px; font-weight: 800; letter-spacing: -0.035em; line-height: 1.05; }
+  .big strong small { font-size: 17px; font-weight: 700; color: #cfcbf7; margin-left: 3px; letter-spacing: -0.01em; }
+  .big .dot { width: 5px; height: 5px; border-radius: 50%; background: #6f6a95; align-self: center; }
+  .big .money { color: #fff; }
+  .sum .sub { display: flex; gap: 18px; margin-top: 14px; font-size: 12px; color: var(--text-2); }
+  .sum .sub b { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; margin-left: 4px; }
+  .sum .sub b.w { color: var(--wa); }
+
+  .log { border-radius: 14px; background: var(--card); border: 1px solid var(--line); padding: 12px 14px; display: flex; flex-direction: column; }
+  .log h3 { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--text-2); }
+  .log h3 span { font-size: 11px; color: var(--text-3); font-weight: 600; }
+  .log ul { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+  .log li { display: flex; gap: 10px; white-space: nowrap; overflow: hidden; }
+  .log time { color: var(--text-3); font-variant-numeric: tabular-nums; flex: none; }
+  .log li span { color: var(--text-2); overflow: hidden; text-overflow: ellipsis; }
+  .log li span b { color: var(--text); font-weight: 700; }
+  .log li.v span b { color: var(--vi-2); }
+
+  .lhead { flex: none; display: flex; align-items: center; gap: 8px; padding: 0 20px 10px; }
+  .seg { display: flex; padding: 3px; border-radius: 8px; background: rgb(255 255 255 / .05); border: 1px solid var(--line); }
+  .seg b { height: 24px; display: flex; align-items: center; gap: 5px; padding: 0 10px; border-radius: 6px; font-size: 12px; font-weight: 700; color: var(--text-3); }
+  .seg b span { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .seg b.on { background: #2c2c35; color: var(--text); box-shadow: 0 1px 2px rgb(0 0 0 / .4); }
+  .lhead .note { margin-left: auto; font-size: 11.5px; color: var(--text-3); }
+  .cols { flex: none; display: grid; grid-template-columns: 268px 82px 100px 146px 1fr 104px 38px; gap: 14px; padding: 0 34px 6px; font-size: 11px; color: var(--text-3); font-weight: 600; }
+  .cols .r { text-align: right; }
+
+  .list { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 6px; padding: 0 20px; overflow: hidden; }
+  .item { display: grid; grid-template-columns: 268px 82px 100px 146px 1fr 104px 38px; gap: 14px; align-items: center; height: 58px; padding: 0 14px; border-radius: 11px; background: var(--card); border: 1px solid var(--line); flex: none; }
+  .item.sel { background: linear-gradient(90deg, rgb(139 124 255 / .13), var(--card) 55%); border-color: rgb(139 124 255 / .4); }
+  .pr { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .th { width: 58px; height: 42px; border-radius: 8px; flex: none; display: grid; place-items: center; overflow: hidden; }
+  .th svg { width: 54px; height: 34px; }
+  .pr b { display: block; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pr small { display: flex; align-items: center; gap: 6px; margin-top: 3px; font-size: 11px; color: var(--text-3); }
+  .sz { display: inline-grid; place-items: center; height: 18px; padding: 0 6px; border-radius: 5px; background: rgb(255 255 255 / .08); color: #e2e2ea; font-size: 11px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .kind { font-size: 11.5px; font-weight: 700; color: var(--text-2); }
+  .kind i { display: inline-block; width: 6px; height: 6px; border-radius: 2px; margin-right: 6px; vertical-align: 1px; background: #8f90a0; }
+  .kind.st i { background: var(--vi); }
+  .mine { text-align: right; font-variant-numeric: tabular-nums; }
+  .mine b { font-size: 14px; font-weight: 800; }
+  .mine small { display: block; font-size: 11px; color: var(--text-3); margin-top: 1px; }
+  .low { text-align: right; font-variant-numeric: tabular-nums; }
+  .low b { font-size: 13px; font-weight: 700; color: var(--text-2); }
+  .low small { display: block; font-size: 11px; margin-top: 1px; color: var(--text-3); }
+  .low small.up { color: var(--ok); }
+  .low small.dn { color: var(--wa); }
+  .rng { padding-right: 4px; }
+  .rng .bar { position: relative; height: 6px; border-radius: 3px; background: rgb(255 255 255 / .07); }
+  .rng .bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: linear-gradient(90deg, #5a4fd0, var(--vi)); }
+  .rng .bar u { position: absolute; top: -4px; width: 2px; height: 14px; border-radius: 1px; background: #fff; box-shadow: 0 0 0 2px var(--card); }
+  .rng .lab { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .rng .lab b { color: var(--text-2); font-weight: 700; }
+  .rng.floor .bar i { background: linear-gradient(90deg, #8a3b46, var(--dn)); }
+  .rng.done .bar i { background: linear-gradient(90deg, #1f7a58, var(--ok)); }
+  .chip { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px; border-radius: 12px; font-size: 11.5px; font-weight: 800; white-space: nowrap; }
+  .chip i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .chip.k { color: var(--vi-2); background: rgb(139 124 255 / .15); }
+  .chip.w { color: var(--wa); background: rgb(247 185 85 / .13); }
+  .chip.o { color: var(--ok); background: rgb(61 220 151 / .13); }
+  .chip.f { color: #ff9aa4; background: rgb(255 111 125 / .13); }
+  .chip.s { color: #9fc3ff; background: rgb(110 160 255 / .13); }
+  .t { font-size: 11.5px; color: var(--text-3); text-align: right; font-variant-numeric: tabular-nums; }
+
+  .status { height: 28px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 20px; margin-top: 10px; border-top: 1px solid var(--line); background: #0f1013; color: var(--text-3); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+  .status b { color: var(--ok); font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .status b i { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+  .status .r { margin-left: auto; }
+
+  /* macOS 알림 배너 */
+  .banner { position: absolute; right: 12px; top: 7px; width: 356px; z-index: 30; display: flex; gap: 11px; padding: 10px 14px 10px 11px; border-radius: 15px;
+    background: rgb(52 50 62 / .9); border: 1px solid rgb(255 255 255 / .14); box-shadow: 0 18px 40px -10px rgb(0 0 0 / .7), 0 2px 6px rgb(0 0 0 / .35), inset 0 1px 0 rgb(255 255 255 / .08); }
+  .banner .logo { width: 36px; height: 36px; border-radius: 9px; flex: none; display: grid; place-items: center; background: linear-gradient(145deg, #a497ff, #6a58f0); box-shadow: inset 0 1px 0 rgb(255 255 255 / .3); }
+  .banner .tx { flex: 1; min-width: 0; }
+  .banner .top { display: flex; justify-content: space-between; font-size: 11px; color: #b9b8c6; font-weight: 600; }
+  .banner b { display: block; margin-top: 3px; font-size: 13px; font-weight: 800; color: #fff; }
+  .banner p { margin-top: 2px; font-size: 12px; color: #d2d1dc; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<div class="mac">
+  <span class="mac-lights"><i></i><i></i><i></i></span>
+  <main class="mac-body">
+    <aside class="side">
+      <div class="brand">
+        <span class="logo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 15 5-5 4 4 7-7"/><path d="M15 7h5v5"/></svg></span>
+        <div><b>비드파일럿</b><small>버전 1.8.2</small></div>
+      </div>
+
+      <p class="grp">관리</p>
+      <nav class="nav">
+        <a class="on"><svg class="i" viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 8-8"/><path d="M14 8h6v6"/></svg>입찰 관리<em>320</em></a>
+        <a><svg class="i" viewBox="0 0 24 24"><path d="M3 8l9-5 9 5v10l-9 5-9-5z"/><path d="M3 8l9 5 9-5M12 13v10"/></svg>보관판매<em>12</em></a>
+        <a><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 10h18M7 15h4"/></svg>정산<em>23</em></a>
+        <a><svg class="i" viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>알림<em class="b">3</em></a>
+      </nav>
+      <p class="grp">작업</p>
+      <nav class="nav">
+        <a><svg class="i" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13l2 2 4-4"/></svg>엑셀 검증<em>0 오류</em></a>
+        <a><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h7"/></svg>작업 로그</a>
+      </nav>
+
+      <p class="grp">연결 계정</p>
+      <div class="acct">
+        <div class="row"><span class="av">리</span><div><b>리셀 스튜디오</b><small>입점 사업자 · ks***@</small></div></div>
+        <dl class="n">
+          <dt>로그인</dt><dd>OTP 사용 · 연결됨</dd>
+          <dt>점검 주기</dt><dd>30분마다</dd>
+          <dt>작업 간격</dt><dd>건당 3초 대기</dd>
+        </dl>
+      </div>
+
+      <p class="grp">보관판매 신청 · 오늘</p>
+      <div class="stor">
+        <div class="hd"><span>엑셀 등록 40건 중</span><b>28<small>/ 40</small></b></div>
+        <div class="b3"><i style="width:70%"></i><i style="width:30%"></i></div>
+        <div class="lg"><span>완료 <em>28</em></span><span>진행 중 <em>12</em></span><span>실패 <em>0</em></span></div>
+      </div>
+
+      <div class="opts">
+        <div class="opt">하한가 도달 시 알림<span class="tg on"></span></div>
+        <div class="opt">요청 제한 시 작업 대기<span class="tg on"></span></div>
+        <div class="opt">보관판매 신청 자동 진행<span class="tg on"></span></div>
+        <div class="opt">정산 내역 자동 저장<span class="tg"></span></div>
+      </div>
+    </aside>
+
+    <section class="main">
+      <div class="tool">
+        <h1>입찰 관리</h1>
+        <span class="tb stop"><svg class="i" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>중지</span>
+        <span class="tb"><svg class="i" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 18v-6M9 15l3-3 3 3"/></svg>엑셀 등록</span>
+        <span class="tb"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>검증</span>
+        <span class="tb"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>정산 내역</span>
+        <span class="sp"></span>
+        <span class="srch"><svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>상품명·모델 번호</span>
+      </div>
+
+      <div class="hero">
+        <div class="sum">
+          <p class="lbl"><i></i>2026.10.26 월 · 10:45 기준</p>
+          <div class="big"><strong>오늘 체결 23<small>건</small></strong><span class="dot"></span><strong class="money">정산 예정 4,820,000<small>원</small></strong></div>
+          <div class="sub"><span>관리 입찰<b>320개</b></span><span>오늘 자동 조정<b>54건</b></span><span>하한가 유지<b class="w">6건</b></span><span>보관판매 진행<b>12건</b></span></div>
+        </div>
+        <div class="log">
+          <h3>실시간 작업 로그 <span>다음 점검 11:15</span></h3>
+          <ul>
+            <li><time>10:42:08</time><span>패딩 점퍼 L <b>보관판매 신청 완료</b></span></li>
+            <li class="v"><time>10:44:15</time><span>레트로 러너 270 → <b>189,000원</b></span></li>
+            <li><time>10:44:19</time><span>코트 스니커즈 260 <b>하한가 유지</b></span></li>
+            <li><time>10:45:02</time><span>정산 예정 금액 갱신 완료</span></li>
+            <li><time>10:45:03</time><span>점검 완료 · 입찰 320개 확인</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="lhead">
+        <div class="seg"><b class="on">전체 <span>320</span></b><b>최저가 유지 <span>260</span></b><b>재입찰 대기 <span>19</span></b><b>하한가 <span>6</span></b><b>보관 신청 <span>12</span></b><b>체결 <span>23</span></b></div>
+        <span class="note">일반·보관 입찰 · 하한가 밑으로는 내리지 않습니다</span>
+      </div>
+      <div class="cols"><span>상품 · 사이즈</span><span>구분</span><span class="r">내 판매 입찰가</span><span class="r">다른 판매자 최저가</span><span>하한가 ↔ 희망가</span><span>상태</span><span class="r">갱신</span></div>
+
+      <div class="list">
+        <!-- 1 -->
+        <div class="item sel">
+          <div class="pr"><span class="th" style="background:linear-gradient(150deg,#3a3d48,#25262d)"><svg viewBox="0 0 64 40"><path d="M5 31V19c0-4 3-6.5 7-6.5l6 .8c2 1.6 4.2 1.6 6-.4l3.4-5c1.3-1.2 3.3-1 4.3.4l4.5 7.2c3.6 3.3 9 5.6 15 7 4.3 1 7.3 3.8 7.3 8.5z" fill="#c9ccd6"/><path d="M5 31V19c0-4 3-6.5 7-6.5l2 .3V31z" fill="#8c90a0"/><path d="M33 9l4.5 7.2c3.6 3.3 9 5.6 15 7 4.3 1 7.3 3.8 7.3 7.8H44c-4-5-7-11-11-22z" fill="#e7e9ef"/><path d="M16 23c6-1 13 1 19 6" stroke="#8b7cff" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M3.5 31h57.5c.8 0 1.2 1 1 2-.4 2-1.8 3.4-3.8 3.4H7.5C5 36.4 3.5 34.5 3.5 32z" fill="#f4f4f7"/><path d="M3.8 34.2h58" stroke="#9a9eae" stroke-width="1.2"/><g fill="#5b5f6e"><circle cx="31" cy="15" r=".9"/><circle cx="33.4" cy="18" r=".9"/><circle cx="35.8" cy="21" r=".9"/></g></svg></span>
+            <div><b>레트로 러너 그레이 포그</b><small><span class="sz">270</span>RT-2207 · 일반</small></div></div>
+          <span class="kind"><i></i>일반 입찰</span>
+          <div class="mine"><b>189,000</b><small>방금 -2,000</small></div>
+          <div class="low"><b>190,000</b><small class="up">내가 최저 · 1,000원 차</small></div>
+          <div class="rng"><div class="bar"><i style="width:51%"></i><u style="left:51%"></u></div><div class="lab"><span>하한 172,000</span><b>여유 17,000</b></div></div>
+          <span><span class="chip k"><i></i>최저가 유지</span></span>
+          <span class="t">10:44</span>
+        </div>
+        <!-- 2 -->
+        <div class="item">
+          <div class="pr"><span class="th" style="background:linear-gradient(150deg,#2a2b33,#1d1e24)"><svg viewBox="0 0 64 40"><path d="M7 31V8.5c0-1.6 1.2-2.8 2.8-2.8h9c1.5 0 2.6 1 3 2.4l1.6 5.4 4-1.2 3 4.4c4.6 3.4 11 6 18 7.6 4 .9 6.6 3.5 6.6 6.7z" fill="#2f3039"/><path d="M7 31V8.5c0-1.6 1.2-2.8 2.8-2.8h3V31z" fill="#454756"/><g stroke="#f1f1f4" stroke-width="1.5" stroke-linecap="round"><path d="M19 11.5h6M20 15h7M21.5 18.5h7.5"/></g><circle cx="13" cy="20" r="3" fill="none" stroke="#f1f1f4" stroke-width="1.4"/><path d="M5.5 31H61c.6 0 1 .8.8 1.8-.4 2.2-2 3.6-4 3.6H8c-1.6 0-2.5-1.6-2.5-3.2z" fill="#f2efe6"/><path d="M48 31c4-2 8.5-1.4 13 .2" stroke="#d9d5c8" stroke-width="3" fill="none"/></svg></span>
+            <div><b>하이탑 캔버스 블랙</b><small><span class="sz">265</span>HC-0140 · 보관</small></div></div>
+          <span class="kind st"><i></i>보관 입찰</span>
+          <div class="mine"><b>128,000</b><small>09:15 -1,000</small></div>
+          <div class="low"><b>130,000</b><small class="up">내가 최저 · 2,000원 차</small></div>
+          <div class="rng"><div class="bar"><i style="width:43%"></i><u style="left:43%"></u></div><div class="lab"><span>하한 115,000</span><b>여유 13,000</b></div></div>
+          <span><span class="chip k"><i></i>최저가 유지</span></span>
+          <span class="t">10:15</span>
+        </div>
+        <!-- 3 -->
+        <div class="item">
+          <div class="pr"><span class="th" style="background:linear-gradient(150deg,#4a3a3c,#2a2224)"><svg viewBox="0 0 64 40"><path d="M5 30v-7.5c0-4 2.5-7 6.6-7.5l7-1c2.2 1.3 4.4 1 6-.6l2.2-2.6c1.4-1 3.2-.8 4.2.6l3.5 4.6c4 2.7 10 4.4 16.5 5.4 4.3.7 7 3.4 7 7.6z" fill="#f5f4f0"/><path d="M5 30v-7.5c0-4 2.5-7 6.6-7.5l1.8-.3V30z" fill="#d8b4a3"/><path d="M40 20c5 2.2 10 3.4 16 4.2" stroke="#e1ded6" stroke-width="1.4" fill="none"/><g fill="#a9a59a"><circle cx="29" cy="15" r=".9"/><circle cx="31.5" cy="17.5" r=".9"/><circle cx="34" cy="20" r=".9"/></g><path d="M3.8 30h58c.8 0 1.2.8 1 1.8l-.3 1.4c-.4 1.7-1.8 2.8-3.5 2.8H7.3C5.3 36 3.8 34.4 3.8 32.4z" fill="#ebe7dc"/><path d="M4 33h58.5" stroke="#cfc9b8" stroke-width="1"/></svg></span>
+            <div><b>코트 스니커즈 화이트</b><small><span class="sz">260</span>CT-5512 · 일반</small></div></div>
+          <span class="kind"><i></i>일반 입찰</span>
+          <div class="mine"><b>152,000</b><small>하한가에서 멈춤</small></div>
+          <div class="low"><b>149,000</b><small class="dn">3,000원 낮음</small></div>
+          <div class="rng floor"><div class="bar"><i style="width:3%"></i><u style="left:0%"></u></div><div class="lab"><span>하한 152,000</span><b style="color:#ff9aa4">여유 0</b></div></div>
+          <span><span class="chip f"><i></i>하한가 유지</span></span>
+          <span class="t">10:44</span>
+        </div>
+        <!-- 4 -->
+        <div class="item">
+          <div class="pr"><span class="th" style="background:linear-gradient(150deg,#33402f,#1f261d)"><svg viewBox="0 0 64 40"><path d="M5 29v-9c0-3.6 2.4-6 6-6.3l6.5-.6c2.3 1.4 4.6 1.4 6.3-.4l3.4-4.4c1.3-1.2 3.4-1 4.3.5l4 6.2c3.8 3.3 9.4 5.4 15.2 6.5 4.7.9 8 3.6 8 7.5z" fill="#b5c49a"/><path d="M27 8.3l-3.6 4.4c-1.7 1.8-4 1.8-6.3.4L11 13.7c-3.6.3-6 2.7-6 6.3V29h15c2-8 4-14 7-20.7z" fill="#7e8c66"/><path d="M38 20c-4 2-6 5-6.5 9" stroke="#e3ecd2" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M2.8 29H62c.7 0 1.2.8 1 1.6l-.6 2.4c-.6 2.2-2.6 3.8-5 3.8H8.4c-3 0-5.6-2.4-5.6-5.4z" fill="#3c3a35"/><path d="M3.2 32.4h59.6" stroke="#f0a43c" stroke-width="1.6"/><g fill="#3c3a35"><path d="M8 36.8h4v1.4H8zM20 36.8h4v1.4h-4zM32 36.8h4v1.4h-4zM44 36.8h4v1.4h-4z"/></g></svg></span>
+            <div><b>청키 트레일 러너 올리브</b><small><span class="sz">280</span>TR-3091 · 보관</small></div></div>
+          <span class="kind st"><i></i>보관 입찰</span>
+          <div class="mine"><b>236,000</b><small>10:15 기준</small></div>
+          <div class="low"><b>233,000</b><small class="dn">232,000원으로 재입찰</small></div>
+          <div class="rng"><div class="bar"><i style="width:58%"></i><u style="left:58%"></u></div><div class="lab"><span>하한 214,000</span><b>여유 22,000</b></div></div>
+          <span><span class="chip w"><i></i>재입찰 대기</span></span>
+          <span class="t">10:44</span>
+        </div>
+        <!-- 5 -->
+        <div class="item">
+          <div class="pr"><span class="th" style="background:linear-gradient(150deg,#5a6280,#363b50)"><svg viewBox="0 0 64 40"><path d="M24 5.5c2.4 2 5.3 3 8 3s5.6-1 8-3l7 2.5c2 .7 3.3 2.4 3.6 4.5L52 31c.2 1.4-.9 2.6-2.3 2.6h-3.4V18.8L44.8 35c-.1 1-1 1.8-2 1.8H21.2c-1 0-1.9-.8-2-1.8l-1.5-16.2v14.8h-3.4c-1.4 0-2.5-1.2-2.3-2.6l1.4-18.5c.3-2.1 1.6-3.8 3.6-4.5z" fill="#17181d"/><g stroke="#4a4e5e" stroke-width="1.6"><path d="M18 14.5h28M18.6 20.5h26.8M19.2 26.5h25.6M19.8 32h24.4"/></g><path d="M32 8.5V36.8" stroke="#8a8fa3" stroke-width="1.2"/><path d="M24 5.5c2.4 2 5.3 3 8 3s5.6-1 8-3l-1.6-1.3c-1.8 1.2-4 1.8-6.4 1.8s-4.6-.6-6.4-1.8z" fill="#4a4e5e"/></svg></span>
+            <div><b>숏 패딩 점퍼 블랙</b><small><span class="sz">L</span>PD-7720 · 보관판매</small></div></div>
+          <span class="kind st"><i></i>보관판매</span>
+          <div class="mine"><b>312,000</b><small>희망가 그대로</small></div>
+          <div class="low"><b>318,000</b><small>입고 후 판매 시작</small></div>
+          <div class="rng"><div class="bar"><i style="width:68%"></i><u style="left:68%"></u></div><div class="lab"><span>하한 286,000</span><b>여유 26,000</b></div></div>
+          <span><span class="chip s"><i></i>신청 완료</span></span>
+          <span class="t">10:42</span>
+        </div>
+        <!-- 6 -->
+        <div class="item">
+          <div class="pr"><span class="th" style="background:linear-gradient(150deg,#3d3346,#241e2b)"><svg viewBox="0 0 64 40"><path d="M5 31V20.5c0-4 2.8-6.6 6.8-6.8l6-.3c2 1.5 4.3 1.5 6-.2l3-3.6c1.2-1.1 3.1-1 4 .3l4 5.4c3.7 3 9.3 5.2 15.6 6.4 4.4.8 7.6 3.6 7.6 8.3z" fill="#d6c7ee"/><path d="M33 10.4l4 5.4c3.7 3 9.3 5.2 15.6 6.4 4.4.8 7.6 3.6 7.6 8.8H47C43 25 38 18 33 10.4z" fill="#b39ce0"/><path d="M5 31V20.5c0-4 2.8-6.6 6.8-6.8l2.2-.1V31z" fill="#8f78bf"/><path d="M14 25c8-3 17-2 25 2" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".8"/><path d="M3.6 31h58c.7 0 1.1.7 1 1.5l-.5 1.8c-.4 1.4-1.7 2.4-3.2 2.4H7.4c-2 0-3.8-1.7-3.8-3.8z" fill="#f6f2fb"/></svg></span>
+            <div><b>로우 러너 라일락</b><small><span class="sz">250</span>LR-1186 · 일반</small></div></div>
+          <span class="kind"><i></i>일반 입찰</span>
+          <div class="mine"><b>168,000</b><small>체결가</small></div>
+          <div class="low"><b>—</b><small>정산 예정 157,920</small></div>
+          <div class="rng done"><div class="bar"><i style="width:100%"></i></div><div class="lab"><span>하한 151,000</span><b style="color:#3ddc97">+17,000 체결</b></div></div>
+          <span><span class="chip o"><i></i>체결 완료</span></span>
+          <span class="t">09:58</span>
+        </div>
+        <!-- 7 -->
+        <div class="item">
+          <div class="pr"><span class="th" style="background:linear-gradient(150deg,#3a3b40,#24252a)"><svg viewBox="0 0 64 40"><path d="M23 7c1-2 3-3 5-3h8c2 0 4 1 5 3l7.6 2.4c2.3.7 3.8 2.6 4 5L54 33c.1 1.2-.8 2.2-2 2.2h-4.3L47 20l-1.4 15.3c-.1 1-.9 1.7-1.9 1.7H20.3c-1 0-1.8-.7-1.9-1.7L17 20l-.7 15.2H12c-1.2 0-2.1-1-2-2.2l1.4-18.6c.2-2.4 1.7-4.3 4-5z" fill="#8d9099"/><path d="M26 6c.6 4.6 3 7.4 6 7.4s5.4-2.8 6-7.4" fill="#6f727c"/><path d="M32 13.5V37" stroke="#c7c9cf" stroke-width="1.2"/><path d="M24 27h7M33 27h7" stroke="#6f727c" stroke-width="1.6"/><path d="M19 34.5h26" stroke="#6f727c" stroke-width="2.4"/></svg></span>
+            <div><b>후드 집업 멜란지 그레이</b><small><span class="sz">M</span>HZ-0418 · 일반</small></div></div>
+          <span class="kind"><i></i>일반 입찰</span>
+          <div class="mine"><b>98,000</b><small>08:45 -1,000</small></div>
+          <div class="low"><b>99,000</b><small class="up">내가 최저 · 1,000원 차</small></div>
+          <div class="rng"><div class="bar"><i style="width:36%"></i><u style="left:36%"></u></div><div class="lab"><span>하한 89,000</span><b>여유 9,000</b></div></div>
+          <span><span class="chip k"><i></i>최저가 유지</span></span>
+          <span class="t">10:44</span>
+        </div>
+      </div>
+
+      <footer class="status"><b><i></i>실행 중</b><span>관리 입찰 320개</span><span>오늘 조정 54건</span><span>요청 제한 감지 없음</span><span>다음 점검 11:15</span><span class="r">비드파일럿 1.8.2 · macOS</span></footer>
+    </section>
+  </main>
+
+  <div class="banner">
+    <span class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 15 5-5 4 4 7-7"/><path d="M15 7h5v5"/></svg></span>
+    <div class="tx">
+      <div class="top"><span>비드파일럿</span><span>지금</span></div>
+      <b>입찰가 갱신 — 270 사이즈 189,000원 최저가</b>
+      <p>레트로 러너 그레이 포그 · 하한가 172,000원 안에서 조정</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

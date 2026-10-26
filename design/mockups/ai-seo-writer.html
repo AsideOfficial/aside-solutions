@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>키워드작가</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 키워드작가: 스프레드시트 안에서 돌아가는 원고 생성 부가기능. 시트는 담백하게, 사이드바는 틸 강조. */
+  :root {
+    --t: #0E9F6E; --t-ink: #046C4E; --t-soft: #E6F6EF; --t-2: #84D9B8;
+    --ink: #1F2328; --ink-2: #4B525C; --ink-3: #7A828D;
+    --grid: #E2E4E8; --hdr: #F6F7F9; --chrome: #F9FAFB; --sel: #2F6FE4;
+  }
+  body { font: 400 13px/1.4 'Inter', 'Noto Sans KR', sans-serif; color: var(--ink); background: #fff; word-break: keep-all; }
+  .ico { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .app { position: absolute; inset: 0; display: flex; flex-direction: column; }
+
+  /* 문서 머리 */
+  .doc-head { height: 64px; flex: none; display: flex; align-items: center; gap: 12px; padding: 0 16px 0 14px; background: var(--chrome); }
+  .doc-ico { width: 34px; height: 40px; flex: none; }
+  .doc-t { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .doc-t .name { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 500; color: var(--ink); }
+  .doc-t .name svg { width: 17px; height: 17px; color: var(--ink-3); }
+  .doc-t .name .saved { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ink-3); font-weight: 400; }
+  .menu { display: flex; gap: 2px; margin-left: -6px; }
+  .menu span { font-size: 13px; color: var(--ink-2); padding: 2px 7px; border-radius: 4px; }
+  .menu span.addon { background: var(--t-soft); color: var(--t-ink); font-weight: 700; display: flex; align-items: center; gap: 5px; }
+  .menu span.addon svg { width: 13px; height: 13px; }
+  .doc-r { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .doc-r .last { font-size: 12px; color: var(--ink-3); }
+  .doc-r .ib { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; color: var(--ink-2); }
+  .doc-r .ib svg { width: 19px; height: 19px; }
+  .share { height: 36px; display: flex; align-items: center; gap: 7px; padding: 0 18px; border-radius: 18px; background: #E3EAF3; color: #1D2A3A; font-weight: 600; font-size: 13px; }
+  .share svg { width: 15px; height: 15px; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #F59E0B, #EA580C); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 13px; }
+
+  /* 도구 막대 */
+  .toolbar { height: 40px; flex: none; margin: 0 10px 6px; padding: 0 10px; border-radius: 20px; background: #EEF1F5; display: flex; align-items: center; gap: 2px; color: var(--ink-2); }
+  .toolbar .b { height: 28px; min-width: 28px; display: grid; place-items: center; border-radius: 4px; font-size: 12.5px; padding: 0 4px; }
+  .toolbar .b svg { width: 17px; height: 17px; }
+  .toolbar .sep { width: 1px; height: 20px; background: #C9CED6; margin: 0 6px; }
+  .toolbar .dd { display: flex; align-items: center; gap: 6px; padding: 0 6px; height: 28px; font-size: 12.5px; }
+  .toolbar .dd::after { content: ""; width: 0; height: 0; border: 4px solid transparent; border-top-color: #5f6670; border-bottom: 0; }
+  .toolbar .num { width: 30px; height: 26px; border: 1px solid #B9C0C9; border-radius: 4px; display: grid; place-items: center; font-size: 12.5px; background: #fff; }
+  .toolbar b.b { font-weight: 800; font-family: 'Inter', sans-serif; }
+
+  .work { flex: 1; min-height: 0; display: flex; }
+  .sheet { flex: 1; min-width: 0; display: flex; flex-direction: column; border-top: 1px solid var(--grid); }
+
+  /* 수식 입력줄 */
+  .fbar { height: 32px; flex: none; display: flex; align-items: center; border-bottom: 1px solid var(--grid); font-size: 13px; }
+  .fbar .nm { width: 90px; height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; border-right: 1px solid var(--grid); color: var(--ink); }
+  .fbar .nm::after { content: ""; border: 4px solid transparent; border-top-color: #5f6670; border-bottom: 0; }
+  .fbar .fx { width: 44px; text-align: center; color: #9AA1AB; font-style: italic; font-family: 'Inter', serif; font-weight: 600; border-right: 1px solid var(--grid); }
+  .fbar .val { padding-left: 10px; color: var(--ink); }
+
+  /* 격자 */
+  .grid { flex: 1; min-height: 0; overflow: hidden; position: relative; }
+  table { border-collapse: collapse; table-layout: fixed; font-variant-numeric: tabular-nums; }
+  th, td { border-right: 1px solid var(--grid); border-bottom: 1px solid var(--grid); white-space: nowrap; overflow: hidden; text-overflow: clip; }
+  thead th { height: 24px; background: var(--hdr); font-size: 11.5px; font-weight: 500; color: #5f6670; text-align: center; }
+  thead th.on { background: #D7E3FB; color: #1B3F8F; font-weight: 700; }
+  tbody th { width: 46px; background: var(--hdr); font-size: 11.5px; font-weight: 500; color: #5f6670; text-align: center; }
+  tbody th.on { background: #D7E3FB; color: #1B3F8F; font-weight: 700; }
+  td { height: 31px; padding: 0 9px; font-size: 13px; color: var(--ink); position: relative; }
+  tr.h td { height: 33px; background: #EAF6F0; font-weight: 700; font-size: 12.5px; color: var(--t-ink); border-bottom: 2px solid #BFC5CC; }
+  tr.h th { border-bottom: 2px solid #BFC5CC; }
+  td.r { text-align: right; }
+  td.dim { color: #A1A8B1; }
+  td.sel { box-shadow: inset 0 0 0 2px var(--sel); }
+  td.sel::after { content: ""; position: absolute; right: -1px; bottom: -1px; width: 7px; height: 7px; background: var(--sel); border: 1.5px solid #fff; }
+  td.note::before { content: ""; position: absolute; right: 0; top: 0; border: 5px solid transparent; border-top-color: #F2A600; border-right-color: #F2A600; }
+  .chip { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 6px 0 9px; border-radius: 11px; font-size: 12px; font-weight: 600; }
+  .chip::after { content: ""; border: 3.5px solid transparent; border-top-color: currentColor; border-bottom: 0; opacity: .7; margin-left: 2px; }
+  .chip.done { background: #D5F2E4; color: #0A6B47; }
+  .chip.run { background: #FFF0C7; color: #8A5A00; }
+  .chip.run i { width: 9px; height: 9px; border-radius: 50%; border: 1.7px solid #B67A00; border-right-color: transparent; }
+  .chip.wait { background: #ECEEF1; color: #5f6670; }
+  .file { display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 9px 0 6px; border-radius: 11px; background: #F1F3F6; font-size: 12px; color: #1F3B73; max-width: 100%; }
+  .file svg { width: 14px; height: 14px; flex: none; }
+  .gen { color: #8A5A00; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; }
+  .spark { display: block; height: 12px; border-radius: 2px; background: #E6E9ED; overflow: hidden; }
+  .spark i { display: block; height: 100%; width: 58.3%; background: var(--t); }
+  tr.sum td { font-size: 12.5px; }
+  tr.sum td.lab { color: var(--ink-2); }
+  tr.sum td b { font-weight: 700; }
+
+  /* 시트 탭 */
+  .tabs { height: 38px; flex: none; display: flex; align-items: center; gap: 4px; padding: 0 10px; background: var(--chrome); border-top: 1px solid var(--grid); color: var(--ink-2); font-size: 12.5px; }
+  .tabs .ib { width: 28px; height: 28px; display: grid; place-items: center; }
+  .tabs .ib svg { width: 17px; height: 17px; }
+  .tabs .tb { height: 30px; display: flex; align-items: center; gap: 7px; padding: 0 14px; border-radius: 4px; }
+  .tabs .tb.on { background: #E1F2EA; color: var(--t-ink); font-weight: 700; }
+  .tabs .tb::after { content: ""; border: 3.5px solid transparent; border-top-color: currentColor; border-bottom: 0; opacity: .6; }
+  .tabs .cnt { margin-left: auto; font-size: 12px; color: var(--ink-3); }
+
+  /* 부가기능 사이드바 */
+  .side { width: 300px; flex: none; border-left: 1px solid var(--grid); border-top: 1px solid var(--grid); background: #fff; display: flex; flex-direction: column; font-family: 'Noto Sans KR', 'Inter', sans-serif; }
+  .sd-head { height: 48px; flex: none; display: flex; align-items: center; gap: 9px; padding: 0 14px; border-bottom: 1px solid #EDEFF2; }
+  .sd-logo { width: 26px; height: 26px; border-radius: 7px; background: var(--t); display: grid; place-items: center; }
+  .sd-logo svg { width: 15px; height: 15px; stroke: #fff; }
+  .sd-head b { font-size: 14px; font-weight: 700; }
+  .sd-head small { font-size: 11px; color: var(--ink-3); font-family: 'Inter', sans-serif; }
+  .sd-head .x { margin-left: auto; width: 16px; height: 16px; color: var(--ink-3); }
+  .sd-body { flex: 1; min-height: 0; padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
+  .cur { border-radius: 10px; background: #F6FBF9; border: 1px solid #DCEFE6; padding: 10px 12px; }
+  .cur .row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--ink-3); }
+  .cur .row .ok { display: flex; align-items: center; gap: 4px; color: var(--t-ink); font-weight: 700; }
+  .cur .row .ok svg { width: 12px; height: 12px; stroke-width: 2.6; }
+  .cur h4 { font-size: 13.5px; font-weight: 700; line-height: 1.4; margin-top: 4px; letter-spacing: -0.01em; }
+  .cur .meta { display: flex; gap: 10px; margin-top: 5px; font-size: 11.5px; color: var(--ink-2); font-family: 'Inter', 'Noto Sans KR', sans-serif; }
+  .cur .meta b { font-weight: 700; color: var(--ink); }
+  .sec h5 { font-size: 12px; font-weight: 700; color: var(--ink-2); display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+  .sec h5 span { font-size: 11px; font-weight: 500; color: var(--ink-3); }
+  .tree li { display: flex; align-items: center; gap: 8px; height: 24px; font-size: 12.5px; color: var(--ink); position: relative; }
+  .tree li.h3 { padding-left: 18px; color: var(--ink-2); font-size: 12px; }
+  .tree li.h3::before { content: ""; position: absolute; left: 9px; top: -4px; width: 7px; height: 15px; border-left: 1.4px solid #CFD5DC; border-bottom: 1.4px solid #CFD5DC; border-bottom-left-radius: 4px; }
+  .tree em { flex: none; font-style: normal; font-family: 'Inter', sans-serif; font-size: 10.5px; font-weight: 700; width: 24px; height: 17px; display: grid; place-items: center; border-radius: 4px; }
+  .tree .h2 em { background: var(--t); color: #fff; }
+  .tree .h3 em { background: var(--t-soft); color: var(--t-ink); }
+  .tree span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gauge { display: flex; align-items: center; gap: 14px; padding: 10px 12px; border-radius: 10px; border: 1px solid #EDEFF2; }
+  .gauge svg { flex: none; }
+  .gauge .gt b { display: block; font-size: 12.5px; font-weight: 700; }
+  .gauge .gt small { display: block; font-size: 11.5px; color: var(--ink-3); line-height: 1.5; margin-top: 2px; font-family: 'Inter', 'Noto Sans KR', sans-serif; }
+  .gauge .gt .okc { display: inline-block; margin-top: 5px; font-size: 11px; font-weight: 700; color: var(--t-ink); background: var(--t-soft); padding: 2px 7px; border-radius: 5px; }
+  .tone { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  .tone span { height: 30px; display: grid; place-items: center; border-radius: 8px; border: 1px solid #DDE1E6; font-size: 12px; color: var(--ink-2); }
+  .tone span.on { border: 1.5px solid var(--t); background: var(--t-soft); color: var(--t-ink); font-weight: 700; }
+  .opts { display: grid; grid-template-columns: 1fr 1fr; row-gap: 6px; margin-top: 9px; }
+  .opts span { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--ink-2); }
+  .cb { width: 15px; height: 15px; border-radius: 4px; border: 1.5px solid #A9B0B9; display: grid; place-items: center; flex: none; }
+  .cb.on { background: var(--t); border-color: var(--t); }
+  .cb svg { width: 11px; height: 11px; stroke: #fff; stroke-width: 3; }
+  .sd-foot { flex: none; padding: 12px 14px 14px; border-top: 1px solid #EDEFF2; }
+  .go { height: 40px; border-radius: 10px; background: var(--t); color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 14px; box-shadow: 0 6px 14px -8px rgb(14 159 110 / .8); }
+  .go svg { width: 17px; height: 17px; stroke: #fff; }
+  .sd-foot .more { display: flex; justify-content: space-between; margin-top: 9px; font-size: 11.5px; color: var(--ink-3); }
+  .sd-foot .more b { color: var(--t-ink); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="doc-head">
+    <svg class="doc-ico" viewBox="0 0 34 40"><path d="M3 0h20l11 11v26a3 3 0 0 1-3 3H3a3 3 0 0 1-3-3V3a3 3 0 0 1 3-3z" fill="#4B6584"/><path d="M23 0v8a3 3 0 0 0 3 3h8z" fill="#8FA6C2"/><rect x="7" y="17" width="20" height="15" rx="1.5" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M7 22h20M7 27h20M15 17v15" stroke="#fff" stroke-width="1.6"/></svg>
+    <div class="doc-t">
+      <div class="name">2026 제주 블로그 원고 관리
+        <svg viewBox="0 0 24 24" class="ico"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>
+        <svg viewBox="0 0 24 24" class="ico"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        <span class="saved"><svg viewBox="0 0 24 24" class="ico" style="width:15px;height:15px"><path d="M7 18a4.5 4.5 0 0 1-.6-9A6 6 0 0 1 18 9.5a4 4 0 0 1-.5 8.5z"/><path d="m9.5 13.5 2 2 3.5-3.5"/></svg>저장됨</span>
+      </div>
+      <nav class="menu"><span>파일</span><span>수정</span><span>보기</span><span>삽입</span><span>서식</span><span>데이터</span><span>도구</span><span>확장 프로그램</span><span>도움말</span><span class="addon"><svg viewBox="0 0 24 24" class="ico"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>키워드작가</span></nav>
+    </div>
+    <div class="doc-r">
+      <span class="last">마지막 수정 09:31</span>
+      <span class="ib"><svg viewBox="0 0 24 24" class="ico"><path d="M12 8v4l3 2"/><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6L3.5 8.5"/><path d="M3.5 4v4.5H8"/></svg></span>
+      <span class="ib"><svg viewBox="0 0 24 24" class="ico"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20.5l1.3-4.8A8 8 0 1 1 21 12z"/></svg></span>
+      <span class="share"><svg viewBox="0 0 24 24" class="ico"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg>공유</span>
+      <span class="avatar">김</span>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <span class="b"><svg viewBox="0 0 24 24" class="ico"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></span>
+    <span class="b"><svg viewBox="0 0 24 24" class="ico"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></span>
+    <span class="b"><svg viewBox="0 0 24 24" class="ico"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/></svg></span>
+    <span class="b"><svg viewBox="0 0 24 24" class="ico"><rect x="4" y="3" width="14" height="6" rx="1.5"/><path d="M18 6h2v5h-8v3"/><rect x="10.5" y="14" width="3" height="7" rx="1"/></svg></span>
+    <span class="sep"></span>
+    <span class="dd">100%</span>
+    <span class="sep"></span>
+    <span class="b">₩</span><span class="b">%</span><span class="b">.0</span><span class="b">.00</span><span class="b">123</span>
+    <span class="sep"></span>
+    <span class="dd" style="width:116px;justify-content:space-between">Noto Sans KR</span>
+    <span class="sep"></span>
+    <span class="b" style="font-size:16px">−</span><span class="num">10</span><span class="b" style="font-size:16px">+</span>
+    <span class="sep"></span>
+    <b class="b">B</b><span class="b" style="font-style:italic;font-family:serif;font-size:15px">I</span><span class="b" style="text-decoration:line-through">S</span>
+    <span class="b"><svg viewBox="0 0 24 24" class="ico"><path d="M6 17 12 4l6 13M8.3 12.5h7.4"/><path d="M4 21h16" stroke="#0E9F6E" stroke-width="2.6"/></svg></span>
+    <span class="sep"></span>
+    <span class="b"><svg viewBox="0 0 24 24" class="ico"><path d="m19 11-8-8-7 7 8 8z"/><path d="M5 2l3 3"/><path d="M20 15s-2 2.4-2 3.7a2 2 0 0 0 4 0C22 17.4 20 15 20 15z"/></svg></span>
+    <span class="b"><svg viewBox="0 0 24 24" class="ico"><rect x="4" y="4" width="16" height="16" rx="1"/><path d="M4 12h16M12 4v16" stroke-dasharray="2 2.5"/></svg></span>
+    <span class="b"><svg viewBox="0 0 24 24" class="ico"><path d="M3 6h18M3 12h12M3 18h18"/></svg></span>
+    <span class="b"><svg viewBox="0 0 24 24" class="ico"><path d="M4 6h16M4 11h16M4 16h9"/><path d="m17 14 3 3-3 3"/></svg></span>
+    <span class="sep"></span>
+    <span class="b"><svg viewBox="0 0 24 24" class="ico"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></span>
+    <span class="b"><svg viewBox="0 0 24 24" class="ico"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20.5l1.3-4.8A8 8 0 1 1 21 12z"/><path d="M12 9v6M9 12h6"/></svg></span>
+    <span class="b"><svg viewBox="0 0 24 24" class="ico"><path d="M4 20h16"/><rect x="6" y="11" width="3" height="6"/><rect x="11" y="7" width="3" height="10"/><rect x="16" y="13" width="3" height="4"/></svg></span>
+    <span class="b"><svg viewBox="0 0 24 24" class="ico"><path d="M4 5h16l-6 7.5V19l-4 1.5v-8z"/></svg></span>
+    <span class="b" style="font-size:15px">Σ</span>
+  </div>
+
+  <div class="work">
+    <section class="sheet">
+      <div class="fbar"><span class="nm">B2</span><span class="fx">fx</span><span class="val">제주 한달살기 비용, 숙소·렌트·식비 현실 정리</span></div>
+      <div class="grid">
+        <table>
+          <colgroup><col style="width:46px"><col style="width:162px"><col style="width:310px"><col style="width:108px"><col style="width:74px"><col style="width:200px"><col style="width:66px"><col style="width:40px"></colgroup>
+          <thead><tr><th></th><th>A</th><th class="on">B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th></tr></thead>
+          <tbody>
+            <tr class="h"><th>1</th><td>키워드</td><td>제목</td><td>상태</td><td class="r">글자 수</td><td>문서 링크</td><td>생성</td><td></td></tr>
+            <tr><th class="on">2</th><td>제주 한달살기 비용</td><td class="sel">제주 한달살기 비용, 숙소·렌트·식비 현실 정리</td><td><span class="chip done">생성 완료</span></td><td class="r">2,812</td><td><span class="file"><svg viewBox="0 0 16 16"><path d="M3 1h7l3 3v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" fill="#3E6FD8"/><path d="M5 8h6M5 10.5h6M5 5.5h3" stroke="#fff" stroke-width="1.1"/></svg>제주 한달살기 비용</span></td><td>09:12</td><td></td></tr>
+            <tr><th>3</th><td class="note">제주 한달살기 숙소</td><td>제주 한달살기 숙소 고르는 법, 지역별 장단점</td><td><span class="chip done">생성 완료</span></td><td class="r">2,640</td><td><span class="file"><svg viewBox="0 0 16 16"><path d="M3 1h7l3 3v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" fill="#3E6FD8"/><path d="M5 8h6M5 10.5h6M5 5.5h3" stroke="#fff" stroke-width="1.1"/></svg>제주 한달살기 숙소</span></td><td>09:14</td><td></td></tr>
+            <tr><th>4</th><td class="note">아이와 제주 한달살기</td><td>아이와 제주 한달살기, 준비물과 학교 체크리스트</td><td><span class="chip done">생성 완료</span></td><td class="r">2,955</td><td><span class="file"><svg viewBox="0 0 16 16"><path d="M3 1h7l3 3v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" fill="#3E6FD8"/><path d="M5 8h6M5 10.5h6M5 5.5h3" stroke="#fff" stroke-width="1.1"/></svg>아이와 제주 한달살기</span></td><td>09:17</td><td></td></tr>
+            <tr><th>5</th><td>겨울 제주 여행 코스</td><td>겨울 제주 여행 코스 2박 3일, 동선 그대로 따라가기</td><td><span class="chip done">생성 완료</span></td><td class="r">2,730</td><td><span class="file"><svg viewBox="0 0 16 16"><path d="M3 1h7l3 3v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" fill="#3E6FD8"/><path d="M5 8h6M5 10.5h6M5 5.5h3" stroke="#fff" stroke-width="1.1"/></svg>겨울 제주 여행 코스</span></td><td>09:19</td><td></td></tr>
+            <tr><th>6</th><td>제주 렌트카 보험</td><td>제주 렌트카 보험, 완전자차 꼭 들어야 할까요</td><td><span class="chip done">생성 완료</span></td><td class="r">2,586</td><td><span class="file"><svg viewBox="0 0 16 16"><path d="M3 1h7l3 3v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" fill="#3E6FD8"/><path d="M5 8h6M5 10.5h6M5 5.5h3" stroke="#fff" stroke-width="1.1"/></svg>제주 렌트카 보험</span></td><td>09:22</td><td></td></tr>
+            <tr><th>7</th><td>제주 오름 추천</td><td>초보도 30분이면 오르는 제주 오름 7곳</td><td><span class="chip done">생성 완료</span></td><td class="r">2,694</td><td><span class="file"><svg viewBox="0 0 16 16"><path d="M3 1h7l3 3v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" fill="#3E6FD8"/><path d="M5 8h6M5 10.5h6M5 5.5h3" stroke="#fff" stroke-width="1.1"/></svg>제주 오름 추천</span></td><td>09:25</td><td></td></tr>
+            <tr><th>8</th><td>제주 동쪽 카페</td><td>제주 동쪽 바다 뷰 카페, 일출 보기 좋은 곳</td><td><span class="chip done">생성 완료</span></td><td class="r">2,508</td><td><span class="file"><svg viewBox="0 0 16 16"><path d="M3 1h7l3 3v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" fill="#3E6FD8"/><path d="M5 8h6M5 10.5h6M5 5.5h3" stroke="#fff" stroke-width="1.1"/></svg>제주 동쪽 카페</span></td><td>09:28</td><td></td></tr>
+            <tr><th>9</th><td>제주 감귤 체험</td><td>아이와 가기 좋은 제주 감귤 따기 체험 농장</td><td><span class="chip run"><i></i>생성 중</span></td><td class="r dim">1,240</td><td><span class="gen">본문 3/6 단락 작성 중</span></td><td class="dim">—</td><td></td></tr>
+            <tr><th>10</th><td>제주 흑돼지 맛집</td><td></td><td><span class="chip wait">대기</span></td><td></td><td></td><td></td><td></td></tr>
+            <tr><th>11</th><td>우도 당일치기</td><td></td><td><span class="chip wait">대기</span></td><td></td><td></td><td></td><td></td></tr>
+            <tr><th>12</th><td>제주 비 오는 날 코스</td><td></td><td><span class="chip wait">대기</span></td><td></td><td></td><td></td><td></td></tr>
+            <tr><th>13</th><td>제주 공항 근처 숙소</td><td></td><td><span class="chip wait">대기</span></td><td></td><td></td><td></td><td></td></tr>
+            <tr><th>14</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr class="sum"><th>15</th><td class="lab"><b>오늘 진행</b></td><td><span class="spark"><i></i></span></td><td><b>7 / 12</b></td><td class="r">58%</td><td></td><td></td><td></td></tr>
+            <tr class="sum"><th>16</th><td class="lab">평균 글자 수</td><td>2,704자 (생성 완료 7건)</td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr class="sum"><th>17</th><td class="lab">연관 키워드 추가</td><td>2개 · 3행, 4행 (메모 참고)</td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><th>18</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><th>19</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tabs">
+        <span class="ib"><svg viewBox="0 0 24 24" class="ico"><path d="M12 5v14M5 12h14"/></svg></span>
+        <span class="ib"><svg viewBox="0 0 24 24" class="ico"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span>
+        <span class="tb on">원고 목록</span>
+        <span class="tb">연관 키워드</span>
+        <span class="tb">설정</span>
+        <span class="cnt">키워드 12개 · 원고 폴더 드라이브/블로그 원고</span>
+      </div>
+    </section>
+
+    <aside class="side">
+      <div class="sd-head">
+        <span class="sd-logo"><svg viewBox="0 0 24 24" class="ico" style="stroke-width:2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span>
+        <b>키워드작가</b><small>1.5.0</small>
+        <svg class="x ico" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </div>
+      <div class="sd-body">
+        <div class="cur">
+          <div class="row"><span>2행 · 제주 한달살기 비용</span><span class="ok"><svg viewBox="0 0 24 24" class="ico"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>생성 완료</span></div>
+          <h4>제주 한달살기 비용, 숙소·렌트·식비 현실 정리</h4>
+          <div class="meta"><span>본문 <b>2,812자</b></span><span>소제목 <b>6개</b></span><span>제목 후보 <b>3개</b></span></div>
+        </div>
+
+        <div class="sec">
+          <h5>원고 개요 <span>클릭하면 문서로 이동</span></h5>
+          <ul class="tree">
+            <li class="h2"><em>H2</em><span>한 달 예산, 얼마면 될까요</span></li>
+            <li class="h3"><em>H3</em><span>2인 기준 총비용 한눈에 보기</span></li>
+            <li class="h2"><em>H2</em><span>숙소비 · 연세, 월세, 전용 숙소 비교</span></li>
+            <li class="h3"><em>H3</em><span>동쪽·서쪽 지역별 시세</span></li>
+            <li class="h2"><em>H2</em><span>렌트비와 교통비 아끼는 법</span></li>
+            <li class="h2"><em>H2</em><span>자주 묻는 질문 (FAQ)</span></li>
+          </ul>
+        </div>
+
+        <div class="sec">
+          <h5>키워드 밀도 <span>제주 한달살기</span></h5>
+          <div class="gauge">
+            <svg width="104" height="62" viewBox="0 0 104 62">
+              <path d="M10 56a42 42 0 0 1 84 0" fill="none" stroke="#EDF0F3" stroke-width="10" stroke-linecap="round"/>
+              <path d="M31 19.6A42 42 0 0 1 88.4 35" fill="none" stroke="#C9EEDD" stroke-width="10"/>
+              <path d="M10 56A42 42 0 0 1 69.1 17.6" fill="none" stroke="#0E9F6E" stroke-width="10" stroke-linecap="round"/>
+              <circle cx="69.1" cy="17.6" r="3.6" fill="#fff" stroke="#046C4E" stroke-width="2"/>
+              <text x="52" y="52" text-anchor="middle" font-family="Inter" font-size="17" font-weight="700" fill="#1F2328">1.9%</text>
+            </svg>
+            <div class="gt"><b>적정 범위 안이에요</b><small>13회 사용 · 어절 684개<br>권장 1.0~2.5%</small><span class="okc">과다 반복 없음</span></div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <h5>말투 · 친근한 톤 <span>글 길이 2,500~3,000자</span></h5>
+          <div class="tone"><span class="on">해요체</span><span>합니다체</span><span>평서체</span></div>
+          <div class="opts">
+            <span><i class="cb on"><svg viewBox="0 0 24 24" class="ico"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></i>요약 단락</span>
+            <span><i class="cb on"><svg viewBox="0 0 24 24" class="ico"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></i>FAQ 단락</span>
+            <span><i class="cb on"><svg viewBox="0 0 24 24" class="ico"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></i>연관 키워드 제안</span>
+            <span><i class="cb"></i>표 형식 비교</span>
+          </div>
+        </div>
+      </div>
+      <div class="sd-foot">
+        <div class="go"><svg viewBox="0 0 24 24" class="ico" style="stroke-width:2"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>원고 생성</div>
+        <div class="more"><span>대기 키워드 <b>4개</b> 이어서 생성</span><span>OpenAI 키 연결됨</span></div>
+      </div>
+    </aside>
+  </div>
+</div>
+</body>
+</html>

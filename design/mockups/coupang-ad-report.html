@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>광고엑스레이</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 광고엑스레이: 광고보고서를 엑스레이로 비춰 돈이 새는 키워드를 찾는 진단 화면. 어두운 남색 + 시안 광택 + 빨간 누수. */
+  :root {
+    --bg: #0b1530; --bg-2: #0e1a3a; --panel: #101e42; --panel-2: #14254f;
+    --line: rgb(120 170 255 / .12); --line-2: rgb(120 170 255 / .2);
+    --text: #e6eeff; --text-2: #9fb2d8; --text-3: #6b7fa8;
+    --cyan: #3ee6f0; --cyan-2: #22b8cf; --leak: #ff4d61; --amber: #ffb547; --ok: #4be0a6; --spend: #5470c6;
+  }
+  body { font: 400 13px/1.4 'IBM Plex Sans KR', 'Malgun Gothic', sans-serif; color: var(--text); background: var(--bg); }
+  .win { --bar: #08102a; --bar-fg: #93a6cf; background: var(--bg); }
+  .tnum, td, .num { font-variant-numeric: tabular-nums; }
+  svg.i { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+  .top { flex: none; height: 56px; display: flex; align-items: center; gap: 18px; padding: 0 16px; background: linear-gradient(#0d1a3c, #0b1633); border-bottom: 1px solid var(--line); }
+  .logo { display: flex; align-items: center; gap: 9px; }
+  .logo span { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: radial-gradient(circle at 50% 35%, #1c4a6e, #0b1f3d 70%); box-shadow: inset 0 0 0 1px rgb(62 230 240 / .45), 0 0 14px rgb(62 230 240 / .25); }
+  .logo b { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+  .tabs { display: flex; gap: 2px; align-self: stretch; }
+  .tabs span { display: flex; align-items: center; padding: 0 12px; font-size: 13px; font-weight: 500; color: var(--text-3); position: relative; }
+  .tabs span.on { color: var(--text); font-weight: 600; }
+  .tabs span.on::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 2px; border-radius: 2px; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+  .file { margin-left: auto; height: 34px; display: flex; align-items: center; gap: 10px; padding: 0 12px 0 6px; border-radius: 9px; background: rgb(62 230 240 / .07); border: 1px solid rgb(62 230 240 / .28); }
+  .file .xl { width: 24px; height: 24px; border-radius: 6px; background: #1f7a4d; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #fff; letter-spacing: -.3px; }
+  .file b { font-size: 13px; font-weight: 600; }
+  .file small { font-size: 11.5px; color: var(--text-2); }
+  .file .done { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--cyan); }
+  .file .done i { width: 16px; height: 16px; border-radius: 50%; background: var(--cyan); display: grid; place-items: center; color: #062033; }
+  .btn { height: 32px; display: flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line-2); color: var(--text-2); font-size: 12.5px; font-weight: 600; background: rgb(255 255 255 / .02); }
+  .btn.pri { background: linear-gradient(180deg, #46e9f2, #1fb5cc); border-color: transparent; color: #04223a; box-shadow: 0 0 16px rgb(62 230 240 / .3); }
+
+  .content { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 12px; padding: 14px 16px; }
+  .row1 { flex: none; height: 340px; display: flex; gap: 12px; }
+  .panel { border-radius: 12px; background: var(--panel); border: 1px solid var(--line); position: relative; overflow: hidden; }
+
+  /* 엑스레이 차트 */
+  .xray { flex: 1; min-width: 0; padding: 14px 18px 10px;
+          background:
+            repeating-linear-gradient(0deg, rgb(62 230 240 / .025) 0 1px, transparent 1px 3px),
+            radial-gradient(ellipse 70% 90% at 40% 45%, rgb(34 150 210 / .16), transparent 70%),
+            var(--panel); }
+  .xray::before { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: 12px; box-shadow: inset 0 0 40px rgb(62 230 240 / .06); }
+  .ph { display: flex; align-items: center; gap: 12px; }
+  .ph h2 { font-size: 14px; font-weight: 600; }
+  .ph h2 small { font-size: 12px; font-weight: 400; color: var(--text-3); margin-left: 6px; }
+  .lg { margin-left: auto; display: flex; gap: 14px; font-size: 11.5px; color: var(--text-2); }
+  .lg i { display: inline-block; width: 12px; height: 8px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
+  .chart { position: relative; margin-top: 10px; }
+  .crow { position: relative; display: grid; grid-template-columns: 124px 1fr 74px; align-items: center; height: 31.5px; }
+  .crow .k { font-size: 12.5px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .crow.leak .k { color: #ffb3bb; }
+  .drop { width: 12px; height: 12px; flex: none; }
+  .bars { position: relative; height: 22px; }
+  .bars i { position: absolute; left: 0; height: 9px; border-radius: 0 3px 3px 0; }
+  .bars i.s { top: 0; background: linear-gradient(90deg, #3d5296, var(--spend)); }
+  .bars i.r { top: 12px; background: linear-gradient(90deg, #1a8fb0, var(--cyan)); box-shadow: 0 0 8px rgb(62 230 240 / .45); }
+  .crow.leak .bars i.s { background: linear-gradient(90deg, #a8243a, var(--leak)); box-shadow: 0 0 10px rgb(255 77 97 / .55); }
+  .bars em { position: absolute; font-style: normal; font-size: 11px; color: var(--text-2); line-height: 9px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .crow.leak .bars em.es { color: #ff8a97; }
+  .crow .ro { text-align: right; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .crow.leak .ro { color: var(--leak); }
+  .crow.leak::before { content: ""; position: absolute; left: -8px; right: -8px; top: 2px; bottom: 2px; border-radius: 6px; background: linear-gradient(90deg, rgb(255 77 97 / .09), rgb(255 77 97 / .02) 70%, transparent); }
+  .grid { position: absolute; left: 124px; right: 74px; top: 0; bottom: 18px; pointer-events: none; }
+  .grid span { position: absolute; top: 0; bottom: 0; border-left: 1px dashed rgb(120 170 255 / .12); }
+  .grid span b { position: absolute; bottom: -17px; left: 0; translate: -50% 0; font-size: 11px; font-weight: 400; color: var(--text-3); white-space: nowrap; }
+  .grid .tgt { border-left: 1px solid rgb(62 230 240 / .0); }
+  .axis-gap { height: 18px; position: relative; }
+  .ro-h { position: absolute; right: 0; bottom: 0; font-size: 11px; color: var(--text-3); }
+  .scan { position: absolute; left: 124px; right: 74px; top: 0; height: 2px; }
+
+  /* 진단 카드 */
+  .diag { width: 364px; flex: none; padding: 16px 18px 14px; display: flex; flex-direction: column;
+          background: radial-gradient(ellipse 90% 60% at 80% 0%, rgb(62 230 240 / .1), transparent 70%), var(--panel); }
+  .dh { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-3); }
+  .dh b { color: var(--text); font-size: 14px; font-weight: 600; }
+  .roas { display: flex; align-items: flex-end; gap: 10px; margin-top: 8px; }
+  .roas div p { font-size: 11.5px; color: var(--text-3); }
+  .roas strong { display: block; font-size: 34px; line-height: 1.05; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .roas .now strong { color: #ff8a97; }
+  .roas .exp strong { color: var(--cyan); text-shadow: 0 0 18px rgb(62 230 240 / .45); }
+  .roas strong small { font-size: 16px; font-weight: 600; margin-left: 1px; }
+  .roas .arr { padding-bottom: 10px; color: var(--text-3); }
+  .roas .tag { margin-left: auto; align-self: center; padding: 4px 8px; border-radius: 6px; background: rgb(62 230 240 / .12); color: var(--cyan); font-size: 11.5px; font-weight: 600; }
+  .gl.gt { margin-top: 4px; margin-bottom: 9px; height: 13px; }
+  .gauge { position: relative; margin-top: 0; height: 8px; border-radius: 4px; background: rgb(120 170 255 / .12); }
+  .gauge i { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 4px; }
+  .gauge .g2 { background: linear-gradient(90deg, rgb(62 230 240 / .25), var(--cyan)); }
+  .gauge .g1 { background: #ff6b7c; }
+  .gauge .t { position: absolute; top: -3px; bottom: -3px; width: 2px; background: #fff; border-radius: 1px; }
+  .gl { position: relative; height: 15px; margin-top: 4px; font-size: 11px; color: var(--text-3); }
+  .gl span { position: absolute; translate: -50% 0; white-space: nowrap; }
+  .leakbox { margin-top: 6px; padding: 9px 12px; border-radius: 10px; background: rgb(255 77 97 / .08); border: 1px solid rgb(255 77 97 / .3); display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; align-items: center; }
+  .leakbox .n { grid-row: span 3; font-size: 30px; line-height: 1; font-weight: 700; color: var(--leak); font-variant-numeric: tabular-nums; }
+  .leakbox .n small { font-size: 13px; font-weight: 600; margin-left: 1px; }
+  .leakbox b { font-size: 12.5px; font-weight: 600; color: #ffd0d5; }
+  .leakbox p { font-size: 11.5px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .split { margin-top: 8px; margin-bottom: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .split div { padding: 8px 10px; border-radius: 9px; background: rgb(120 170 255 / .06); border: 1px solid var(--line); }
+  .split p { font-size: 11px; color: var(--text-3); }
+  .split b { display: block; font-size: 15px; font-weight: 700; margin-top: 1px; font-variant-numeric: tabular-nums; }
+  .split small { display: block; font-size: 11px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .copy { margin-top: auto; height: 32px; display: flex; align-items: center; justify-content: center; gap: 7px; border-radius: 8px; background: rgb(255 77 97 / .14); border: 1px solid rgb(255 77 97 / .45); color: #ffc0c7; font-size: 12.5px; font-weight: 600; }
+
+  /* 표 */
+  .tbl { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .tt { height: 42px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--line); }
+  .seg { display: flex; gap: 2px; padding: 3px; border-radius: 8px; background: #0a1430; }
+  .seg b { height: 26px; display: flex; align-items: center; gap: 5px; padding: 0 10px; border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--text-3); }
+  .seg b span { font-weight: 400; font-variant-numeric: tabular-nums; }
+  .seg b.on { background: var(--panel-2); color: var(--text); }
+  .seg b.lk span { color: var(--leak); font-weight: 600; }
+  .tt .rule { margin-left: auto; display: flex; gap: 14px; font-size: 12px; color: var(--text-3); }
+  .tt .rule b { color: var(--text-2); font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; }
+  th { height: 30px; padding: 0 10px; font-size: 11.5px; font-weight: 500; color: var(--text-3); text-align: right; background: #0d1938; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; padding-left: 16px; }
+  th:last-child, td:last-child { padding-right: 16px; }
+  th.l, td.l { text-align: left; }
+  td { height: 39px; padding: 0 10px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; font-size: 12.5px; color: var(--text-2); }
+  td.kw { color: var(--text); font-weight: 600; }
+  tr.leak td.kw { color: #ffb3bb; }
+  tr.leak td.sp { color: #ff8a97; font-weight: 600; }
+  td.ro { font-weight: 700; color: var(--text); }
+  tr.leak td.ro { color: var(--leak); }
+  .area { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 11px; background: rgb(120 170 255 / .1); color: var(--text-2); }
+  .act { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 9px; border-radius: 11px; font-size: 11.5px; font-weight: 600; }
+  .act i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .act.ex { color: #ff98a4; background: rgb(255 77 97 / .14); box-shadow: inset 0 0 0 1px rgb(255 77 97 / .4); }
+  .act.dn { color: var(--amber); background: rgb(255 181 71 / .12); box-shadow: inset 0 0 0 1px rgb(255 181 71 / .3); }
+  .act.up { color: var(--cyan); background: rgb(62 230 240 / .1); box-shadow: inset 0 0 0 1px rgb(62 230 240 / .3); }
+  .act.ke { color: var(--text-2); background: rgb(120 170 255 / .08); box-shadow: inset 0 0 0 1px rgb(120 170 255 / .2); }
+
+  .status { flex: none; height: 26px; display: flex; align-items: center; gap: 18px; padding: 0 14px; background: #08102a; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--text-3); }
+  .status b { color: var(--cyan); font-weight: 600; }
+  .status .r { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar">
+    <span class="win-icon"><svg viewBox="0 0 16 16" width="16" height="16"><rect x="1.5" y="1.5" width="13" height="13" rx="3.5" fill="#0f2b4a" stroke="#3ee6f0" stroke-width="1"/><path d="M5 5.5h6M4.5 8h7M5 10.5h6M8 4v8" stroke="#3ee6f0" stroke-width="1.1" stroke-linecap="round"/></svg></span>
+    <span class="win-title">광고엑스레이 1.3.0 — 10월 광고보고서 분석</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <div class="col">
+      <div class="top">
+        <div class="logo">
+          <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3ee6f0" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v18"/><path d="M7 7c3 1 7 1 10 0M6 11c3.5 1.2 8.5 1.2 12 0M7 15c3 1 7 1 10 0"/><circle cx="16.5" cy="17.5" r="2.4" stroke="#ff4d61"/></svg></span>
+          <b>광고엑스레이</b>
+        </div>
+        <nav class="tabs"><span class="on">키워드 진단</span><span>캠페인별 보고서</span><span>검색·비검색 영역</span></nav>
+        <div class="file">
+          <span class="xl">XLS</span>
+          <b>광고보고서_10월.xlsx</b>
+          <small>시트 12개 · 10.01~10.25</small>
+          <span class="done"><i><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></i>분석 완료</span>
+        </div>
+        <span class="btn"><svg class="i" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>폴더 선택</span>
+        <span class="btn"><svg class="i" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg>마진 입력</span>
+        <span class="btn pri"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>엑셀 저장</span>
+      </div>
+
+      <div class="content">
+        <div class="row1">
+          <section class="panel xray">
+            <div class="ph">
+              <h2>키워드별 광고비 vs 광고매출<small>광고비 상위 8개 · 10.01~10.25</small></h2>
+              <div class="lg"><span><i style="background:#5470c6"></i>광고비</span><span><i style="background:#3ee6f0;box-shadow:0 0 6px #3ee6f0"></i>광고매출</span><span><i style="background:#ff4d61;box-shadow:0 0 6px #ff4d61"></i>돈 새는 키워드</span></div>
+            </div>
+            <div class="chart" id="chart">
+              <div class="grid" id="grid"></div>
+            </div>
+          </section>
+
+          <section class="panel diag">
+            <div class="dh"><b>진단 결과</b><span>목표 ROAS 300% · 마진 18,000원</span></div>
+            <div class="roas">
+              <div class="now"><p>현재 ROAS</p><strong>112<small>%</small></strong></div>
+              <svg class="arr" width="34" height="14" viewBox="0 0 34 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7h29M25 2l6 5-6 5"/></svg>
+              <div class="exp"><p>개선 시 예상</p><strong>248<small>%</small></strong></div>
+              <span class="tag">2.2배</span>
+            </div>
+            <div class="gl gt"><span style="left:75%;color:#e6eeff">목표 300%</span></div>
+            <div class="gauge"><i class="g2" style="width:62%"></i><i class="g1" style="width:28%"></i><i class="t" style="left:75%"></i></div>
+            <div class="gl"><span style="left:0;translate:0 0">0</span><span style="left:28%">112%</span><span style="left:62%">248%</span><span style="left:100%;translate:-100% 0">400%</span></div>
+            <div class="leakbox">
+              <span class="n">18<small>개</small></span>
+              <b>제외 추천 · 돈 새는 키워드</b>
+              <p>광고비 2,760,000원 · 매출 316,800원</p>
+              <p>ROAS 11.5% · 빼면 광고비 57.5% 절감</p>
+            </div>
+            <div class="split">
+              <div><p>검색 영역</p><b>141%</b><small>광고비 3,120,000원</small></div>
+              <div><p>비검색 영역</p><b style="color:#ff8a97">58%</b><small>광고비 1,680,000원</small></div>
+            </div>
+            <div class="copy"><svg class="i" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>제외 키워드 18개 복사</div>
+          </section>
+        </div>
+
+        <section class="panel tbl">
+          <div class="tt">
+            <div class="seg"><b class="on">전체 <span>286</span></b><b class="lk">제외 <span>18</span></b><b>입찰 하향 <span>9</span></b><b>유지 <span>247</span></b><b>확장 <span>12</span></b></div>
+            <div class="rule"><span>총 광고비 <b>4,800,000원</b></span><span>광고매출 <b>5,376,000원</b></span><span>중단 기준 <b>전환단가 &gt; 마진</b></span></div>
+          </div>
+          <table>
+            <thead><tr><th>키워드</th><th>노출</th><th>클릭</th><th>CTR</th><th>CPC</th><th>광고비</th><th>주문</th><th>전환율</th><th>광고매출</th><th>ROAS</th><th>전환단가</th><th class="l" style="padding-left:18px">권장 조치</th></tr></thead>
+            <tbody id="tb"></tbody>
+          </table>
+        </section>
+      </div>
+
+      <footer class="status">
+        <b>● 완료</b><span>보고서 파일 12개</span><span>키워드 286개 지표 계산</span><span>제외 추천 18개 · 입찰 하향 9개 · 확장 12개</span><span>소요 10초</span>
+        <span class="r"><svg class="i" style="width:13px;height:13px" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>내 PC 안에서만 분석 · 라이선스 인증됨</span>
+      </footer>
+    </div>
+  </main>
+</div>
+<script>(() => {
+  // [키워드, 영역, 노출, 클릭, 광고비, 주문, 광고매출, 조치]  — 10.01~10.25, 광고비 순
+  const K = [
+    ['의자',        '검색',   186400, 2030, 812000, 2,  71600,   'ex'],
+    ['캠핑의자',    '검색',    52800, 1280, 640000, 52, 2069600, 'up'],
+    ['접이식 의자', '검색',   121500, 1470, 588000, 2,  79600,   'ex'],
+    ['낚시 의자',   '검색',    98200, 1240, 465000, 1,  32900,   'ex'],
+    ['경량 체어',   '검색',    31900,  704, 352000, 21, 835800,  'dn'],
+    ['의자 추천',   '검색',    64300,  795, 318000, 0,  0,       'ex'],
+    ['캠핑 체어',   '검색',    27600,  592, 296000, 18, 716400,  'dn'],
+    ['등산 의자',   '검색',    58100,  685, 274000, 1,  39800,   'ex'],
+  ];
+  const ACT = { ex: ['ex', '제외'], dn: ['dn', '입찰 하향'], up: ['up', '확장'], ke: ['ke', '유지'] };
+  const won = (n) => n.toLocaleString('ko-KR');
+  const man = (n) => n === 0 ? '0' : (n / 10000).toFixed(1).replace(/\.0$/, '') + '만';
+  const roas = (s, r) => { const v = r / s * 100; return v === 0 ? '0%' : v >= 100 ? Math.round(v) + '%' : v.toFixed(1) + '%'; };
+
+  // 차트: 같은 눈금(0~220만 원)에 광고비·광고매출 막대
+  const MAX = 2200000;
+  const chart = document.getElementById('chart');
+  const grid = document.getElementById('grid');
+  [0, 500000, 1000000, 1500000, 2000000].forEach((v) => {
+    grid.insertAdjacentHTML('beforeend', `<span style="left:${v / MAX * 100}%"><b>${v === 0 ? '0' : v / 10000 + '만'}</b></span>`);
+  });
+  const drop = '<svg class="drop" viewBox="0 0 24 24" fill="#ff4d61"><path d="M12 2.5s-6.5 7.2-6.5 12a6.5 6.5 0 0 0 13 0c0-4.8-6.5-12-6.5-12z"/></svg>';
+  K.forEach(([k, , , , s, , r, a]) => {
+    const leak = a === 'ex';
+    const sw = s / MAX * 100, rw = Math.max(r / MAX * 100, r ? .6 : 0);
+    chart.insertAdjacentHTML('beforeend', `
+      <div class="crow${leak ? ' leak' : ''}">
+        <span class="k">${leak ? drop : '<span style="width:12px"></span>'}${k}</span>
+        <div class="bars">
+          <i class="s" style="width:${sw}%"></i><em class="es" style="left:calc(${sw}% + 6px);top:0">${man(s)}</em>
+          ${r ? `<i class="r" style="width:${rw}%"></i>` : ''}<em style="left:calc(${rw}% + ${r ? 6 : 0}px);top:12px">${r ? man(r) : '매출 없음'}</em>
+        </div>
+        <span class="ro">${roas(s, r)}</span>
+      </div>`);
+  });
+  chart.insertAdjacentHTML('beforeend', '<div class="axis-gap"><span class="ro-h">ROAS</span></div>');
+
+  // 표
+  document.getElementById('tb').innerHTML = K.slice(0, 6).map(([k, area, imp, clk, s, o, r, a]) => {
+    const leak = a === 'ex';
+    return `<tr class="${leak ? 'leak' : ''}"><td class="kw">${k}</td>
+      <td>${won(imp)}</td><td>${won(clk)}</td><td>${(clk / imp * 100).toFixed(2)}%</td><td>${won(Math.round(s / clk))}</td>
+      <td class="sp">${won(s)}</td><td>${o}</td><td>${(o / clk * 100).toFixed(2)}%</td><td>${won(r)}</td><td class="ro">${roas(s, r)}</td>
+      <td>${o ? won(Math.round(s / o)) : '–'}</td>
+      <td class="l" style="padding-left:18px"><span class="act ${ACT[a][0]}"><i></i>${ACT[a][1]}</span></td></tr>`;
+  }).join('');
+})();</script>
+</body>
+</html>

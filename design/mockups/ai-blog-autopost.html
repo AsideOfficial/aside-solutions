@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>블로그집사</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 블로그집사: 써 둔 글을 확인하고 날짜·시간에 맞춰 내보내는 발행 비서. 밝은 민트 + 에메랄드. */
+  :root {
+    --bg: #F3FBF8; --panel: #fff; --line: #DDEFE7; --line-2: #CBE5DA;
+    --text: #12261F; --text-2: #4C6359; --text-3: #85998F;
+    --e: #059669; --e-2: #10B981; --e-soft: #E3F6EE; --e-ink: #046147;
+    --amber: #C77700; --amber-soft: #FFF3DC;
+  }
+  body { font: 400 13px/1.45 'Pretendard Variable', 'Segoe UI', sans-serif; color: var(--text); background: var(--bg); letter-spacing: -0.01em; word-break: keep-all; }
+  .win { --bar: #E6F5EF; --bar-fg: #23413A; background: var(--bg); }
+  .win-body { flex-direction: column; }
+  .ico { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  .top { height: 54px; flex: none; display: flex; align-items: center; gap: 20px; padding: 0 18px; background: #fff; border-bottom: 1px solid var(--line); }
+  .brand { display: flex; align-items: center; gap: 9px; font-size: 15px; font-weight: 800; letter-spacing: -0.02em; }
+  .brand .mk { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(140deg, #10B981, #047857); display: grid; place-items: center; }
+  .brand .mk svg { width: 17px; height: 17px; stroke: #fff; stroke-width: 2; }
+  .nav { display: flex; gap: 4px; }
+  .nav span { height: 32px; display: flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--text-3); }
+  .nav span svg { width: 15px; height: 15px; }
+  .nav span.on { background: var(--e-soft); color: var(--e-ink); }
+  .top .sp { flex: 1; }
+  .conn { display: flex; align-items: center; gap: 7px; height: 30px; padding: 0 11px; border-radius: 15px; border: 1px solid var(--line); font-size: 12px; color: var(--text-2); }
+  .conn i { width: 7px; height: 7px; border-radius: 50%; background: var(--e-2); }
+  .conn b { font-weight: 700; color: var(--text); }
+
+  .cols { flex: 1; min-height: 0; display: flex; gap: 14px; padding: 14px 16px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; }
+
+  /* 왼쪽 큐 */
+  .queue { width: 290px; flex: none; display: flex; flex-direction: column; overflow: hidden; }
+  .q-h { padding: 14px 16px 10px; display: flex; align-items: center; justify-content: space-between; }
+  .q-h b { font-size: 15px; font-weight: 800; }
+  .q-h span { font-size: 12px; color: var(--text-3); }
+  .week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 0 12px 12px; border-bottom: 1px solid var(--line); }
+  .day { height: 50px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; font-variant-numeric: tabular-nums; position: relative; }
+  .day small { font-size: 11px; color: var(--text-3); }
+  .day b { font-size: 14px; font-weight: 700; }
+  .day.today { background: var(--text); color: #fff; }
+  .day.today small { color: #A9C2B8; }
+  .day i { position: absolute; bottom: 5px; width: 5px; height: 5px; border-radius: 50%; background: var(--e); }
+  .day.pick { border: 1.5px dashed var(--e-2); background: #F4FCF8; }
+  .day.pick i { background: var(--amber); }
+  .q-list { flex: 1; min-height: 0; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
+  .grp { font-size: 11.5px; font-weight: 700; color: var(--text-3); padding: 6px 4px 2px; display: flex; justify-content: space-between; }
+  .qi { border-radius: 12px; padding: 9px 11px; border: 1px solid var(--line); background: #fff; }
+  .qi.on { border: 1.5px solid var(--e); background: #F5FCF9; box-shadow: 0 8px 18px -14px rgb(5 150 105 / .6); }
+  .qi .row { display: flex; align-items: center; gap: 6px; }
+  .when { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 6px; background: var(--e-soft); color: var(--e-ink); font-size: 11.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .when svg { width: 12px; height: 12px; stroke-width: 2.2; }
+  .when.wait { background: var(--amber-soft); color: var(--amber); }
+  .when.done { background: #EEF2F0; color: var(--text-3); }
+  .qi .st { margin-left: auto; font-size: 11.5px; font-weight: 600; color: var(--text-3); }
+  .qi .st.e { color: var(--e); }
+  .qi b { display: block; font-size: 13px; font-weight: 700; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .qi small { display: block; font-size: 11.5px; color: var(--text-3); margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .qi.done b { color: var(--text-2); font-weight: 600; }
+  .q-f { padding: 10px 12px 12px; border-top: 1px solid var(--line); }
+  .newbtn { height: 38px; border-radius: 10px; border: 1.5px dashed var(--line-2); display: flex; align-items: center; justify-content: center; gap: 7px; color: var(--e-ink); font-weight: 700; font-size: 13px; }
+  .newbtn svg { width: 15px; height: 15px; }
+
+  /* 가운데 미리보기 */
+  .preview { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; background: #EAF5F0; border-color: var(--line); }
+  .pv-bar { height: 46px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 14px; background: #fff; border-bottom: 1px solid var(--line); }
+  .pv-bar .lab { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .pv-bar .lab em { font-style: normal; font-size: 11px; font-weight: 700; color: var(--amber); background: var(--amber-soft); padding: 2px 7px; border-radius: 5px; }
+  .pv-bar .sp { flex: 1; }
+  .seg { display: flex; padding: 2px; border-radius: 8px; background: #EEF5F2; }
+  .seg span { height: 26px; display: flex; align-items: center; gap: 5px; padding: 0 10px; border-radius: 6px; font-size: 12px; color: var(--text-3); font-weight: 600; }
+  .seg span svg { width: 13px; height: 13px; }
+  .seg span.on { background: #fff; color: var(--text); box-shadow: 0 1px 2px rgb(18 38 31 / .12); }
+  .ghost { height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 11px; border-radius: 8px; border: 1px solid var(--line-2); font-size: 12px; font-weight: 600; color: var(--text-2); }
+  .ghost svg { width: 14px; height: 14px; }
+  .paper-wrap { flex: 1; min-height: 0; padding: 14px 0 0; display: flex; justify-content: center; overflow: hidden; }
+  .paper { width: 560px; background: #fff; border-radius: 12px 12px 0 0; box-shadow: 0 12px 30px -18px rgb(4 97 71 / .35); padding: 20px 32px 0; overflow: hidden; }
+  .cat { font-size: 12px; font-weight: 600; color: var(--e); }
+  .paper h1 { text-wrap: balance; font-family: 'Gowun Dodum', serif; font-weight: 400; font-size: 24px; line-height: 1.35; letter-spacing: -0.02em; margin-top: 6px; color: #1A1F1D; }
+  .byline { display: flex; align-items: center; gap: 8px; margin-top: 8px; padding-bottom: 12px; border-bottom: 1px solid #EEF1EF; font-size: 12px; color: var(--text-3); }
+  .byline .av { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #A7F3D0, #34D399); display: grid; place-items: center; font-size: 11px; font-weight: 800; color: #065F46; }
+  .byline b { color: var(--text-2); font-weight: 600; }
+  .hero { position: relative; margin-top: 14px; height: 178px; border-radius: 10px; overflow: hidden; }
+  .hero svg { width: 100%; height: 100%; }
+  .hero .ov { position: absolute; left: 22px; top: 22px; color: #fff; }
+  .hero .ov small { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 3px 8px; border-radius: 5px; background: rgb(255 255 255 / .18); backdrop-filter: blur(2px); }
+  .hero .ov strong { display: block; margin-top: 8px; font-size: 26px; font-weight: 800; line-height: 1.2; letter-spacing: -0.03em; text-shadow: 0 2px 10px rgb(0 0 0 / .3); }
+  .hero .auto { position: absolute; right: 10px; bottom: 10px; display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: #fff; background: rgb(4 97 71 / .85); padding: 4px 8px; border-radius: 6px; }
+  .hero .auto svg { width: 12px; height: 12px; }
+  .post { font-family: 'Gowun Dodum', serif; font-size: 14px; line-height: 1.8; color: #2B302E; margin-top: 14px; letter-spacing: -0.01em; }
+  .post h3 { font-family: 'Gowun Dodum', serif; font-weight: 400; font-size: 16px; margin-top: 12px; color: #1A1F1D; padding-left: 10px; border-left: 3px solid var(--e-2); line-height: 1.4; }
+  .post p + h3 { margin-top: 12px; }
+  .post h3 + p { margin-top: 6px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .tags span { font-size: 12px; color: var(--e-ink); background: var(--e-soft); padding: 4px 10px; border-radius: 14px; }
+
+  /* 오른쪽 설정 */
+  .settings { width: 300px; flex: none; display: flex; flex-direction: column; overflow: hidden; }
+  .s-h { padding: 14px 16px 6px; display: flex; justify-content: space-between; align-items: center; }
+  .s-h b { font-size: 15px; font-weight: 800; }
+  .s-h span { font-size: 12px; color: var(--text-3); }
+  .s-body { flex: 1; min-height: 0; padding: 4px 16px; display: flex; flex-direction: column; gap: 11px; overflow: hidden; }
+  .fl { font-size: 12px; font-weight: 700; color: var(--text-2); margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+  .fl span { font-weight: 500; color: var(--text-3); font-size: 11.5px; }
+  .inp { height: 36px; border-radius: 9px; border: 1px solid var(--line-2); display: flex; align-items: center; gap: 8px; padding: 0 11px; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; background: #fff; }
+  .inp svg { width: 15px; height: 15px; color: var(--e); }
+  .inp.dd::after { content: ""; margin-left: auto; border: 4.5px solid transparent; border-top-color: var(--text-3); border-bottom: 0; }
+  .two { display: grid; grid-template-columns: 1.35fr 1fr; gap: 8px; }
+  .slots { display: flex; gap: 6px; margin-top: 7px; }
+  .slots span { flex: 1; height: 26px; display: grid; place-items: center; border-radius: 7px; background: #F1F7F4; font-size: 11.5px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .slots span.on { background: var(--e-soft); color: var(--e-ink); font-weight: 700; box-shadow: inset 0 0 0 1px var(--e-2); }
+  .tog { display: flex; align-items: center; justify-content: space-between; }
+  .tog b { font-size: 12.5px; font-weight: 700; }
+  .tog small { display: block; font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
+  .sw { width: 34px; height: 20px; border-radius: 10px; background: #CFDAD5; position: relative; flex: none; }
+  .sw::after { content: ""; position: absolute; left: 2px; top: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / .2); }
+  .sw.on { background: var(--e); }
+  .sw.on::after { left: 16px; }
+  .imgs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; }
+  .imgs span { height: 40px; border-radius: 8px; position: relative; overflow: hidden; }
+  .imgs span em { position: absolute; left: 4px; top: 4px; font-style: normal; font-size: 10px; font-weight: 700; color: #fff; background: rgb(0 0 0 / .45); padding: 0 4px; border-radius: 3px; }
+  .htags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .htags span { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 4px 6px 4px 9px; border-radius: 7px; border: 1px solid var(--line-2); color: var(--text-2); }
+  .htags span svg { width: 11px; height: 11px; color: var(--text-3); stroke-width: 2.4; }
+  .logs { padding-top: 8px; border-top: 1px dashed var(--line-2); }
+  .logs li { display: flex; gap: 10px; font-size: 12px; height: 20px; align-items: center; color: var(--text-2); }
+  .logs time { color: var(--text-3); font-variant-numeric: tabular-nums; font-size: 11.5px; }
+  .logs b { color: var(--amber); font-weight: 700; }
+  .s-f { padding: 12px 16px 14px; border-top: 1px solid var(--line); display: flex; gap: 8px; }
+  .btn { height: 40px; display: flex; align-items: center; justify-content: center; gap: 7px; border-radius: 10px; font-weight: 700; font-size: 13px; }
+  .btn svg { width: 15px; height: 15px; }
+  .btn.sub { width: 92px; border: 1px solid var(--line-2); color: var(--text-2); }
+  .btn.pri { flex: 1; background: var(--e); color: #fff; box-shadow: 0 8px 16px -8px rgb(5 150 105 / .7); }
+
+  .status { height: 26px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 16px; background: #E6F5EF; border-top: 1px solid var(--line); color: var(--text-2); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+  .status b { color: var(--amber); font-weight: 700; }
+  .status .r { margin-left: auto; color: var(--text-3); }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar">
+    <span class="win-icon"><svg viewBox="0 0 16 16" width="16" height="16"><rect x="1" y="1" width="14" height="14" rx="4" fill="#059669"/><path d="M5 11.5V5h3.2a1.6 1.6 0 0 1 0 3.2H5h3.6a1.7 1.7 0 0 1 0 3.3z" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg></span>
+    <span class="win-title">블로그집사 2.2.1 — 예약 발행</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <div class="top">
+      <div class="brand"><span class="mk"><svg viewBox="0 0 24 24" class="ico"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></span>블로그집사</div>
+      <nav class="nav">
+        <span class="on"><svg viewBox="0 0 24 24" class="ico"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>예약 목록</span>
+        <span><svg viewBox="0 0 24 24" class="ico"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/></svg>원고 생성</span>
+        <span><svg viewBox="0 0 24 24" class="ico"><path d="M3 12s3.5-7 9-7 9 7 9 7-3.5 7-9 7-9-7-9-7z"/><circle cx="12" cy="12" r="2.5"/></svg>미리보기</span>
+        <span><svg viewBox="0 0 24 24" class="ico"><path d="M4 6h10M4 12h6M4 18h12"/><circle cx="17" cy="6" r="2.5"/><circle cx="13" cy="12" r="2.5"/><circle cx="19" cy="18" r="2.5"/></svg>설정</span>
+      </nav>
+      <span class="sp"></span>
+      <span class="conn"><i></i>내 블로그 <b>연결됨</b></span>
+      <span class="conn"><i></i>OpenAI 키 <b>●●●●</b></span>
+    </div>
+
+    <div class="cols">
+      <section class="card queue">
+        <div class="q-h"><b>예약 발행 큐</b><span>10월 넷째 주</span></div>
+        <div class="week">
+          <div class="day today"><small>월</small><b>26</b></div>
+          <div class="day"><small>화</small><b>27</b></div>
+          <div class="day"><small>수</small><b>28</b><i></i></div>
+          <div class="day"><small>목</small><b>29</b><i></i></div>
+          <div class="day pick"><small>금</small><b>30</b><i></i></div>
+          <div class="day"><small>토</small><b>31</b></div>
+          <div class="day"><small>일</small><b>1</b></div>
+        </div>
+        <div class="q-list">
+          <div class="grp"><span>검토 대기 1</span></div>
+          <div class="qi on">
+            <div class="row"><span class="when wait"><svg viewBox="0 0 24 24" class="ico"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>10/30 (금) 09:00</span><span class="st" style="color:var(--amber)">승인 필요</span></div>
+            <b>겨울 캠핑 난방용품 비교</b><small>2,600자 · 이미지 3장 · 해시태그 8개</small>
+          </div>
+          <div class="grp"><span>예약됨 2</span></div>
+          <div class="qi">
+            <div class="row"><span class="when"><svg viewBox="0 0 24 24" class="ico"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>10/28 (수) 08:30</span><span class="st e">다음 발행</span></div>
+            <b>가을 제철 전어 손질법 총정리</b><small>2,350자 · 이미지 3장</small>
+          </div>
+          <div class="qi">
+            <div class="row"><span class="when"><svg viewBox="0 0 24 24" class="ico"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>10/29 (목) 12:00</span><span class="st">오늘 09:12 승인</span></div>
+            <b>동네 카페 신메뉴 소개</b><small>2,080자 · 이미지 3장 · 지도 없음</small>
+          </div>
+          <div class="grp"><span>최근 발행</span><span style="font-weight:500">전체 보기</span></div>
+          <div class="qi done">
+            <div class="row"><span class="when done"><svg viewBox="0 0 24 24" class="ico"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>10/25 (일) 09:00</span><span class="st">발행됨</span></div>
+            <b>주말 나들이 코스 추천</b>
+          </div>
+        </div>
+        <div class="q-f"><div class="newbtn"><svg viewBox="0 0 24 24" class="ico"><path d="M12 5v14M5 12h14"/></svg>키워드로 새 원고 만들기</div></div>
+      </section>
+
+      <section class="card preview">
+        <div class="pv-bar">
+          <span class="lab">발행 전 미리보기 <em>검토 대기</em></span>
+          <span class="sp"></span>
+          <div class="seg"><span class="on"><svg viewBox="0 0 24 24" class="ico"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>PC</span><span><svg viewBox="0 0 24 24" class="ico"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/></svg>모바일</span></div>
+          <span class="ghost"><svg viewBox="0 0 24 24" class="ico"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/></svg>직접 수정</span>
+          <span class="ghost"><svg viewBox="0 0 24 24" class="ico"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 9"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15"/><path d="M4 20v-5h5"/></svg>다시 쓰기</span>
+        </div>
+        <div class="paper-wrap">
+          <article class="paper">
+            <span class="cat">캠핑·아웃도어</span>
+            <h1>영하의 밤도 따뜻하게,<br>겨울 캠핑 난방용품 4종 비교</h1>
+            <div class="byline"><span class="av">숲</span><b>숲속 주말 캠핑</b><span>·</span><span>2026. 10. 30. 09:00 발행 예정</span></div>
+            <div class="hero">
+              <svg viewBox="0 0 496 214" preserveAspectRatio="xMidYMax slice">
+                <defs>
+                  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14213D"/><stop offset=".6" stop-color="#2E3A6B"/><stop offset="1" stop-color="#5B5A8E"/></linearGradient>
+                  <radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFB347" stop-opacity=".75"/><stop offset="1" stop-color="#FFB347" stop-opacity="0"/></radialGradient>
+                  <linearGradient id="tent" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD48A"/><stop offset="1" stop-color="#F08A2E"/></linearGradient>
+                  <linearGradient id="snow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#DCE6F5"/><stop offset="1" stop-color="#A9B8D6"/></linearGradient>
+                </defs>
+                <rect width="496" height="214" fill="url(#sky)"/>
+                <g fill="#fff"><circle cx="40" cy="120" r="1"/><circle cx="96" cy="96" r="1.2"/><circle cx="150" cy="128" r=".9"/><circle cx="300" cy="22" r="1.2"/><circle cx="352" cy="58" r="1"/><circle cx="420" cy="30" r="1.3"/><circle cx="470" cy="70" r="1"/><circle cx="250" cy="48" r=".9"/><circle cx="210" cy="16" r="1"/><circle cx="388" cy="96" r=".8"/><circle cx="460" cy="118" r="1"/></g>
+                <circle cx="430" cy="52" r="15" fill="#FFF6DA"/><circle cx="436" cy="47" r="14" fill="#2B3768"/>
+                <path d="M0 150 70 104l46 30 60-46 70 54 56-38 62 40 54-30 78 44v56H0z" fill="#3C4677"/>
+                <path d="M0 162 60 136l60 22 76-30 84 34 70-22 74 26 72-20v68H0z" fill="#4A5384"/>
+                <path d="M0 176c60-10 140-14 220-8s170 10 276 0v46H0z" fill="url(#snow)"/>
+                <ellipse cx="340" cy="186" rx="110" ry="26" fill="url(#glow)"/>
+                <g fill="#1E2A4A"><path d="M440 186l14-42 14 42z"/><path d="M444 166l10-30 10 30z"/><path d="M466 190l11-34 11 34z"/><path d="M226 182l10-30 10 30z"/><path d="M212 186l8-24 8 24z"/></g>
+                <path d="M282 186l52-62 54 62z" fill="url(#tent)"/>
+                <path d="M334 124l-14 62h28z" fill="#B85414" opacity=".85"/>
+                <path d="M334 124l-6 62" stroke="#FFE4B5" stroke-width="1.5" opacity=".6"/>
+                <path d="M282 186l52-62 54 62" fill="none" stroke="#7A3A0A" stroke-width="2" stroke-linejoin="round" opacity=".6"/>
+                <rect x="362" y="136" width="4" height="22" fill="#3A3F55"/>
+                <path d="M364 134c-4-8 6-12 1-20M368 128c-3-6 4-9 0-15" stroke="#C9D2E6" stroke-width="2" fill="none" stroke-linecap="round" opacity=".55"/>
+                <g fill="#fff" opacity=".85"><circle cx="60" cy="40" r="1.6"/><circle cx="120" cy="60" r="1.4"/><circle cx="180" cy="90" r="1.6"/><circle cx="260" cy="110" r="1.3"/><circle cx="400" cy="140" r="1.5"/><circle cx="20" cy="80" r="1.2"/><circle cx="330" cy="80" r="1.4"/><circle cx="480" cy="160" r="1.3"/></g>
+              </svg>
+              <div class="ov"><small>겨울 캠핑 필수템</small><strong>난방용품<br>4종 비교</strong></div>
+              <span class="auto"><svg viewBox="0 0 24 24" class="ico"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/></svg>대표 썸네일 자동 생성</span>
+            </div>
+            <div class="post">
+              <p>기온이 영하로 내려가는 겨울 캠핑에서는 무엇보다 잘 자는 것이 중요해요. 오늘은 캠퍼들이 많이 쓰는 난방용품 네 가지를 연료비, 안전성, 무게 기준으로 하나씩 비교하고, 고르는 기준도 함께 정리했어요.</p>
+              <h3>1. 등유 난로 — 화력은 최고, 환기는 필수</h3>
+              <p>넓은 텐트도 금방 데워 주지만, 일산화탄소 경보기를 꼭 함께 두고 한 시간에 한 번은 환기해 주세요.</p>
+            </div>
+            <div class="tags"><span>#겨울캠핑</span><span>#캠핑난로</span><span>#난방용품비교</span><span>#동계캠핑</span><span>#등유난로</span><span>#전기요</span><span>#캠핑준비물</span><span>#캠핑용품</span></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="card settings">
+        <div class="s-h"><b>발행 설정</b><span>정보형 · 해요체</span></div>
+        <div class="s-body">
+          <div>
+            <div class="fl">발행 시각 <span>다음 빈 시간대</span></div>
+            <div class="two">
+              <div class="inp"><svg viewBox="0 0 24 24" class="ico"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>10월 30일 (금)</div>
+              <div class="inp"><svg viewBox="0 0 24 24" class="ico"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>09:00</div>
+            </div>
+            <div class="slots"><span>08:30</span><span class="on">09:00</span><span>12:00</span><span>19:00</span></div>
+          </div>
+          <div>
+            <div class="fl">카테고리</div>
+            <div class="inp dd" style="font-weight:600">캠핑·아웃도어</div>
+          </div>
+          <div>
+            <div class="tog"><div><b>이미지 자동 삽입</b><small>무료 이미지 3장 · 대표 썸네일</small></div><i class="sw on"></i></div>
+            <div class="imgs">
+              <span style="background:linear-gradient(160deg,#2E3A6B,#5B5A8E)"><svg viewBox="0 0 80 46" style="width:100%;height:100%"><path d="M0 34c20-4 50-4 80-2v14H0z" fill="#C8D3E8"/><path d="M28 36l12-16 12 16z" fill="#F5A640"/></svg><em>대표</em></span>
+              <span style="background:linear-gradient(160deg,#FCE7C8,#F2C48D)"><svg viewBox="0 0 80 46" style="width:100%;height:100%"><rect x="30" y="12" width="20" height="26" rx="4" fill="#5B6472"/><rect x="34" y="18" width="12" height="9" rx="2" fill="#FFB347"/><path d="M34 31h12" stroke="#2E333B" stroke-width="2"/></svg><em>2</em></span>
+              <span style="background:linear-gradient(160deg,#E7F0EA,#C9DDD0)"><svg viewBox="0 0 80 46" style="width:100%;height:100%"><rect x="16" y="22" width="48" height="14" rx="3" fill="#E8826A"/><path d="M20 26h40M20 30h40" stroke="#fff" stroke-opacity=".6" stroke-width="1.2"/><path d="M58 22c4-6 10-4 12 0" stroke="#3B4A42" stroke-width="2" fill="none"/></svg><em>3</em></span>
+            </div>
+          </div>
+          <div>
+            <div class="fl">해시태그 8개 <span>자동 추가 켜짐</span></div>
+            <div class="htags">
+              <span>겨울캠핑<svg viewBox="0 0 24 24" class="ico"><path d="M6 6l12 12M18 6 6 18"/></svg></span><span>캠핑난로<svg viewBox="0 0 24 24" class="ico"><path d="M6 6l12 12M18 6 6 18"/></svg></span><span>난방용품비교<svg viewBox="0 0 24 24" class="ico"><path d="M6 6l12 12M18 6 6 18"/></svg></span><span>동계캠핑<svg viewBox="0 0 24 24" class="ico"><path d="M6 6l12 12M18 6 6 18"/></svg></span><span>등유난로<svg viewBox="0 0 24 24" class="ico"><path d="M6 6l12 12M18 6 6 18"/></svg></span><span>전기요<svg viewBox="0 0 24 24" class="ico"><path d="M6 6l12 12M18 6 6 18"/></svg></span><span>캠핑준비물<svg viewBox="0 0 24 24" class="ico"><path d="M6 6l12 12M18 6 6 18"/></svg></span><span>캠핑용품<svg viewBox="0 0 24 24" class="ico"><path d="M6 6l12 12M18 6 6 18"/></svg></span>
+            </div>
+          </div>
+          <div class="tog"><div><b>발행 전 승인 받기</b><small>승인한 글만 예약 시각에 발행</small></div><i class="sw on"></i></div>
+          <div class="logs">
+            <div class="fl">이 글 작업 기록</div>
+            <ul>
+              <li><time>09:00:02</time><span>원고 생성 · 2,600자</span></li>
+              <li><time>09:00:41</time><span>이미지 3장 · 썸네일 구성</span></li>
+              <li><time>09:00:44</time><span>해시태그 8개 추가 · <b>검토 대기</b></span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="s-f">
+          <span class="btn sub">임시 저장</span>
+          <span class="btn pri"><svg viewBox="0 0 24 24" class="ico"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>승인하고 예약</span>
+        </div>
+      </section>
+    </div>
+
+    <footer class="status"><span><b>● 대기 중</b></span><span>예약 2건</span><span>검토 대기 1건</span><span>다음 발행 10/28 (수) 08:30</span><span>09:12:31 동네 카페 신메뉴 소개 예약 등록</span><span class="r">블로그집사 2.2.1</span></footer>
+  </main>
+</div>
+</body>
+</html>

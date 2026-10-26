@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>업로드큐</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 업로드큐: 편집자용 어두운 작업 화면. 대기열 표가 주인공이고 오른쪽에 메타데이터 템플릿. 레드 강조. */
+  :root {
+    --bg: #121212; --p1: #181818; --p2: #1F1F1F; --p3: #262626; --line: #2A2A2A; --line-2: #333;
+    --t1: #F2F2F2; --t2: #B4B4B4; --t3: #7A7A7A; --r: #FF4E45; --r-2: #FF7A6B; --ok: #3DD68C; --amb: #F5B547;
+  }
+  body { font: 400 13px/1.4 'Pretendard Variable', sans-serif; color: var(--t1); background: var(--bg); letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+  .win { --bar: #0C0C0C; --bar-fg: #BDBDBD; background: var(--bg); }
+  .win-body { flex-direction: column; }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  .cmd { height: 58px; flex: none; display: flex; align-items: center; gap: 12px; padding: 0 18px; border-bottom: 1px solid var(--line); background: #151515; }
+  .logo { display: flex; align-items: center; gap: 9px; padding-right: 16px; border-right: 1px solid var(--line); height: 32px; }
+  .logo i { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(140deg, #FF6A52, #E2302A); display: grid; place-items: center; }
+  .logo i svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .logo b { font-size: 15px; font-weight: 800; letter-spacing: -0.03em; }
+  .folder { display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 12px 0 10px; border-radius: 9px; background: var(--p2); border: 1px solid var(--line-2); min-width: 0; }
+  .folder svg { width: 18px; height: 18px; fill: #F5B547; stroke: none; flex: none; }
+  .folder b { font-weight: 600; font-size: 13px; white-space: nowrap; }
+  .folder small { font-size: 12px; color: var(--t3); white-space: nowrap; }
+  .folder span { margin-left: 6px; font-size: 12px; font-weight: 600; color: var(--t2); padding-left: 10px; border-left: 1px solid var(--line-2); }
+  .acct { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--t2); margin-left: 6px; }
+  .acct i { width: 26px; height: 26px; border-radius: 50%; background: linear-gradient(135deg, #F59E0B, #EF4444); display: grid; place-items: center; font-weight: 800; font-size: 11px; color: #fff; font-style: normal; }
+  .acct b { color: var(--t1); font-weight: 600; display: block; font-size: 12.5px; }
+  .cmd .sp { flex: 1; }
+  .btn { height: 34px; display: flex; align-items: center; gap: 7px; padding: 0 13px; border-radius: 8px; border: 1px solid var(--line-2); background: var(--p2); font-weight: 600; font-size: 12.5px; color: var(--t2); }
+  .btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .btn.pri { background: var(--r); border-color: var(--r); color: #fff; }
+  .btn.ic { width: 34px; padding: 0; justify-content: center; }
+
+  .hero { height: 96px; flex: none; display: flex; align-items: center; gap: 26px; padding: 0 22px; border-bottom: 1px solid var(--line); background: linear-gradient(180deg, #171717, #131313); }
+  .count strong { font-size: 40px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+  .count strong small { font-size: 20px; color: var(--t3); font-weight: 700; margin-left: 4px; }
+  .count p { font-size: 12px; color: var(--t2); margin-top: 6px; }
+  .count p b { color: var(--ok); font-weight: 700; }
+  .segs { flex: 1; min-width: 0; }
+  .segs .bar { display: grid; grid-template-columns: repeat(24, 1fr); gap: 3px; height: 12px; }
+  .segs .bar i { border-radius: 2px; background: #2C2C2C; }
+  .segs .bar i.d { background: #E9E9E9; }
+  .segs .bar i.c { background: linear-gradient(90deg, var(--r) 62%, #4A2422 62%); }
+  .segs .lab { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11.5px; color: var(--t3); }
+  .segs .lab b { color: var(--t1); font-weight: 600; }
+  .pipe { display: flex; align-items: center; gap: 6px; }
+  .pipe span { display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 11px; border-radius: 15px; font-size: 12px; font-weight: 600; background: var(--p2); color: var(--t3); border: 1px solid var(--line); white-space: nowrap; }
+  .pipe span svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .pipe span.d { color: var(--ok); border-color: rgb(61 214 140 / .25); background: rgb(61 214 140 / .07); }
+  .pipe span.c { color: #fff; background: rgb(255 78 69 / .16); border-color: rgb(255 78 69 / .5); }
+  .pipe span.c i { width: 9px; height: 9px; border-radius: 50%; border: 1.8px solid var(--r-2); border-right-color: transparent; }
+  .pipe em { width: 10px; height: 1px; background: var(--line-2); }
+
+  .main { flex: 1; min-height: 0; display: flex; }
+  .queue { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .qtop { height: 46px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 18px; border-bottom: 1px solid var(--line); }
+  .qtop h2 { font-size: 14px; font-weight: 700; }
+  .tabs { display: flex; gap: 4px; margin-left: 8px; }
+  .tabs b { height: 26px; display: flex; align-items: center; gap: 5px; padding: 0 10px; border-radius: 13px; font-size: 12px; font-weight: 600; color: var(--t2); background: transparent; border: 1px solid var(--line-2); }
+  .tabs b.on { background: var(--t1); color: #111; border-color: var(--t1); }
+  .tabs b span { color: var(--t3); font-weight: 600; }
+  .tabs b.on span { color: #555; }
+  .qtop .hint { margin-left: auto; font-size: 12px; color: var(--t3); display: flex; align-items: center; gap: 6px; }
+  .qtop .hint svg { width: 14px; height: 14px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th { height: 32px; text-align: left; padding: 0 12px; font-size: 11.5px; font-weight: 600; color: var(--t3); border-bottom: 1px solid var(--line); white-space: nowrap; background: #141414; }
+  td { height: 63.5px; padding: 0 12px; border-bottom: 1px solid #222; white-space: nowrap; }
+  th:first-child, td:first-child { padding-left: 18px; width: 40px; }
+  tr.cur td { background: rgb(255 78 69 / .07); }
+  tr.cur td:first-child { box-shadow: inset 3px 0 0 var(--r); }
+  tr.done td { color: var(--t2); }
+  .no { font-size: 12px; color: var(--t3); font-weight: 600; }
+  tr.cur .no { color: var(--r-2); }
+  .vid { display: flex; align-items: center; gap: 12px; }
+  .th { position: relative; width: 88px; height: 50px; border-radius: 7px; overflow: hidden; flex: none; box-shadow: 0 0 0 1px rgb(255 255 255 / .06); }
+  .th svg.art { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .th .play { position: absolute; left: 50%; top: 50%; translate: -50% -50%; width: 22px; height: 22px; border-radius: 50%; background: rgb(0 0 0 / .45); display: grid; place-items: center; backdrop-filter: blur(2px); }
+  .th .play::after { content: ""; border-left: 7px solid #fff; border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; margin-left: 2px; }
+  .th .dur { position: absolute; right: 4px; bottom: 4px; font-size: 10.5px; font-weight: 700; padding: 1px 4px; border-radius: 3px; background: rgb(0 0 0 / .78); color: #fff; line-height: 1.3; }
+  .th .sh { position: absolute; left: 4px; top: 4px; font-size: 10px; font-weight: 800; padding: 1px 4px; border-radius: 3px; background: rgb(255 255 255 / .9); color: #111; line-height: 1.3; }
+  .vt b { display: block; font-weight: 600; font-size: 13px; color: var(--t1); max-width: 300px; overflow: hidden; text-overflow: ellipsis; }
+  tr.done .vt b { color: #D6D6D6; }
+  .vt small { display: block; font-size: 11.5px; color: var(--t3); margin-top: 3px; }
+  .when b { display: block; font-weight: 600; font-size: 12.5px; }
+  .when small { display: block; font-size: 11.5px; color: var(--t3); margin-top: 2px; }
+  .pub { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 5px; font-size: 11.5px; font-weight: 600; background: #252525; color: var(--t2); }
+  .pub svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .pub.set { background: rgb(61 214 140 / .1); color: var(--ok); }
+  .prog { width: 170px; }
+  .prog .pb { height: 5px; border-radius: 3px; background: #2C2C2C; overflow: hidden; }
+  .prog .pb i { display: block; height: 100%; border-radius: 3px; background: var(--ok); }
+  .prog .pb i.r { background: var(--r); }
+  .prog p { display: flex; justify-content: space-between; margin-top: 5px; font-size: 11.5px; color: var(--t3); }
+  .prog p b { font-weight: 700; color: var(--t1); }
+  .prog p b.ok { color: var(--ok); }
+  .prog.wait p { color: #5E5E5E; }
+
+  .tpl { width: 340px; flex: none; border-left: 1px solid var(--line); background: var(--p1); display: flex; flex-direction: column; padding: 14px 16px; gap: 12px; }
+  .tpl-h { display: flex; align-items: center; justify-content: space-between; }
+  .tpl-h h3 { font-size: 14px; font-weight: 700; }
+  .tpl-h span { font-size: 11.5px; color: var(--t3); }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; padding: 3px; border-radius: 8px; background: #111; border: 1px solid var(--line); }
+  .seg b { height: 26px; display: grid; place-items: center; font-size: 12px; font-weight: 600; color: var(--t3); border-radius: 6px; }
+  .seg b.on { background: var(--p3); color: var(--t1); }
+  .f p.l { font-size: 11.5px; color: var(--t3); font-weight: 600; margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .f p.l span { font-weight: 500; }
+  .box { border-radius: 8px; background: #111; border: 1px solid var(--line-2); padding: 9px 11px; font-size: 12.5px; line-height: 1.6; color: #DADADA; }
+  .tk { display: inline-block; padding: 0 5px; border-radius: 4px; background: rgb(255 78 69 / .16); color: #FF8A7E; font-weight: 600; font-size: 12px; line-height: 1.55; }
+  .pv { margin-top: 6px; font-size: 11.5px; color: var(--t3); display: flex; gap: 6px; }
+  .pv b { color: var(--t2); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .desc { height: 128px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .tags span { height: 24px; display: inline-flex; align-items: center; padding: 0 9px; border-radius: 12px; background: var(--p3); font-size: 12px; color: var(--t2); font-weight: 500; }
+  .tags span.tk2 { background: rgb(255 78 69 / .14); color: #FF8A7E; font-weight: 600; }
+  .tags span.add { background: transparent; border: 1px dashed #444; color: var(--t3); }
+  .kv { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .kv div { padding: 7px 10px; border-radius: 8px; background: #141414; border: 1px solid var(--line); }
+  .kv p { font-size: 11px; color: var(--t3); }
+  .kv b { display: block; font-size: 12.5px; font-weight: 600; margin-top: 1px; }
+  .opt { display: flex; align-items: center; justify-content: space-between; height: 24px; font-size: 12.5px; color: var(--t2); }
+  .sw { width: 30px; height: 17px; border-radius: 9px; background: #3A3A3A; position: relative; }
+  .sw::after { content: ""; position: absolute; top: 2px; left: 2px; width: 13px; height: 13px; border-radius: 50%; background: #9A9A9A; }
+  .sw.on { background: var(--r); }
+  .sw.on::after { left: auto; right: 2px; background: #fff; }
+
+  .status { height: 28px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 18px; background: #0C0C0C; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--t3); }
+  .status .live { color: var(--r-2); font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .status .live i { width: 7px; height: 7px; border-radius: 50%; background: var(--r); box-shadow: 0 0 0 3px rgb(255 78 69 / .2); }
+  .status code { font: 11.5px 'Pretendard Variable'; color: var(--t2); }
+  .status .r { margin-left: auto; }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar"><span class="win-icon"><svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="4" fill="#FF4E45"/><path d="M8 11.5V5M5.5 7.2 8 4.7l2.5 2.5" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="win-title">업로드큐 2.0.1 — 예약 업로드</span><span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span></header>
+  <main class="win-body">
+    <div class="cmd">
+      <div class="logo"><i><svg viewBox="0 0 24 24"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5"/><path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg></i><b>업로드큐</b></div>
+      <div class="folder"><svg viewBox="0 0 24 24"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.6l2 2h8.4A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/></svg><b>D:\영상\10월 업로드 (24개)</b><small>영상 폴더 24 · 썸네일 24 · 메모장 24</small><span>폴더 바꾸기</span></div>
+      <div class="acct"><i>요</i><div><b>요리하는 자취생</b>구글 계정 로그인됨 · 내 채널</div></div>
+      <span class="sp"></span>
+      <span class="btn"><svg viewBox="0 0 24 24"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.6l2 2h8.4A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/></svg>폴더 열기</span>
+      <span class="btn"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>중지</span>
+      <span class="btn pri"><svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>일시정지</span>
+      <span class="btn ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></span>
+    </div>
+
+    <div class="hero">
+      <div class="count"><strong>9<small>/ 24</small></strong><p>업로드 완료 · <b>실패 0</b></p></div>
+      <div class="segs">
+        <div class="bar"><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="d"></i><i class="c"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="lab"><span>시작 09:02 · 평균 4분 20초/개</span><span>지금 <b>10번째 · 일주일 반찬 7가지</b></span><span>남은 시간 약 1시간 2분</span></div>
+      </div>
+      <div class="pipe">
+        <span class="d"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg>영상 업로드</span><em></em>
+        <span class="d"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg>제목·설명</span><em></em>
+        <span class="c"><i></i>썸네일</span><em></em>
+        <span>공개 예약</span>
+      </div>
+    </div>
+
+    <div class="main">
+      <section class="queue">
+        <div class="qtop">
+          <h2>업로드 대기열</h2>
+          <div class="tabs"><b class="on">전체 <span>24</span></b><b>완료 <span>9</span></b><b>대기 <span>14</span></b><b>실패 <span>0</span></b></div>
+          <span class="hint"><svg class="i" viewBox="0 0 24 24"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M9 13h6M9 17h4"/></svg>영상 폴더의 메모장 값이 템플릿보다 우선합니다</span>
+        </div>
+        <table>
+          <thead><tr><th>#</th><th>영상</th><th>공개 예약</th><th>공개 상태</th><th>진행</th></tr></thead>
+          <tbody>
+            <tr class="done">
+              <td class="no">08</td>
+              <td><div class="vid"><span class="th"><svg class="art" viewBox="0 0 88 50" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="a1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFC24B"/><stop offset="1" stop-color="#F0782F"/></linearGradient></defs><rect width="88" height="50" fill="url(#a1)"/><ellipse cx="50" cy="31" rx="30" ry="13" fill="#fff" opacity=".9"/><g fill="#FFE07A" stroke="#E9A93A" stroke-width="1"><rect x="30" y="22" width="11" height="16" rx="3"/><rect x="42" y="22" width="11" height="16" rx="3"/><rect x="54" y="22" width="11" height="16" rx="3"/></g><g stroke="#F3B744" stroke-width="1.2" fill="none"><path d="M33 26c3 2 3 6 0 8M45 26c3 2 3 6 0 8M57 26c3 2 3 6 0 8"/></g></svg><span class="sh">쇼츠</span><i class="play"></i><span class="dur">0:58</span></span><div class="vt"><b>1분 계란말이, 이것만 지키면 안 터져요</b><small>쇼츠_계란말이 · 재생목록 쇼츠 레시피</small></div></div></td>
+              <td class="when"><b>10/28 (수) 18:00</b><small>메모장 시간</small></td>
+              <td><span class="pub set"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></svg>예약 완료</span></td>
+              <td><div class="prog"><div class="pb"><i style="width:100%"></i></div><p><b class="ok">완료</b><span>09:36</span></p></div></td>
+            </tr>
+            <tr class="done">
+              <td class="no">09</td>
+              <td><div class="vid"><span class="th"><svg class="art" viewBox="0 0 88 50" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="a2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3A2A22"/><stop offset="1" stop-color="#1C1512"/></linearGradient><radialGradient id="a2b"><stop offset="0" stop-color="#F4A23C"/><stop offset=".7" stop-color="#D9572B"/><stop offset="1" stop-color="#9C2F1A"/></radialGradient></defs><rect width="88" height="50" fill="url(#a2)"/><circle cx="46" cy="26" r="21" fill="#2B2B2B"/><circle cx="46" cy="26" r="17" fill="url(#a2b)"/><g fill="#7A2414" opacity=".55"><circle cx="40" cy="20" r="2.4"/><circle cx="52" cy="22" r="2"/><circle cx="44" cy="31" r="2.6"/><circle cx="54" cy="31" r="1.8"/></g><g fill="#5FA34A"><rect x="37" y="25" width="5" height="1.6" rx=".8"/><rect x="49" y="17" width="4" height="1.6" rx=".8"/><rect x="50" y="34" width="5" height="1.6" rx=".8"/></g><rect x="67" y="24" width="20" height="4" rx="2" fill="#2B2B2B"/></svg><span class="sh">쇼츠</span><i class="play"></i><span class="dur">0:47</span></span><div class="vt"><b>바삭한 김치전 반죽 비율 공개</b><small>쇼츠_김치전 · 재생목록 쇼츠 레시피</small></div></div></td>
+              <td class="when"><b>10/29 (목) 18:00</b><small>메모장 시간</small></td>
+              <td><span class="pub set"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></svg>예약 완료</span></td>
+              <td><div class="prog"><div class="pb"><i style="width:100%"></i></div><p><b class="ok">완료</b><span>09:41</span></p></div></td>
+            </tr>
+            <tr class="cur">
+              <td class="no">10</td>
+              <td><div class="vid"><span class="th"><svg class="art" viewBox="0 0 88 50" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="a3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E8D9C4"/><stop offset="1" stop-color="#C7AE8C"/></linearGradient></defs><rect width="88" height="50" fill="url(#a3)"/><g stroke="#fff" stroke-width="1.5"><circle cx="18" cy="15" r="9" fill="#5E9C4A"/><circle cx="40" cy="15" r="9" fill="#E2A23B"/><circle cx="62" cy="15" r="9" fill="#C8432E"/><circle cx="29" cy="36" r="9" fill="#8E5A34"/><circle cx="51" cy="36" r="9" fill="#F2E3B5"/><circle cx="73" cy="36" r="9" fill="#3E7D3A"/><circle cx="82" cy="12" r="7" fill="#D8743C"/></g></svg><i class="play"></i><span class="dur">14:32</span></span><div class="vt"><b>일주일 반찬 7가지 한 번에 만들기 (장보기 3만 원)</b><small>롱폼_일주일 반찬 · 재생목록 반찬 만들기</small></div></div></td>
+              <td class="when"><b>10/30 (금) 19:00</b><small>메모장 시간</small></td>
+              <td><span class="pub"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></svg>예약 대기</span></td>
+              <td><div class="prog"><div class="pb"><i class="r" style="width:62%"></i></div><p><b>썸네일 등록 중</b><span>3 / 4단계</span></p></div></td>
+            </tr>
+            <tr>
+              <td class="no">11</td>
+              <td><div class="vid"><span class="th"><svg class="art" viewBox="0 0 88 50" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="a4" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B8322A"/><stop offset="1" stop-color="#6E1A16"/></linearGradient></defs><rect width="88" height="50" fill="url(#a4)"/><ellipse cx="44" cy="28" rx="30" ry="17" fill="#3A1410"/><ellipse cx="44" cy="27" rx="26" ry="14" fill="#C7452E"/><g fill="#FFF6E6" stroke="#E8C9A8" stroke-width=".8"><rect x="28" y="18" width="10" height="9" rx="1.5"/><rect x="40" y="16" width="10" height="9" rx="1.5"/><rect x="52" y="19" width="10" height="9" rx="1.5"/><rect x="33" y="28" width="10" height="9" rx="1.5"/><rect x="46" y="29" width="10" height="9" rx="1.5"/></g><g fill="#3E8A3A"><rect x="38" y="25" width="4" height="1.5" rx=".7"/><rect x="55" y="27" width="5" height="1.5" rx=".7"/></g></svg><span class="sh">쇼츠</span><i class="play"></i><span class="dur">0:52</span></span><div class="vt"><b>밥도둑 두부조림 10분 컷</b><small>쇼츠_두부조림 · 재생목록 쇼츠 레시피</small></div></div></td>
+              <td class="when"><b>10/31 (토) 18:00</b><small>메모장 시간</small></td>
+              <td><span class="pub"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></svg>예약 대기</span></td>
+              <td><div class="prog wait"><div class="pb"><i style="width:0"></i></div><p><span>대기 중</span><span>약 1분 뒤</span></p></div></td>
+            </tr>
+            <tr>
+              <td class="no">12</td>
+              <td><div class="vid"><span class="th"><svg class="art" viewBox="0 0 88 50" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="a5" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F1E3C8"/><stop offset="1" stop-color="#D9BE8E"/></linearGradient></defs><rect width="88" height="50" fill="url(#a5)"/><ellipse cx="44" cy="27" rx="28" ry="16" fill="#fff"/><g fill="none" stroke="#A8642E" stroke-width="4" stroke-linecap="round"><path d="M26 22c4-4 8 4 12 0s8 4 12 0"/><path d="M30 30c4-4 8 4 12 0s8 4 12 0"/><path d="M40 37c4-3 8 3 12 0"/></g><g fill="#E0452E"><circle cx="34" cy="26" r="1.6"/><circle cx="52" cy="33" r="1.6"/><circle cx="58" cy="24" r="1.4"/></g></svg><span class="sh">쇼츠</span><i class="play"></i><span class="dur">0:39</span></span><div class="vt"><b>도시락 단골 어묵볶음, 간장 비율만 기억하세요</b><small>쇼츠_어묵볶음 · 재생목록 쇼츠 레시피</small></div></div></td>
+              <td class="when"><b>11/1 (일) 18:00</b><small>메모장 시간</small></td>
+              <td><span class="pub"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></svg>예약 대기</span></td>
+              <td><div class="prog wait"><div class="pb"><i style="width:0"></i></div><p><span>대기 중</span><span>약 5분 뒤</span></p></div></td>
+            </tr>
+            <tr>
+              <td class="no">13</td>
+              <td><div class="vid"><span class="th"><svg class="art" viewBox="0 0 88 50" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="a6" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9ED3C2"/><stop offset="1" stop-color="#4E9C88"/></linearGradient></defs><rect width="88" height="50" fill="url(#a6)"/><g stroke="#fff" stroke-width="1.4" fill="rgb(255 255 255 / .55)"><rect x="10" y="8" width="21" height="15" rx="3"/><rect x="34" y="8" width="21" height="15" rx="3"/><rect x="58" y="8" width="21" height="15" rx="3"/><rect x="10" y="27" width="21" height="15" rx="3"/><rect x="34" y="27" width="21" height="15" rx="3"/><rect x="58" y="27" width="21" height="15" rx="3"/></g><g><circle cx="17" cy="15" r="3.5" fill="#F2C14E"/><rect x="21" y="13" width="7" height="5" rx="1.5" fill="#6BA24A"/><circle cx="44" cy="15" r="4" fill="#C8513A"/><rect x="63" y="12" width="12" height="6" rx="2" fill="#F5E6C4"/><circle cx="20" cy="34" r="4" fill="#8B5A34"/><rect x="38" y="32" width="13" height="5" rx="2" fill="#6BA24A"/><circle cx="68" cy="34" r="4.5" fill="#F2C14E"/></g></svg><i class="play"></i><span class="dur">21:05</span></span><div class="vt"><b>자취 5년 차의 일주일 밀프렙 루틴</b><small>롱폼_자취 밀프렙 · 재생목록 반찬 만들기</small></div></div></td>
+              <td class="when"><b>11/2 (월) 19:00</b><small>메모장 시간</small></td>
+              <td><span class="pub"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></svg>예약 대기</span></td>
+              <td><div class="prog wait"><div class="pb"><i style="width:0"></i></div><p><span>대기 중</span><span>약 9분 뒤</span></p></div></td>
+            </tr>
+            <tr>
+              <td class="no">14</td>
+              <td><div class="vid"><span class="th"><svg class="art" viewBox="0 0 88 50" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="a7" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF7A59"/><stop offset="1" stop-color="#D62E3A"/></linearGradient></defs><rect width="88" height="50" fill="url(#a7)"/><ellipse cx="44" cy="27" rx="29" ry="16" fill="#2A2A2A"/><ellipse cx="44" cy="26" rx="25" ry="13" fill="#E2412F"/><g fill="#FFF1E0" stroke="#E7B9A0" stroke-width=".8"><rect x="27" y="20" width="16" height="5" rx="2.5" transform="rotate(-15 35 22)"/><rect x="40" y="25" width="16" height="5" rx="2.5" transform="rotate(10 48 27)"/><rect x="47" y="17" width="16" height="5" rx="2.5" transform="rotate(-5 55 19)"/><rect x="31" y="29" width="14" height="5" rx="2.5" transform="rotate(20 38 31)"/></g><g fill="#F8D7A0"><path d="M54 30l8-2 1 3-8 2z"/></g></svg><span class="sh">쇼츠</span><i class="play"></i><span class="dur">0:55</span></span><div class="vt"><b>분식집 떡볶이 소스, 집에 있는 재료로</b><small>쇼츠_떡볶이 소스 · 재생목록 쇼츠 레시피</small></div></div></td>
+              <td class="when"><b>11/3 (화) 18:00</b><small>메모장 시간</small></td>
+              <td><span class="pub"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></svg>예약 대기</span></td>
+              <td><div class="prog wait"><div class="pb"><i style="width:0"></i></div><p><span>대기 중</span><span>약 17분 뒤</span></p></div></td>
+            </tr>
+            <tr>
+              <td class="no">15</td>
+              <td><div class="vid"><span class="th"><svg class="art" viewBox="0 0 88 50" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="a8" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5B6B8C"/><stop offset="1" stop-color="#2D3550"/></linearGradient></defs><rect width="88" height="50" fill="url(#a8)"/><path d="M20 22h48c0 14-10 22-24 22S20 36 20 22z" fill="#F4F1EA"/><ellipse cx="44" cy="22" rx="24" ry="6" fill="#F6D27A"/><g fill="none" stroke="#FFF4C2" stroke-width="1.6" stroke-linecap="round"><path d="M30 21c4-2 8 2 12 0s8 2 12 0"/></g><g fill="#5FA34A"><rect x="36" y="23" width="4" height="1.5" rx=".7"/><rect x="50" y="20" width="4" height="1.5" rx=".7"/></g><path d="M58 10c2 3-2 4 0 7M64 9c2 3-2 4 0 7" stroke="rgb(255 255 255 / .5)" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg><span class="sh">쇼츠</span><i class="play"></i><span class="dur">0:44</span></span><div class="vt"><b>5분 계란국, 국물 맛 내는 한 가지</b><small>쇼츠_계란국 · 재생목록 쇼츠 레시피</small></div></div></td>
+              <td class="when"><b>11/4 (수) 18:00</b><small>메모장 시간</small></td>
+              <td><span class="pub"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></svg>예약 대기</span></td>
+              <td><div class="prog wait"><div class="pb"><i style="width:0"></i></div><p><span>대기 중</span><span>약 21분 뒤</span></p></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <aside class="tpl">
+        <div class="tpl-h"><h3>메타데이터 템플릿</h3><span>메모장 빈칸에만 적용</span></div>
+        <div class="seg"><b class="on">쇼츠 레시피</b><b>롱폼 기본</b></div>
+        <div class="f">
+          <p class="l">제목 규칙 <span>최대 100자</span></p>
+          <div class="box"><span class="tk">{한줄요약}</span> #shorts</div>
+          <p class="pv">11번 미리보기 <b>밥도둑 두부조림 10분 컷 #shorts</b></p>
+        </div>
+        <div class="f">
+          <p class="l">설명 템플릿 <span>184 / 5,000자</span></p>
+          <div class="box desc">오늘은 <span class="tk">{요리명}</span> 만들어요.<br>재료와 분량은 고정 댓글에도 적어 둘게요.<br>재료 <span class="tk">{재료목록}</span><br>전체 레시피 <span class="tk">{재생목록링크}</span><br>#자취요리 #집밥 #<span class="tk">{요리명}</span></div>
+        </div>
+        <div class="f">
+          <p class="l">태그 <span>6개 · 41 / 500자</span></p>
+          <div class="tags"><span>자취요리</span><span>집밥</span><span>간단요리</span><span>레시피</span><span>반찬</span><span class="tk2">{요리명}</span><span class="add">+ 태그</span></div>
+        </div>
+        <div class="kv">
+          <div><p>재생목록</p><b>쇼츠 레시피</b></div>
+          <div><p>시청자층</p><b>아동용 아님</b></div>
+        </div>
+        <div>
+          <div class="opt">실패해도 다음 영상 계속<span class="sw on"></span></div>
+          <div class="opt">재생목록 자동 추가<span class="sw on"></span></div>
+          <div class="opt">모두 끝나면 PC 종료<span class="sw"></span></div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="status"><span class="live"><i></i>업로드 중</span><code>09:45:12  [10/24] 제목·설명·태그 입력 완료 → 썸네일 등록 중</code><span class="r">업로드큐 2.0.1 · 채널 일일 한도 안에서 진행</span></div>
+  </main>
+</div>
+</body>
+</html>

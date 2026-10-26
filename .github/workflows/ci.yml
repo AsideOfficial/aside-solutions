@@ -1,0 +1,19 @@
+name: Build
+# PR에서 데이터 검사와 빌드를 확인한다. main 푸시는 deploy.yml이 검사 후 배포한다.
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm run validate
+      - run: npm run build
+      - run: test -s dist/index.html
+      - run: test "$(ls dist/products | wc -l)" -eq "$(ls data/products/*.json | wc -l)"

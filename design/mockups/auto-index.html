@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>인덱스런</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 인덱스런: Windows 11 Fluent 밝은 테마. NavigationView + 검색엔진별 진행 링 4개가 중심. 그린 강조. */
+  :root {
+    --mica: #eef2ef; --layer: #f9faf9; --card: #fff; --line: rgb(0 0 0 / .075); --line-2: rgb(0 0 0 / .05);
+    --text: #1b1b1b; --text-2: #555; --text-3: #8b8b8b;
+    --gr: #16a34a; --gr-d: #11803a; --gr-l: #e5f4ea; --gr-ll: #f1f9f3;
+  }
+  body { font: 400 13px/1.4 'Segoe UI Variable Text', 'Segoe UI', 'Pretendard Variable', sans-serif; color: var(--text); background: var(--mica); word-break: keep-all; }
+  .win { --bar: #eef2ef; --bar-fg: #1b1b1b; background: var(--mica); }
+  .ko { font-family: 'Pretendard Variable', 'Segoe UI', sans-serif; }
+  .n { font-variant-numeric: tabular-nums; }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  /* NavigationView */
+  .nav { width: 212px; flex: none; display: flex; flex-direction: column; padding: 4px 6px 10px; font-family: 'Segoe UI Variable Text', 'Pretendard Variable', sans-serif; }
+  .nav .hb { width: 40px; height: 36px; border-radius: 5px; display: grid; place-items: center; margin-bottom: 4px; }
+  .nav a { position: relative; display: flex; align-items: center; gap: 14px; height: 38px; padding: 0 12px; margin: 1px 0; border-radius: 5px; font-size: 13.5px; color: var(--text); }
+  .nav a svg { width: 17px; height: 17px; }
+  .nav a.on { background: rgb(0 0 0 / .055); font-weight: 600; }
+  .nav a.on::before { content: ""; position: absolute; left: 0; top: 11px; bottom: 11px; width: 3px; border-radius: 2px; background: var(--gr); }
+  .nav a em { margin-left: auto; font-style: normal; font-size: 11px; font-weight: 700; color: #fff; background: var(--gr); min-width: 20px; height: 18px; border-radius: 9px; display: grid; place-items: center; padding: 0 5px; font-variant-numeric: tabular-nums; }
+  .nav .sep { height: 1px; background: var(--line); margin: 8px 10px; }
+  .nav .cap { font-size: 12px; color: var(--text-3); padding: 8px 12px 4px; font-family: 'Pretendard Variable', sans-serif; }
+  .site { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 12px; font-size: 12.5px; color: var(--text-2); }
+  .site i { width: 18px; height: 18px; border-radius: 5px; display: grid; place-items: center; font-style: normal; font-size: 11px; font-weight: 800; color: #fff; flex: none; }
+  .wm { display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 12px; font-size: 12px; color: var(--text-2); font-family: 'Pretendard Variable', sans-serif; }
+  .wm i { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  .wm svg { margin-left: auto; width: 14px; height: 14px; color: var(--gr); stroke-width: 2.4; }
+  .nav .grow { flex: 1; }
+
+  .content { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--layer); border-top-left-radius: 8px; border-left: 1px solid var(--line); border-top: 1px solid var(--line); font-family: 'Pretendard Variable', 'Segoe UI', sans-serif; letter-spacing: -0.01em; }
+  .hd { flex: none; display: flex; align-items: flex-end; gap: 10px; padding: 20px 24px 14px; }
+  .hd h1 { font-family: 'Segoe UI Variable Display', 'Pretendard Variable', sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+  .hd p { margin-top: 5px; font-size: 12.5px; color: var(--text-3); }
+  .hd p b { color: var(--text-2); font-weight: 600; }
+  .hd .sp { flex: 1; }
+  .fb { height: 32px; display: flex; align-items: center; gap: 7px; padding: 0 12px; border-radius: 5px; background: #fff; border: 1px solid var(--line); border-bottom-color: rgb(0 0 0 / .16); font-size: 13px; font-weight: 500; color: var(--text); }
+  .fb.acc { background: var(--gr); color: #fff; border-color: rgb(0 0 0 / .08); border-bottom-color: rgb(0 0 0 / .3); opacity: .55; }
+  .fb svg.i { width: 15px; height: 15px; }
+
+  .body { flex: 1; min-height: 0; display: flex; gap: 14px; padding: 0 24px 16px; }
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 1px 2px rgb(0 0 0 / .035); }
+
+  .rings { flex: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .ring { padding: 13px 14px 12px; display: flex; flex-direction: column; align-items: center; }
+  .ring .eh { align-self: stretch; display: flex; align-items: center; justify-content: space-between; }
+  .ring .eh b { display: flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 700; }
+  .ring .eh b i { width: 9px; height: 9px; border-radius: 50%; }
+  .ring .stt { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 9px; }
+  .stt.ok { color: var(--gr-d); background: var(--gr-l); }
+  .stt.run { color: #0d6b33; background: #d7f0df; }
+  .stt.wait { color: #6b6b6b; background: #efefef; }
+  .ring svg.rg { margin-top: 10px; }
+  .ring svg.rg text { font-family: 'Segoe UI Variable Display', 'Pretendard Variable', sans-serif; font-variant-numeric: tabular-nums; }
+  .ring .lim { margin-top: 9px; align-self: stretch; display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-3); font-variant-numeric: tabular-nums; padding-top: 9px; border-top: 1px solid var(--line-2); }
+  .ring .lim b { color: var(--text-2); font-weight: 600; }
+  .ring.run { border-color: rgb(22 163 74 / .45); box-shadow: 0 0 0 1px rgb(22 163 74 / .18), 0 4px 14px -8px rgb(22 163 74 / .55); }
+
+  .tbl { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+  .th { display: flex; align-items: center; gap: 10px; padding: 12px 16px 10px; }
+  .th h2 { font-size: 14px; font-weight: 700; }
+  .th span { font-size: 12px; color: var(--text-3); }
+  .th .sp { flex: 1; }
+  .pivot { display: flex; gap: 16px; font-size: 12.5px; color: var(--text-3); font-weight: 600; }
+  .pivot b { color: var(--text); position: relative; }
+  .pivot b::after { content: ""; position: absolute; left: 20%; right: 20%; bottom: -6px; height: 3px; border-radius: 2px; background: var(--gr); }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  thead th { height: 30px; text-align: left; font-size: 11.5px; font-weight: 600; color: var(--text-3); padding: 0 10px; background: #fafafa; border-top: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2); white-space: nowrap; }
+  thead th .d { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; }
+  td { height: 39px; padding: 0 10px; border-bottom: 1px solid var(--line-2); white-space: nowrap; }
+  td:first-child, th:first-child { padding-left: 16px; }
+  .ttl { display: flex; align-items: center; gap: 9px; max-width: 290px; }
+  .ttl b { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+  .sb { flex: none; font-size: 11px; font-weight: 800; width: 18px; height: 18px; border-radius: 5px; display: grid; place-items: center; color: #fff; }
+  .tm { font-size: 12px; color: var(--text-3); }
+  .pl { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 11px; font-size: 11.5px; font-weight: 600; }
+  .pl svg { width: 11px; height: 11px; stroke-width: 2.6; }
+  .pl.ok { color: var(--gr-d); background: var(--gr-l); }
+  .pl.res { color: #0f6e5c; background: #ddf3ee; }
+  .pl.run { color: #11803a; background: #fff; box-shadow: inset 0 0 0 1.2px #7cc897; }
+  .pl.run i { width: 10px; height: 10px; border-radius: 50%; border: 2px solid #9ed6b1; border-top-color: var(--gr); }
+  .pl.wait { color: #767676; background: #f1f1f1; }
+  .tf { margin-top: auto; display: flex; align-items: center; gap: 8px; padding: 9px 16px; font-size: 12px; color: var(--text-3); border-top: 1px solid var(--line-2); background: #fcfcfc; }
+  .tf b { color: var(--text-2); font-weight: 600; }
+
+  .side { width: 296px; flex: none; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+  .watch { padding: 14px 14px 12px; }
+  .wh { display: flex; align-items: center; justify-content: space-between; }
+  .wh h2 { font-size: 14px; font-weight: 700; }
+  .tg { width: 40px; height: 20px; border-radius: 10px; background: var(--gr); position: relative; flex: none; }
+  .tg::after { content: ""; position: absolute; right: 4px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: #fff; }
+  .tg.off { background: #fff; box-shadow: inset 0 0 0 1px #8a8a8a; }
+  .tg.off::after { left: 4px; right: auto; background: #5d5d5d; }
+  .radar { display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 10px 12px; border-radius: 7px; background: var(--gr-ll); border: 1px solid #d3ecdb; }
+  .radar .pulse { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle, var(--gr) 0 5px, rgb(22 163 74 / .25) 6px 10px, rgb(22 163 74 / .1) 11px 16px, transparent 17px); }
+  .radar b { font-size: 13px; font-weight: 700; color: var(--gr-d); display: block; }
+  .radar small { font-size: 11.5px; color: var(--text-2); }
+  .feeds { margin-top: 10px; }
+  .fd { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--line-2); }
+  .fd:last-child { border-bottom: 0; }
+  .fd .sb { width: 22px; height: 22px; border-radius: 6px; font-size: 11px; }
+  .fd b { display: block; font-size: 12.5px; font-weight: 600; }
+  .fd small { display: block; font-size: 11px; color: var(--text-3); margin-top: 1px; font-variant-numeric: tabular-nums; }
+  .fd .new { font-size: 12px; font-weight: 700; color: var(--gr-d); text-align: right; font-variant-numeric: tabular-nums; }
+  .fd .new small { color: var(--text-3); font-weight: 500; }
+  .opts { padding: 6px 14px; }
+  .op { display: flex; align-items: center; justify-content: space-between; height: 38px; border-bottom: 1px solid var(--line-2); font-size: 12.5px; }
+  .op:last-child { border-bottom: 0; }
+  .log { flex: 1; min-height: 0; padding: 12px 14px; overflow: hidden; }
+  .log h3 { font-size: 12.5px; font-weight: 700; display: flex; justify-content: space-between; }
+  .log h3 span { color: var(--text-3); font-weight: 500; font-size: 11.5px; }
+  .log ul { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+  .log li { display: flex; gap: 9px; color: var(--text-2); white-space: nowrap; }
+  .log time { font-family: 'Cascadia Mono', Consolas, monospace; font-size: 11.5px; color: var(--text-3); }
+
+  .status { height: 28px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 16px; background: var(--mica); border-top: 1px solid var(--line); font-size: 12px; color: var(--text-2); font-family: 'Pretendard Variable', sans-serif; font-variant-numeric: tabular-nums; }
+  .status b { display: flex; align-items: center; gap: 6px; color: var(--gr-d); font-weight: 700; }
+  .status b i { width: 7px; height: 7px; border-radius: 50%; background: var(--gr); }
+  .status .r { margin-left: auto; color: var(--text-3); }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar"><i class="win-icon"><svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="4" fill="#16a34a"/><path d="M4.5 8.3 7 10.6l4.6-5" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></i><span class="win-title">인덱스런 1.6.2</span><span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span></header>
+  <main class="win-body" style="flex-direction:column">
+    <div style="flex:1;min-height:0;display:flex">
+      <nav class="nav">
+        <span class="hb"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span>
+        <a class="on"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span class="ko">오늘의 색인</span><em>12</em></a>
+        <a><svg class="i" viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="16" rx="2.5"/><path d="M3.5 9h17M8 4v5"/></svg><span class="ko">사이트 프리셋</span></a>
+        <a><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span class="ko">요청 기록</span></a>
+        <a><svg class="i" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg><span class="ko">수동 모드</span></a>
+        <a><svg class="i" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><span class="ko">웹마스터 연결</span></a>
+        <div class="sep"></div>
+        <p class="cap">내 사이트</p>
+        <div class="site ko"><i style="background:#ea6a2b">T</i>캠핑 기록 · 티스토리</div>
+        <div class="site ko"><i style="background:#3a6ea5">W</i>리뷰 노트 · 워드프레스</div>
+        <div class="site ko"><i style="background:#e8912d">B</i>여행 메모 · 블로그스팟</div>
+        <div class="sep"></div>
+        <p class="cap">웹마스터 도구</p>
+        <div class="wm"><i style="background:#19b45b"></i>네이버 서치어드바이저<svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <div class="wm"><i style="background:#4b7bec"></i>구글 서치콘솔 · API<svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <div class="wm"><i style="background:#0ea5c6"></i>빙 웹마스터 도구<svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <div class="wm"><i style="background:#f0a020"></i>다음 웹마스터 도구<svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <span class="grow"></span>
+        <a><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M2.5 12h3M18.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg><span class="ko">설정</span></a>
+      </nav>
+
+      <section class="content">
+        <div class="hd">
+          <div>
+            <h1 class="ko">오늘의 색인 요청</h1>
+            <p>2026년 10월 26일 월요일 · <b>티스토리 외 2곳</b> · 자동 · 최신 글부터 · 엔진별 하루 한도까지</p>
+          </div>
+          <span class="sp"></span>
+          <span class="fb"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>사이트 분석</span>
+          <span class="fb"><svg class="i" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>중지</span>
+          <span class="fb acc"><svg class="i" viewBox="0 0 24 24" style="fill:#fff;stroke:none"><path d="M7 4.5v15l12-7.5z"/></svg>색인 시작</span>
+        </div>
+
+        <div class="body">
+          <div class="main">
+            <div class="rings" id="rings"></div>
+
+            <div class="card tbl">
+              <div class="th"><h2>새 글 12건</h2><span>사이트 분석 10:02 · 최신 글부터 요청</span><span class="sp"></span>
+                <div class="pivot"><b>전체 12</b><span>티스토리 6</span><span>워드프레스 4</span><span>블로그스팟 2</span></div></div>
+              <table>
+                <thead><tr><th>글 제목</th><th>발행</th><th><i class="d" style="background:#19b45b"></i>네이버</th><th><i class="d" style="background:#4b7bec"></i>구글</th><th><i class="d" style="background:#0ea5c6"></i>빙</th><th><i class="d" style="background:#f0a020"></i>다음</th></tr></thead>
+                <tbody id="posts"></tbody>
+              </table>
+              <div class="tf"><svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span>외 4건 · 이미 요청한 글 <b>248건</b>은 건너뜀 · 빙은 다음 차례로 이어서 요청합니다</span></div>
+            </div>
+          </div>
+
+          <aside class="side">
+            <div class="card watch">
+              <div class="wh"><h2>새 글 자동 감지</h2><span class="tg"></span></div>
+              <div class="radar"><span class="pulse"></span><div><b>RSS 감시 중 · 30분마다</b><small>마지막 확인 10:00 · 다음 10:30</small></div></div>
+              <div class="feeds">
+                <div class="fd"><span class="sb" style="background:#ea6a2b">T</span><div><b>캠핑 기록</b><small>티스토리 · RSS 정상 · 10:00</small></div><span class="new">+6<small> 오늘</small></span></div>
+                <div class="fd"><span class="sb" style="background:#3a6ea5">W</span><div><b>리뷰 노트</b><small>워드프레스 · 사이트맵 · 10:00</small></div><span class="new">+4<small> 오늘</small></span></div>
+                <div class="fd"><span class="sb" style="background:#e8912d">B</span><div><b>여행 메모</b><small>블로그스팟 · RSS 정상 · 10:00</small></div><span class="new">+2<small> 오늘</small></span></div>
+              </div>
+            </div>
+            <div class="card opts">
+              <div class="op"><span>요청한 글 건너뛰기</span><span class="tg"></span></div>
+              <div class="op"><span>실행 후 기록 파일 저장</span><span class="tg"></span></div>
+              <div class="op"><span>수동 모드(주소 목록)</span><span class="tg off"></span></div>
+            </div>
+            <div class="card log">
+              <h3>실행 기록 <span>오늘</span></h3>
+              <ul>
+                <li><time>10:02:15</time>사이트 분석 · 새 글 12건 선별</li>
+                <li><time>10:03:40</time>네이버 12건 색인 요청 완료</li>
+                <li><time>10:05:12</time>구글 12건 요청 · 응답 정상</li>
+                <li><time>10:05:20</time>다음 웹마스터 도구 요청 시작</li>
+                <li><time>10:06:31</time>다음 7 / 12건 진행 중</li>
+              </ul>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </div>
+    <footer class="status"><b><i></i>실행 중</b><span>2 / 4 엔진 완료</span><span>오늘 요청 31건</span><span>새 글 12건</span><span>구글 API 연결됨 · JSON 키</span><span class="r">인덱스런 1.6.2</span></footer>
+  </main>
+</div>
+<script>
+  // 엔진별 오늘 요청 (새 글 12건 기준): 네이버 12 · 구글 12 · 빙 0 · 다음 7 → 합계 31
+  (function () {
+    const E = [
+      ['네이버', '#19b45b', 12, 'ok', '요청 완료', '하루 한도', '50'],
+      ['구글', '#4b7bec', 12, 'ok', '응답 정상', 'API 한도', '200'],
+      ['빙', '#0ea5c6', 0, 'wait', '대기', '하루 한도', '100'],
+      ['다음', '#f0a020', 7, 'run', '진행 중', '하루 한도', '50'],
+    ];
+    const R = 38, C = 2 * Math.PI * R;
+    document.getElementById('rings').innerHTML = E.map(([n, c, v, st, stt, lt, lim]) => {
+      const p = v / 12, col = st === 'wait' ? '#c9c9c9' : '#16a34a';
+      return `<div class="card ring ${st === 'run' ? 'run' : ''}"><div class="eh"><b><i style="background:${c}"></i>${n}</b><span class="stt ${st}">${stt}</span></div>
+        <svg class="rg" width="104" height="104" viewBox="0 0 104 104"><circle cx="52" cy="52" r="${R}" fill="none" stroke="#ececec" stroke-width="9"/>
+        ${v ? `<circle cx="52" cy="52" r="${R}" fill="none" stroke="${col}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(C * p).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 52 52)"/>` : ''}
+        <text x="52" y="52" text-anchor="middle" font-size="25" font-weight="700" fill="${v ? '#1b1b1b' : '#9a9a9a'}">${v}<tspan font-size="14" font-weight="500" fill="#9a9a9a">/12</tspan></text>
+        <text x="52" y="70" text-anchor="middle" font-size="11" fill="#8b8b8b" style="font-family:'Pretendard Variable',sans-serif">오늘 요청</text></svg>
+        <div class="lim"><span>${lt}</span><b>${v} / ${lim}</b></div></div>`;
+    }).join('');
+  })();
+  (function () {
+    const site = { T: '#ea6a2b', W: '#3a6ea5', B: '#e8912d' };
+    const P = [
+      ['T', '가을 캠핑장 난로 고르는 법 5가지', '09:41'],
+      ['W', '무선 청소기 3종 한 달 사용 후기', '09:20'],
+      ['T', '동계 침낭 온도 등급 제대로 읽기', '08:55'],
+      ['B', '1박 2일 여행 짐 싸기 체크리스트', '08:30'],
+      ['T', '차박 매트 두께별 비교', '08:02'],
+      ['W', '가성비 전기포트 고르는 기준', '07:46'],
+      ['T', '캠핑 의자 높이별 장단점 정리', '07:15'],
+      ['W', '휴대용 선풍기 소음 측정기록', '06:58'],
+    ];
+    const ok = '<svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>';
+    document.getElementById('posts').innerHTML = P.map(([s, t, tm], i) => `<tr>
+      <td><div class="ttl"><span class="sb" style="background:${site[s]}">${s}</span><b>${t}</b></div></td>
+      <td class="tm">오늘 ${tm}</td>
+      <td><span class="pl ok">${ok}요청 완료</span></td>
+      <td><span class="pl res">${ok}응답 정상</span></td>
+      <td><span class="pl wait">대기</span></td>
+      <td>${i < 7 ? `<span class="pl ok">${ok}요청 완료</span>` : '<span class="pl run"><i></i>요청 중</span>'}</td></tr>`).join('');
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>재고메이트</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 재고메이트: 팀이 함께 쓰는 스프레드시트 화면. 사용자 메뉴(펼침) + 조건부 서식 + 스파크라인 + 떠 있는 분류별 차트 + 공동 작업자. */
+  :root {
+    --chrome: #f7f9f8; --line: #e1e5e3; --grid: #e2e3e3; --hdr: #f8f9fa; --hdr-on: #d3e8da;
+    --text: #1f2421; --text-2: #50585a; --text-3: #80878a;
+    --green: #137a3f; --green-2: #0f5f31; --green-bg: #e3f2e8; --amber: #d98a00; --amber-bg: #fdf1d3; --amber-tx: #9a5b00;
+    --red: #c4321f; --red-bg: #fce6e2;
+  }
+  body { font: 400 13px/1.35 'Pretendard Variable', 'Segoe UI', sans-serif; color: var(--text); background: #fff; letter-spacing: -0.01em; word-break: keep-all; }
+  .tnum { font-variant-numeric: tabular-nums; }
+  svg.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .app { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--chrome); }
+
+  /* 문서 머리 */
+  .doc { height: 64px; flex: none; display: flex; align-items: center; gap: 12px; padding: 0 16px 0 14px; }
+  .ficon { width: 36px; height: 40px; flex: none; }
+  .meta { flex: 1; min-width: 0; }
+  .ttl { display: flex; align-items: center; gap: 10px; height: 26px; }
+  .ttl h1 { font-size: 17px; font-weight: 500; letter-spacing: -0.02em; }
+  .ttl svg { width: 17px; height: 17px; color: var(--text-2); }
+  .ttl .saved { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-3); margin-left: 4px; }
+  .menu { display: flex; gap: 2px; height: 26px; align-items: center; margin-left: -6px; }
+  .menu a { height: 24px; display: flex; align-items: center; padding: 0 7px; border-radius: 4px; font-size: 13px; color: var(--text); }
+  .menu a.on { background: var(--amber-bg); color: var(--amber-tx); font-weight: 700; box-shadow: inset 0 0 0 1px #f1d38e; }
+  .menu a.on svg { width: 14px; height: 14px; margin-right: 4px; }
+  .people { display: flex; align-items: center; }
+  .people span { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 12.5px; font-weight: 700; margin-left: -6px; box-shadow: 0 0 0 2px var(--chrome); position: relative; }
+  .people span.me { box-shadow: 0 0 0 2px var(--chrome), 0 0 0 4px var(--amber); }
+  .people span.idle { opacity: .55; }
+  .people span i { position: absolute; right: -1px; bottom: -1px; width: 9px; height: 9px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 2px var(--chrome); }
+  .hist { color: var(--text-2); }
+  .share { height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 18px 0 14px; border-radius: 18px; background: #cfe8d7; color: #0b3d20; font-weight: 700; font-size: 13.5px; }
+  .share svg { width: 16px; height: 16px; }
+
+  /* 도구 막대 */
+  .tool { height: 40px; flex: none; margin: 0 10px 6px; display: flex; align-items: center; gap: 2px; padding: 0 10px; border-radius: 20px; background: #e9efec; color: #3c4442; }
+  .tool svg.i { width: 17px; height: 17px; }
+  .tool .t { height: 28px; min-width: 28px; display: grid; place-items: center; border-radius: 4px; font-size: 12.5px; padding: 0 4px; }
+  .tool .dd { height: 28px; display: flex; align-items: center; gap: 6px; padding: 0 6px; font-size: 12.5px; }
+  .tool .dd::after { content: ""; width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 4.5px solid #5f6664; }
+  .tool .sep { width: 1px; height: 20px; background: #c9d1cd; margin: 0 5px; }
+  .tool .sz { display: flex; align-items: center; gap: 4px; font-size: 12.5px; }
+  .tool .sz b { width: 30px; height: 24px; display: grid; place-items: center; border: 1px solid #b9c2be; border-radius: 4px; font-weight: 500; background: #fff; }
+  .tool .bt { font-weight: 800; font-size: 14px; }
+  .tool .A { position: relative; font-weight: 600; font-size: 14px; }
+  .tool .A::after { content: ""; position: absolute; left: 6px; right: 6px; bottom: 3px; height: 3px; background: var(--red); }
+
+  /* 수식 입력줄 */
+  .fx { height: 30px; flex: none; display: flex; align-items: center; background: #fff; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: 12.5px; }
+  .fx .nb { width: 82px; height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; border-right: 1px solid var(--line); font-weight: 500; }
+  .fx .nb::after { content: ""; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 4.5px solid #5f6664; }
+  .fx .f { width: 40px; text-align: center; color: var(--text-3); font-style: italic; font-family: Georgia, serif; font-size: 14px; border-right: 1px solid var(--line); }
+  .fx code { padding-left: 12px; font: 500 12.5px/1 'Consolas', 'Pretendard Variable', monospace; color: var(--text); }
+  .fx code em { font-style: normal; color: #0b57d0; }
+  .fx code u { text-decoration: none; color: #b3261e; }
+  .fx code s { text-decoration: none; color: var(--green); }
+
+  /* 시트 */
+  .sheet { position: relative; flex: 1; min-height: 0; overflow: hidden; background: #fff; }
+  table { border-collapse: collapse; table-layout: fixed; font-variant-numeric: tabular-nums; }
+  th, td { border-right: 1px solid var(--grid); border-bottom: 1px solid var(--grid); white-space: nowrap; overflow: hidden; }
+  thead th { height: 22px; background: var(--hdr); font-size: 11px; font-weight: 500; color: #5f6368; text-align: center; }
+  thead th.on { background: var(--hdr-on); color: #0b3d20; font-weight: 700; }
+  tbody th { background: var(--hdr); font-size: 11px; font-weight: 500; color: #5f6368; text-align: center; }
+  tbody th.on { background: var(--hdr-on); color: #0b3d20; font-weight: 700; }
+  td { height: 24px; padding: 0 7px; font-size: 12.5px; }
+  .r { text-align: right; }
+  .c { text-align: center; }
+  tr.t1 td { height: 34px; }
+  .title { font-size: 16px; font-weight: 800; letter-spacing: -0.02em; color: var(--green-2); }
+  .sub { color: var(--text-3); font-size: 12px; }
+  .chip { display: inline-flex; align-items: center; gap: 4px; margin-right: 10px; font-size: 11.5px; color: var(--text-2); }
+  .chip i { width: 10px; height: 10px; border-radius: 2px; }
+  tr.h td:not(:empty) { background: #1f6b3e; color: #fff; font-weight: 700; font-size: 12px; border-right-color: #2f7d4f; }
+  tr.h td.am { background: #2a7a4b; }
+  td.code { color: var(--text-3); font-size: 11.5px; }
+  td.nm { font-weight: 600; }
+  td.low { color: var(--red); font-weight: 800; }
+  td.st { text-align: center; font-weight: 700; font-size: 12px; }
+  td.st.ok { background: var(--green-bg); color: var(--green); }
+  td.st.no { background: var(--red-bg); color: var(--red); }
+  td.st.am { background: var(--amber-bg); color: var(--amber-tx); }
+  td.sp { padding: 0 6px; }
+  td.sp svg { width: 100%; height: 18px; }
+  td.dim { color: var(--text-3); font-size: 12px; }
+  tr.sum td { font-weight: 800; border-top: 2px solid #9fb7a8; background: #f6faf7; }
+  .sel { position: absolute; border: 2px solid var(--green); pointer-events: none; }
+  .sel::after { content: ""; position: absolute; right: -5px; bottom: -5px; width: 7px; height: 7px; background: var(--green); border: 1.5px solid #fff; }
+  .peer { position: absolute; border: 2px solid #8b5cf6; pointer-events: none; }
+  .peer b { position: absolute; right: -2px; top: -19px; height: 17px; padding: 0 6px; display: flex; align-items: center; background: #8b5cf6; color: #fff; font-size: 11px; font-weight: 700; border-radius: 3px 3px 0 3px; white-space: nowrap; }
+  .peer.p2 { border-color: #0d9488; }
+  .peer.p2 b { background: #0d9488; }
+
+  /* 떠 있는 차트 */
+  .chart { position: absolute; left: 872px; top: 52px; width: 396px; height: 300px; background: #fff; border: 1px solid #d6dbd8; border-radius: 4px; box-shadow: 0 6px 22px -6px rgb(20 40 30 / .22), 0 1px 3px rgb(20 40 30 / .08); padding: 14px 16px 10px; }
+  .chart h4 { font-size: 13.5px; font-weight: 800; letter-spacing: -0.02em; }
+  .chart p.s { font-size: 11.5px; color: var(--text-3); margin-top: 2px; }
+  .chart .lg { position: absolute; right: 16px; top: 16px; display: flex; gap: 12px; font-size: 11.5px; color: var(--text-2); }
+  .chart .lg span { display: flex; align-items: center; gap: 5px; }
+  .chart .lg i { width: 10px; height: 10px; border-radius: 2px; }
+  .chart .lg i.ln { height: 0; border-top: 2px dashed var(--amber); border-radius: 0; width: 14px; }
+  .chart .kebab { position: absolute; right: 6px; top: 40px; }
+
+  /* 펼친 사용자 메뉴 */
+  .dd-menu { position: absolute; left: 505px; top: 54px; width: 262px; background: #fff; border-radius: 8px; box-shadow: 0 10px 30px -6px rgb(20 30 25 / .28), 0 0 0 1px rgb(20 30 25 / .08); padding: 6px 0; z-index: 10; }
+  .dd-menu .hd { display: flex; align-items: center; gap: 8px; padding: 6px 14px 8px; font-size: 11.5px; color: var(--text-3); font-weight: 600; border-bottom: 1px solid #edf0ee; margin-bottom: 4px; }
+  .dd-menu .hd i { width: 18px; height: 18px; border-radius: 5px; background: var(--amber); display: grid; place-items: center; }
+  .mi { height: 34px; display: flex; align-items: center; gap: 12px; padding: 0 14px; font-size: 13px; color: var(--text); }
+  .mi svg.i { width: 17px; height: 17px; color: #4f5755; }
+  .mi .k { margin-left: auto; font-size: 11.5px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .mi .bd { margin-left: auto; height: 19px; padding: 0 7px; border-radius: 10px; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; display: grid; place-items: center; }
+  .mi.hov { background: var(--amber-bg); }
+  .mi.hov svg.i { color: var(--amber-tx); }
+  .mi.hov b { font-weight: 700; color: #6b3f00; }
+  .mi .car { width: 7px; height: 7px; border-top: 1.6px solid #5f6664; border-right: 1.6px solid #5f6664; rotate: 45deg; margin-left: 8px; }
+  .dd-menu hr { border: 0; border-top: 1px solid #edf0ee; margin: 4px 0; }
+  .mi.ver { font-size: 12px; color: var(--text-3); height: 30px; }
+
+  /* 시트 탭 */
+  .tabs { height: 40px; flex: none; display: flex; align-items: center; gap: 4px; padding: 0 12px; background: var(--chrome); border-top: 1px solid var(--line); }
+  .tabs .ic { width: 30px; height: 30px; display: grid; place-items: center; color: #4f5755; border-radius: 50%; }
+  .tab { height: 32px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: 6px; font-size: 13px; color: var(--text-2); font-weight: 500; }
+  .tab.on { background: #dbece1; color: var(--green-2); font-weight: 700; }
+  .tab.on::after { content: ""; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 4.5px solid var(--green-2); }
+  .tab .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .tabs .sp { flex: 1; }
+  .tabs .agg { height: 30px; display: flex; align-items: center; gap: 8px; padding: 0 12px; border-radius: 6px; background: #fff; border: 1px solid var(--line); font-size: 12.5px; color: var(--text-2); }
+  .tabs .agg b { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="doc">
+    <svg class="ficon" viewBox="0 0 36 40"><rect x="2" y="2" width="32" height="36" rx="6" fill="#1e8e4e"/><rect x="8" y="12" width="20" height="18" rx="1.5" fill="none" stroke="#fff" stroke-width="2"/><path d="M8 18h20M8 24h20M15 12v18" stroke="#fff" stroke-width="2"/><rect x="21" y="25" width="10" height="10" rx="2.5" fill="#f5b52e" stroke="#1e8e4e" stroke-width="1.5"/></svg>
+    <div class="meta">
+      <div class="ttl"><h1>재고메이트 — 팀 입출고·재고 관리</h1>
+        <svg class="i" viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>
+        <svg class="i" viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/></svg>
+        <span class="saved"><svg class="i" viewBox="0 0 24 24" style="width:15px;height:15px"><path d="M7 18a5 5 0 0 1-.8-9.9A6 6 0 0 1 17.7 9 4.5 4.5 0 0 1 17 18z"/><path d="m9.5 13 2 2 3.5-3.5"/></svg>모든 변경사항이 저장됨</span>
+      </div>
+      <nav class="menu"><a>파일</a><a>수정</a><a>보기</a><a>삽입</a><a>서식</a><a>데이터</a><a>도구</a><a>확장 프로그램</a><a>도움말</a><a class="on"><svg class="i" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4z"/><path d="M3 7v10l9 4 9-4V7"/></svg>재고메이트</a></nav>
+    </div>
+    <svg class="i hist" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>
+    <div class="people">
+      <span style="background:#1e8e4e" class="me">김<i></i></span>
+      <span style="background:#d98a00">이<i></i></span>
+      <span style="background:#8b5cf6">박<i></i></span>
+      <span style="background:#0d9488">최<i></i></span>
+      <span style="background:#64748b" class="idle">정</span>
+    </div>
+    <span class="share"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>공유</span>
+  </div>
+
+  <div class="tool">
+    <span class="t"><svg class="i" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></span>
+    <span class="t"><svg class="i" viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></span>
+    <span class="t"><svg class="i" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/></svg></span>
+    <span class="t"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="3" width="14" height="6" rx="1.5"/><path d="M18 6h2v5h-8v3"/><rect x="10.5" y="14" width="3" height="7" rx="1"/></svg></span>
+    <span class="dd">100%</span><span class="sep"></span>
+    <span class="t">₩</span><span class="t">%</span><span class="t">.0</span><span class="t">.00</span><span class="dd">123</span><span class="sep"></span>
+    <span class="dd">기본값</span><span class="sep"></span>
+    <span class="sz"><span class="t">−</span><b>10</b><span class="t">+</span></span><span class="sep"></span>
+    <span class="t bt">B</span><span class="t" style="font-style:italic;font-family:Georgia,serif;font-size:15px">I</span><span class="t" style="text-decoration:line-through">S</span><span class="t A">A</span>
+    <span class="t"><svg class="i" viewBox="0 0 24 24"><path d="m19 11-8-8-8.5 8.5a2 2 0 0 0 0 2.8L7.7 19.5a2 2 0 0 0 2.8 0z"/><path d="M5 2 7.5 4.5M2 13h15M20 15s2 2.3 2 3.7a2 2 0 0 1-4 0c0-1.4 2-3.7 2-3.7z"/></svg></span>
+    <span class="t"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 12h18M12 3v18" stroke-dasharray="2 2.5"/></svg></span>
+    <span class="t"><svg class="i" viewBox="0 0 24 24"><path d="M8 4H4v16h4M16 4h4v16h-4M7 12h10M10 9l-3 3 3 3M14 9l3 3-3 3"/></svg></span><span class="sep"></span>
+    <span class="t"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h14"/></svg></span>
+    <span class="t"><svg class="i" viewBox="0 0 24 24"><path d="M4 20h16M12 4v12M8 12l4 4 4-4"/></svg></span>
+    <span class="t"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h13a3 3 0 0 1 0 6h-4M15 16l-2 2 2 2M4 18h5"/></svg></span><span class="sep"></span>
+    <span class="t"><svg class="i" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></span>
+    <span class="t"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M12 9v6M9 12h6"/></svg></span>
+    <span class="t"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 17v-5M12 17V8M16 17v-3"/></svg></span>
+    <span class="t"><svg class="i" viewBox="0 0 24 24"><path d="M3 5h18l-7 8.5V19l-4 2v-7.5z"/></svg></span>
+    <span class="t"><svg class="i" viewBox="0 0 24 24"><path d="M18 5H6l6 7-6 7h12"/></svg></span>
+  </div>
+
+  <div class="fx"><span class="nb">D7</span><span class="f">fx</span><code>=IF(<em>B7</em>&lt;<u>C7</u>, <s>"부족"</s>, IF(<em>B7</em>&lt;<u>C7</u>*1.2, <s>"임박"</s>, <s>"적정"</s>))</code></div>
+
+  <div class="sheet">
+    <table>
+      <colgroup><col style="width:46px"><col style="width:156px"><col style="width:72px"><col style="width:72px"><col style="width:72px"><col style="width:104px"><col style="width:84px"><col style="width:78px"><col style="width:78px"><col style="width:104px"><col style="width:112px"><col style="width:100px"><col style="width:100px"><col style="width:100px"></colgroup>
+      <thead><tr><th></th><th>A</th><th>B</th><th>C</th><th class="on">D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th><th>K</th><th>L</th><th>M</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+
+    <!-- 선택 셀 D7 · 공동 작업자 커서 -->
+    <div class="sel" id="sel"></div>
+    <div class="peer" id="peer1"><b>이○○</b></div>
+    <div class="peer p2" id="peer2"><b>최○○</b></div>
+
+    <div class="chart">
+      <h4>분류별 재고</h4>
+      <p class="s">현재고 합계 · 안전재고 합계 · 품목 128개</p>
+      <div class="lg"><span><i style="background:#2e9a5c"></i>현재고</span><span><i class="ln"></i>안전재고</span></div>
+      <svg width="364" height="236" viewBox="0 0 382 236" style="margin-top:8px">
+        <g font-family="Pretendard Variable" font-size="11" fill="#80878a"><text x="30" y="212.0" text-anchor="end">0</text><text x="30" y="172.4" text-anchor="end">1,000</text><text x="30" y="132.8" text-anchor="end">2,000</text><text x="30" y="93.2" text-anchor="end">3,000</text><text x="30" y="53.6" text-anchor="end">4,000</text><text x="30" y="14.0" text-anchor="end">5,000</text></g>
+        <g stroke="#eceeed"><path d="M38 168.4h340M38 128.8h340M38 89.2h340M38 49.6h340M38 10.0h340"/></g>
+        <path d="M38 208h340" stroke="#b9c2be"/>
+        <g>
+          <rect x="54" y="123.3" width="38" height="84.7" rx="3" fill="#2e9a5c"/>
+          <rect x="120" y="183.8" width="38" height="24.2" rx="3" fill="#e0533f"/>
+          <rect x="186" y="70.2" width="38" height="137.8" rx="3" fill="#2e9a5c"/>
+          <rect x="252" y="39.3" width="38" height="168.7" rx="3" fill="#2e9a5c"/>
+          <rect x="318" y="132.0" width="38" height="76.0" rx="3" fill="#2e9a5c"/>
+        </g>
+        <g stroke="#d98a00" stroke-width="2.2" stroke-dasharray="5 3"><path d="M48 160.5h50"/><path d="M114 176.7h50"/><path d="M180 143.7h50"/><path d="M246 121.9h50"/><path d="M312 158.6h50"/></g>
+        <g font-family="Pretendard Variable" font-size="11.5" font-weight="700" fill="#1f2421" text-anchor="middle"><text x="73" y="117.3">2,140</text><text x="139" y="169" fill="#c4321f">610</text><text x="205" y="64.2">3,480</text><text x="271" y="33.3">4,260</text><text x="337" y="126.0">1,920</text></g>
+        <g font-family="Pretendard Variable" font-size="11.5" fill="#50585a" text-anchor="middle">
+          <text x="73" y="226">포장 박스</text><text x="139" y="226" fill="#c4321f" font-weight="700">완충재</text><text x="205" y="226">테이프·라벨</text><text x="271" y="226">봉투류</text><text x="337" y="226">냉장용품</text>
+        </g>
+      </svg>
+    </div>
+
+  </div>
+
+  <div class="dd-menu">
+    <div class="hd"><i><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4z"/><path d="M3 7v10l9 4 9-4V7"/></svg></i>재고메이트 1.2.0</div>
+    <div class="mi"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>입고 등록<span class="k">Ctrl+Alt+1</span></div>
+    <div class="mi"><svg class="i" viewBox="0 0 24 24"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>출고 등록<span class="k">Ctrl+Alt+2</span></div>
+    <div class="mi"><svg class="i" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>입출고 기록 보기</div>
+    <hr>
+    <div class="mi hov"><svg class="i" viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><b>부족 품목 알림</b><span class="bd">2건</span><span class="car"></span></div>
+    <div class="mi"><svg class="i" viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"/><path d="M8 15v-4M12 15V8M16 15v-6"/></svg>월간 리포트 만들기<span class="k">10월</span></div>
+    <div class="mi"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>기간·거래처별 조회</div>
+    <hr>
+    <div class="mi"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5M3 21v-5h5"/></svg>현황 갱신</div>
+    <div class="mi"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h10M4 12h6M4 18h12"/><circle cx="17" cy="6" r="2.5"/><circle cx="13" cy="12" r="2.5"/><circle cx="19" cy="18" r="2.5"/></svg>안전 재고 설정</div>
+  </div>
+
+  <div class="tabs">
+    <span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
+    <span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span>
+    <span class="tab on">재고현황</span>
+    <span class="tab"><i class="dot" style="background:#2e9a5c"></i>입고</span>
+    <span class="tab"><i class="dot" style="background:#d98a00"></i>출고</span>
+    <span class="tab">품목</span>
+    <span class="tab">거래처</span>
+    <span class="tab">월간 리포트</span>
+    <span class="sp"></span>
+    <span class="agg">선택 영역 <b>부족</b> · 개수 <b>1</b></span>
+  </div>
+</div>
+<script>
+  // 재고현황 시트 행. [코드, 품목, 현재고, 안전재고, 분류, 이번 달 입고, 이번 달 출고, 주 거래처, 최근 입력, 추이 시작값]
+  const items = [
+    ['PK-S01', '포장 박스(소)', 210, 200, '포장 박스', 600, 1140, '한빛포장', '09:12 김○○', 420],
+    ['PK-M01', '포장 박스(중)', 320, 200, '포장 박스', 800, 1380, '한빛포장', '09:31 박○○', 560],
+    ['PK-L01', '포장 박스(대)', 150, 100, '포장 박스', 300, 410, '한빛포장', '10/25 정○○', 200],
+    ['CU-A01', '완충 에어캡', 45, 100, '완충재', 200, 655, '대성산업', '09:05 이○○', 260],
+    ['CU-P02', '종이 완충재', 260, 150, '완충재', 400, 520, '대성산업', '10/25 최○○', 320],
+    ['TL-L01', '라벨 스티커', 1200, 500, '테이프·라벨', 2000, 1640, '굿라벨', '09:22 김○○', 1500],
+    ['TL-O01', 'OPP 테이프', 18, 30, '테이프·라벨', 60, 102, '굿라벨', '09:38 이○○', 70],
+    ['TL-B02', '박스 테이프(투명)', 96, 60, '테이프·라벨', 120, 148, '굿라벨', '10/24 박○○', 130],
+    ['EN-L01', '택배 봉투(대)', 540, 300, '봉투류', 1000, 1210, '미래패키지', '09:16 최○○', 700],
+    ['EN-S01', '택배 봉투(소)', 820, 400, '봉투류', 1500, 1630, '미래패키지', '09:16 최○○', 900],
+    ['EN-Z03', '지퍼백(중)', 430, 400, '봉투류', 600, 740, '미래패키지', '09:40 이○○', 560],
+    ['CO-I01', '아이스팩', 860, 400, '냉장용품', 1200, 1340, '쿨링코리아', '08:58 김○○', 980],
+    ['CO-B02', '보냉 은박 봉투', 140, 120, '냉장용품', 200, 310, '쿨링코리아', '10/25 정○○', 240],
+    ['ET-R01', '송장 용지(롤)', 64, 40, '소모품', 80, 96, '오피스원', '10/24 박○○', 72],
+  ];
+  const fmt = (n) => n.toLocaleString('ko-KR');
+  const status = (q, s) => q < s ? ['no', '부족'] : q < s * 1.2 ? ['am', '임박'] : ['ok', '적정'];
+  function spark(start, end, seed, cls) {
+    const pts = []; const n = 14;
+    for (let i = 0; i < n; i++) {
+      const t = i / (n - 1);
+      const base = start + (end - start) * t;
+      const wob = Math.sin(seed * 1.7 + i * 1.3) * 0.08 + Math.sin(seed + i * 2.9) * 0.05;
+      pts.push(base * (1 + (i === n - 1 ? 0 : wob)));
+    }
+    const lo = Math.min(...pts), hi = Math.max(...pts);
+    const xy = pts.map((v, i) => [2 + i * (86 / (n - 1)), 16 - ((v - lo) / (hi - lo || 1)) * 13]);
+    const col = cls === 'no' ? '#c4321f' : cls === 'am' ? '#d98a00' : '#2e9a5c';
+    const last = xy[xy.length - 1];
+    return `<svg viewBox="0 0 92 18" preserveAspectRatio="none"><polyline points="${xy.map((p) => p.map((v) => v.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="1.5" stroke-linejoin="round"/><circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2" fill="${col}"/></svg>`;
+  }
+  const cols = 13;
+  const empty = (k) => '<td></td>'.repeat(k);
+  let html = '';
+  // 1행: 제목, 2행: 기준·범례, 3행: 머리글
+  html += `<tr class="t1"><th>1</th><td colspan="5" class="title">주요 품목 재고 현황</td><td colspan="3" class="sub" style="text-align:right">기준 10/26(월) 09:40</td>${empty(cols - 8)}</tr>`;
+  html += `<tr><th>2</th><td colspan="5" class="sub">오늘 입출고 27건 반영 · 발주 필요 2건 · 전체 128개 품목은 ‘품목’ 시트</td><td colspan="3"><span class="chip"><i style="background:#fce6e2;box-shadow:inset 0 0 0 1px #e9a79c"></i>부족</span><span class="chip"><i style="background:#fdf1d3;box-shadow:inset 0 0 0 1px #e8c27a"></i>임박</span><span class="chip"><i style="background:#e3f2e8;box-shadow:inset 0 0 0 1px #9fcfb0"></i>적정</span></td>${empty(cols - 8)}</tr>`;
+  html += `<tr class="h"><th>3</th><td>품목</td><td class="r">현재고</td><td class="r">안전재고</td><td class="c">상태</td><td>최근 14일 추이</td><td>분류</td><td class="r">이번 달 입고</td><td class="r">이번 달 출고</td><td>주 거래처</td><td>최근 입력</td>${empty(cols - 10)}</tr>`;
+  items.forEach((it, idx) => {
+    const r = idx + 4;
+    const [cls, label] = status(it[2], it[3]);
+    const on = r === 7 ? ' class="on"' : '';
+    html += `<tr><th${on}>${r}</th><td class="nm">${it[1]}</td><td class="r${cls === 'no' ? ' low' : ''}">${fmt(it[2])}</td><td class="r">${fmt(it[3])}</td><td class="st ${cls}">${label}</td><td class="sp">${spark(it[9], it[2], idx + 2, cls)}</td><td class="dim">${it[4]}</td><td class="r">${fmt(it[5])}</td><td class="r">${fmt(it[6])}</td><td>${it[7]}</td><td class="dim">${it[8]}</td>${empty(cols - 10)}</tr>`;
+  });
+  const r0 = items.length + 4;
+  html += `<tr class="sum"><th>${r0}</th><td>합계 (주요 14개)</td><td class="r">${fmt(items.reduce((a, b) => a + b[2], 0))}</td><td class="r">${fmt(items.reduce((a, b) => a + b[3], 0))}</td><td class="c" style="color:#c4321f">부족 2</td><td></td><td></td><td class="r">${fmt(items.reduce((a, b) => a + b[5], 0))}</td><td class="r">${fmt(items.reduce((a, b) => a + b[6], 0))}</td><td></td><td></td>${empty(cols - 10)}</tr>`;
+  html += `<tr><th>${r0 + 1}</th>${empty(cols)}</tr>`;
+  html += `<tr><th>${r0 + 2}</th><td colspan="3" class="title" style="font-size:13.5px;color:#c4321f">발주 필요 목록 · 자동</td><td colspan="4" class="sub">안전재고 미달 시 이 표에 자동으로 올라옵니다</td>${empty(cols - 7)}</tr>`;
+  html += `<tr class="h"><th>${r0 + 3}</th><td>품목</td><td class="r">부족 수량</td><td class="r">권장 발주</td><td class="c">진행</td><td>거래처</td><td>요청</td><td colspan="2">메모</td>${empty(cols - 8)}</tr>`;
+  html += `<tr><th>${r0 + 4}</th><td class="nm">완충 에어캡</td><td class="r low">-55</td><td class="r">200</td><td class="st am">발주 요청</td><td>대성산업</td><td class="dim">09:06 이○○</td><td colspan="2" class="dim">화요일 입고 예정</td>${empty(cols - 8)}</tr>`;
+  html += `<tr><th>${r0 + 5}</th><td class="nm">OPP 테이프</td><td class="r low">-12</td><td class="r">60</td><td class="st no">확인 대기</td><td>굿라벨</td><td class="dim">09:38 자동</td><td colspan="2" class="dim">박스 단위 30개</td>${empty(cols - 8)}</tr>`;
+  for (let r = r0 + 6; r <= r0 + 8; r++) html += `<tr><th>${r}</th>${empty(cols)}</tr>`;
+  document.getElementById('rows').innerHTML = html;
+  // 선택 셀·공동 작업자 커서·메뉴를 실제 셀 위치에 맞춘다.
+  const table = document.querySelector('.sheet table');
+  const sheet = document.querySelector('.sheet').getBoundingClientRect();
+  function place(id, r, c) {
+    const b = table.rows[r].cells[c].getBoundingClientRect();
+    Object.assign(document.getElementById(id).style, { left: (b.left - sheet.left - 1) + 'px', top: (b.top - sheet.top - 1) + 'px', width: (b.width + 1) + 'px', height: (b.height + 1) + 'px' });
+  }
+  place('sel', 7, 4); place('peer1', 15, 8); place('peer2', 12, 1);
+  const a = document.querySelector('.menu a.on').getBoundingClientRect();
+  Object.assign(document.querySelector('.dd-menu').style, { left: a.left + 'px', top: (a.bottom + 3) + 'px' });
+</script>
+</body>
+</html>

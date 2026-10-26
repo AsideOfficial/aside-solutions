@@ -1,0 +1,93 @@
+/* 제품 화면 시안 공용 파일: 캔버스 크기, 리셋, OS 창 틀(Windows 11 · macOS · 브라우저 · 휴대폰)만 담는다.
+   앱 안쪽 디자인은 시안마다 직접 만든다. 사용법은 design/mockups/README.md 참고. */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1280px; height: 800px; overflow: hidden; }
+body { -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+*, *::before, *::after { animation: none !important; transition: none !important; }
+ul, ol { list-style: none; }
+button, input, select { font: inherit; color: inherit; }
+svg { display: block; }
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* ── Windows 11 창 ───────────────────────────────────────────
+   <div class="win" style="--bar:#f3f3f3; --bar-fg:#1a1a1a">
+     <header class="win-bar"><i class="win-icon"></i><span class="win-title">앱 이름 2.4.1</span><span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span></header>
+     <main class="win-body">…</main>
+   </div> */
+.win { position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden; }
+.win-bar {
+  flex: none; height: 32px; display: flex; align-items: center; gap: 10px; padding-left: 12px;
+  background: var(--bar, #f3f3f3); color: var(--bar-fg, #1a1a1a);
+  font: 400 12px/1 'Segoe UI Variable Text', 'Segoe UI', 'Malgun Gothic', sans-serif;
+}
+.win-icon { width: 16px; height: 16px; flex: none; display: grid; place-items: center; }
+.win-title { flex: 1; line-height: 1.6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.win-ctrls { display: flex; align-self: stretch; }
+.win-ctrls i { position: relative; width: 46px; }
+.win-ctrls i::before, .win-ctrls i::after { content: ""; position: absolute; left: 50%; top: 50%; translate: -50% -50%; }
+.win-ctrls .min::before { width: 10px; height: 1px; background: currentColor; }
+.win-ctrls .max::before { width: 10px; height: 10px; border: 1px solid currentColor; border-radius: 2px; }
+.win-ctrls .close::before, .win-ctrls .close::after { width: 13px; height: 1px; background: currentColor; rotate: 45deg; }
+.win-ctrls .close::after { rotate: -45deg; }
+.win-body { position: relative; flex: 1; min-height: 0; display: flex; }
+
+/* ── macOS 창 ───────────────────────────────────────────────
+   <div class="mac" style="--bar:#ececec">
+     <header class="mac-bar"><span class="mac-lights"><i></i><i></i><i></i></span><span class="mac-title">앱 이름</span></header>
+     <main class="mac-body">…</main>
+   </div>
+   사이드바가 창 위쪽까지 이어지는 디자인이면 mac-bar를 쓰지 않고 .mac-lights만 절대 위치로 올린다. */
+.mac { position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden; }
+.mac-bar {
+  flex: none; height: 38px; position: relative; display: flex; align-items: center; justify-content: center;
+  background: var(--bar, #ececec); color: var(--bar-fg, #4a4a4a); font: 600 13px/1 'Pretendard Variable', sans-serif;
+}
+.mac-lights { position: absolute; left: 14px; top: 13px; display: flex; gap: 8px; z-index: 5; }
+.mac-lights i { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; box-shadow: inset 0 0 0 .5px rgb(0 0 0 / .18); }
+.mac-lights i:nth-child(2) { background: #febc2e; }
+.mac-lights i:nth-child(3) { background: #28c840; }
+.mac-body { position: relative; flex: 1; min-height: 0; display: flex; }
+
+/* ── 브라우저 창 (웹 프로그램) ─────────────────────────────────
+   <div class="browser" style="--bar:#e9ebef">
+     <header class="br-tabs"><span class="mac-lights"><i></i><i></i><i></i></span><span class="br-tab"><i class="br-fav"></i>탭 제목</span><span class="br-tab off">다른 탭</span></header>
+     <div class="br-tool"><span class="br-nav"><i></i><i></i><i></i></span><span class="br-url"><b>localhost:8080</b>/dashboard</span></div>
+     <main class="br-body">…</main>
+   </div>
+   주소창에는 localhost 또는 solutions.asidepartners.kr 아래 경로만 쓴다(남의 도메인을 지어내지 않는다). */
+.browser { position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden; background: var(--page, #fff); }
+.br-tabs {
+  flex: none; height: 40px; position: relative; display: flex; align-items: flex-end; gap: 2px; padding: 0 12px 0 84px;
+  background: var(--bar, #e9ebef); font: 500 12px/1 'Pretendard Variable', sans-serif; color: var(--bar-fg, #3b3f46);
+}
+.br-tabs .mac-lights { top: 14px; }
+.br-tab { position: relative; height: 32px; width: 220px; display: flex; align-items: center; gap: 8px; padding: 0 12px; border-radius: 9px 9px 0 0; background: var(--tool, #fff); white-space: nowrap; overflow: hidden; }
+.br-tab.off { background: transparent; opacity: .7; }
+.br-fav { width: 14px; height: 14px; border-radius: 4px; background: var(--fav, #888); flex: none; }
+.br-tool { flex: none; height: 40px; display: flex; align-items: center; gap: 12px; padding: 0 14px; background: var(--tool, #fff); border-bottom: 1px solid var(--tool-line, #e3e5e9); }
+.br-nav { display: flex; gap: 14px; }
+.br-nav i { width: 9px; height: 9px; border-left: 1.6px solid #8a8f98; border-bottom: 1.6px solid #8a8f98; rotate: 45deg; }
+.br-nav i:nth-child(2) { rotate: -135deg; opacity: .45; }
+.br-nav i:nth-child(3) { width: 12px; height: 12px; border: 1.6px solid #8a8f98; border-top-color: transparent; border-radius: 50%; rotate: 0deg; }
+.br-url {
+  flex: 1; max-width: 640px; height: 28px; display: flex; align-items: center; gap: 6px; padding: 0 14px; border-radius: 14px;
+  background: var(--url, #f1f3f5); color: #6b7079; font: 400 13px/1 'Segoe UI', 'Pretendard Variable', sans-serif;
+}
+.br-url b { font-weight: 400; color: #1f2329; }
+.br-body { position: relative; flex: 1; min-height: 0; display: flex; }
+
+/* ── 휴대폰 (알림·메시지·QR 화면을 창 위에 겹칠 때) ─────────────────
+   <div class="phone" style="right:40px; bottom:-60px">
+     <div class="ph-screen"><div class="ph-status"><span>9:41</span><i class="ph-island"></i><span class="ph-icons"></span></div>…</div>
+   </div> */
+.phone {
+  position: absolute; width: 300px; height: 620px; padding: 10px; border-radius: 48px; z-index: 20;
+  background: #111317; box-shadow: inset 0 0 0 1.5px #3a3d44, 0 40px 80px -20px rgb(0 0 0 / .55), 0 12px 30px -8px rgb(0 0 0 / .35);
+}
+.ph-screen { position: relative; width: 100%; height: 100%; border-radius: 39px; overflow: hidden; background: var(--screen, #fff); display: flex; flex-direction: column; }
+.ph-status { flex: none; height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 26px 0 30px; font: 600 14px/1 'Pretendard Variable', sans-serif; color: var(--status-fg, #111); }
+.ph-island { position: absolute; left: 50%; top: 10px; translate: -50% 0; width: 92px; height: 26px; border-radius: 14px; background: #000; }
+.ph-icons { width: 44px; height: 11px; background:
+  linear-gradient(currentColor, currentColor) 0 100% / 3px 40% no-repeat, linear-gradient(currentColor, currentColor) 5px 100% / 3px 60% no-repeat,
+  linear-gradient(currentColor, currentColor) 10px 100% / 3px 80% no-repeat, linear-gradient(currentColor, currentColor) 15px 100% / 3px 100% no-repeat,
+  linear-gradient(currentColor, currentColor) 24px 0 / 18px 100% no-repeat; border-radius: 1px; opacity: .9; }

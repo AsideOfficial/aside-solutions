@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#08141b"/>
+      <stop offset=".42" stop-color="#18343f"/>
+      <stop offset=".7" stop-color="#3a5f69"/>
+      <stop offset="1" stop-color="#6c8789"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".5" cy=".8" r=".6">
+      <stop offset="0" stop-color="#f1d2b3" stop-opacity=".5"/>
+      <stop offset=".45" stop-color="#b88f74" stop-opacity=".12"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="planet" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ece6de" stop-opacity=".55"/>
+      <stop offset=".35" stop-color="#9fb0b2" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#9fb0b2" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="d1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a3a27"/><stop offset="1" stop-color="#2e140d"/></linearGradient>
+    <linearGradient id="d2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b0532f"/><stop offset="1" stop-color="#4a1e11"/></linearGradient>
+    <linearGradient id="d3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9673f"/><stop offset=".7" stop-color="#5a2412"/><stop offset="1" stop-color="#1c0a05"/></linearGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset=".72" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000"/></linearGradient>
+    <radialGradient id="vignette" cx=".5" cy=".45" r=".8"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".55"/></radialGradient>
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer><feFuncA type="table" tableValues="0 .09"/></feComponentTransfer>
+    </filter>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <rect width="1920" height="1080" fill="url(#glow)"/>
+  <g fill="#fff">
+    <circle cx="212" cy="96" r="1.2" opacity=".5"/><circle cx="486" cy="188" r="1" opacity=".35"/><circle cx="742" cy="64" r="1.4" opacity=".45"/>
+    <circle cx="1188" cy="120" r="1" opacity=".4"/><circle cx="1422" cy="210" r="1.3" opacity=".35"/><circle cx="1690" cy="84" r="1.1" opacity=".5"/>
+    <circle cx="1834" cy="260" r=".9" opacity=".3"/><circle cx="96" cy="300" r="1" opacity=".3"/><circle cx="1010" cy="40" r="1" opacity=".4"/>
+  </g>
+  <circle cx="960" cy="905" r="300" fill="url(#planet)"/>
+  <path d="M960 605 a300 300 0 0 1 300 300" fill="none" stroke="#f4eee6" stroke-opacity=".35" stroke-width="1.5"/>
+  <path d="M0 790 C 280 735 560 742 860 785 S 1480 728 1920 770 V1080 H0 Z" fill="url(#d1)"/>
+  <path d="M0 880 C 240 812 520 796 820 852 C 1090 905 1290 832 1560 812 C 1720 800 1840 828 1920 846 V1080 H0 Z" fill="url(#d2)"/>
+  <path d="M0 880 C 240 812 520 796 820 852" fill="none" stroke="#f0a27a" stroke-opacity=".35" stroke-width="2"/>
+  <path d="M1090 905 C 1290 832 1560 812 1920 846" fill="none" stroke="#f0a27a" stroke-opacity=".22" stroke-width="2"/>
+  <path d="M0 990 C 320 905 700 884 1000 962 C 1260 1030 1520 944 1920 936 V1080 H0 Z" fill="url(#d3)"/>
+  <path d="M0 990 C 320 905 700 884 1000 962" fill="none" stroke="#ffb88f" stroke-opacity=".3" stroke-width="2"/>
+  <rect width="1920" height="1080" filter="url(#grain)"/>
+  <rect width="1920" height="1080" fill="url(#vignette)"/>
+  <rect width="1920" height="1080" fill="url(#fade)"/>
+</svg>

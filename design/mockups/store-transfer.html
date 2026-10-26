@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>상품이사</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2.0.5/fonts/variable/woff2/SUIT-Variable.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 상품이사: 스토어 간 이사를 한 단계씩 밟아 가는 마법사형 도구. 밝은 라벤더 + 바이올렛. */
+  :root {
+    --bg: #F7F5FF; --panel: #fff; --line: #E9E4F8; --line-2: #DCD3F6;
+    --text: #1D1730; --text-2: #574F6E; --text-3: #8E87A5;
+    --v: #7C3AED; --v-2: #A78BFA; --v-3: #C4B5FD; --v-soft: #F2EDFF; --v-ink: #4C1D95;
+    --ok: #0E9F6E; --warn: #D97706; --bad: #E5484D;
+  }
+  body { font: 400 13px/1.45 'SUIT Variable', 'Malgun Gothic', sans-serif; color: var(--text); background: var(--bg); letter-spacing: -0.01em; }
+  .win { --bar: #EDE8FB; --bar-fg: #3A3150; background: var(--bg); }
+  .win-body { flex-direction: column; }
+  .ico { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* 상단: 브랜드 + 단계 표시 */
+  .top { height: 66px; flex: none; display: flex; align-items: center; gap: 20px; padding: 0 22px; background: #fff; border-bottom: 1px solid var(--line); }
+  .brand { width: 214px; display: flex; align-items: center; gap: 11px; }
+  .logo { width: 36px; height: 36px; border-radius: 11px; background: linear-gradient(140deg, #9F67FF, #6D28D9); display: grid; place-items: center; box-shadow: 0 6px 14px -6px rgb(109 40 217 / .6); }
+  .logo svg { width: 20px; height: 20px; }
+  .brand b { display: block; font-size: 15.5px; font-weight: 800; letter-spacing: -0.02em; }
+  .brand small { display: block; font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
+  .steps { flex: 1; display: flex; align-items: center; justify-content: center; }
+  .step { display: flex; align-items: center; gap: 9px; white-space: nowrap; }
+  .step .n { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 12.5px; flex: none; }
+  .step.done .n { background: var(--v); color: #fff; }
+  .step.done .n svg { width: 15px; height: 15px; stroke-width: 2.6; }
+  .step.cur .n { background: #fff; border: 2px solid var(--v); color: var(--v); box-shadow: 0 0 0 5px rgb(124 58 237 / .13); }
+  .step p { font-size: 13px; font-weight: 700; line-height: 1.25; }
+  .step small { display: block; font-size: 11.5px; color: var(--text-3); font-weight: 500; }
+  .step.cur p { color: var(--v); }
+  .step.nowp small { color: var(--v-ink); font-weight: 600; }
+  .sline { width: 40px; height: 2px; margin: 0 13px; border-radius: 2px; background: var(--v); }
+  .top-r { width: 214px; display: flex; justify-content: flex-end; gap: 8px; }
+  .chip-api { height: 30px; display: flex; align-items: center; gap: 7px; padding: 0 11px; border-radius: 9px; background: #F1FBF7; color: var(--ok); font-size: 12px; font-weight: 700; }
+  .chip-api i { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+  .ibtn { width: 30px; height: 30px; border-radius: 9px; border: 1px solid var(--line-2); display: grid; place-items: center; color: var(--text-2); }
+  .ibtn svg { width: 16px; height: 16px; }
+
+  .content { flex: 1; min-height: 0; display: flex; gap: 16px; padding: 16px 20px 16px; }
+  .stage { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 1px 2px rgb(76 29 149 / .04), 0 10px 26px -18px rgb(76 29 149 / .22); }
+
+  /* 이전 레인 */
+  .hero { padding: 14px 18px 13px; flex: none; }
+  .hero-head { display: flex; align-items: center; gap: 10px; }
+  .hero-head h2 { font-size: 16px; font-weight: 800; letter-spacing: -0.02em; }
+  .live { height: 24px; display: flex; align-items: center; gap: 6px; padding: 0 9px; border-radius: 7px; background: var(--v-soft); color: var(--v); font-size: 11.5px; font-weight: 700; }
+  .live i { width: 7px; height: 7px; border-radius: 50%; background: var(--v); box-shadow: 0 0 0 3px rgb(124 58 237 / .2); }
+  .hero-head .meta { margin-left: auto; display: flex; gap: 18px; color: var(--text-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .hero-head .meta b { color: var(--text); font-weight: 700; margin-left: 4px; }
+  .hero-head .meta b.bad { color: var(--bad); }
+
+  .lane-wrap { display: grid; grid-template-columns: 188px 1fr 214px; margin-top: 12px; height: 146px; }
+  .src { position: relative; border-radius: 14px; padding: 13px 14px; background: linear-gradient(160deg, #F5F0FF, #EAE1FF); border: 1px solid var(--line-2); display: flex; flex-direction: column; }
+  .lbl { font-size: 11px; font-weight: 700; color: var(--v); letter-spacing: .02em; }
+  .src h4, .dest h4 { font-size: 15px; font-weight: 800; letter-spacing: -0.02em; margin-top: 2px; }
+  .src .sub, .dest .sub { font-size: 11.5px; color: var(--text-3); }
+  .stack { position: relative; height: 44px; margin-top: auto; }
+  .stack .t { position: absolute; top: 0; width: 38px; height: 38px; }
+  .src .cnt { position: absolute; right: 13px; bottom: 13px; text-align: right; font-variant-numeric: tabular-nums; }
+  .src .cnt b { display: block; font-size: 17px; font-weight: 800; color: var(--v-ink); }
+  .src .cnt small { display: block; font-size: 11px; color: var(--text-3); }
+
+  .lanes { position: relative; display: flex; flex-direction: column; justify-content: space-between; padding: 8px 0; }
+  .lane { position: relative; height: 62px; }
+  .track { position: absolute; left: 0; right: 14px; top: 50%; height: 2px; translate: 0 -50%;
+    background: linear-gradient(90deg, var(--v-3) 55%, transparent 0) 0 0 / 10px 2px repeat-x; }
+  .lane::after { content: ""; position: absolute; right: 6px; top: 50%; width: 9px; height: 9px; border-top: 2px solid var(--v-2); border-right: 2px solid var(--v-2); translate: 0 -50%; rotate: 45deg; }
+  .lane .t { position: absolute; top: 50%; translate: 0 -50%; }
+  .t { width: 42px; height: 42px; border-radius: 11px; background: #fff; border: 1px solid var(--line); box-shadow: 0 6px 14px -8px rgb(76 29 149 / .35); display: grid; place-items: center; }
+  .t svg { width: 30px; height: 30px; }
+  .t.q { opacity: .38; box-shadow: none; }
+  .t.m { opacity: .7; }
+  .t.lead { width: 48px; height: 48px; border-color: var(--v-2); box-shadow: 0 0 0 4px rgb(124 58 237 / .1), 0 10px 18px -10px rgb(76 29 149 / .5); }
+  .t.lead svg { width: 34px; height: 34px; }
+  .streak { position: absolute; top: 50%; height: 14px; translate: 0 -50%; }
+  .streak i { position: absolute; right: 0; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, var(--v-2)); }
+  .tag { position: absolute; top: -2px; translate: -50% -100%; white-space: nowrap; font-size: 11px; font-weight: 700; color: #fff; background: var(--v); padding: 3px 7px; border-radius: 6px; }
+  .tag::after { content: ""; position: absolute; left: 50%; bottom: -4px; translate: -50% 0; border: 4px solid transparent; border-bottom: 0; border-top-color: var(--v); }
+
+  .dests { display: flex; flex-direction: column; gap: 10px; }
+  .dest { flex: 1; border-radius: 14px; border: 1px solid var(--line); background: #fff; padding: 10px 13px; display: grid; grid-template-columns: 34px 1fr; column-gap: 10px; align-items: center; }
+  .dest .di { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; grid-row: span 2; align-self: start; margin-top: 2px; }
+  .dest .di svg { width: 18px; height: 18px; }
+  .dest .di.word { font-size: 11px; font-weight: 800; letter-spacing: -0.03em; }
+  .dest h4 { font-size: 14px; margin: 0; display: flex; justify-content: space-between; align-items: baseline; }
+  .dest h4 span { font-size: 12.5px; font-weight: 800; color: var(--v-ink); font-variant-numeric: tabular-nums; }
+  .dest h4 span small { font-size: 11px; color: var(--text-3); font-weight: 600; }
+  .mini { grid-column: 2; height: 5px; border-radius: 3px; background: #EFEAFC; overflow: hidden; margin-top: 6px; }
+  .mini i { display: block; height: 100%; border-radius: 3px; background: var(--v); }
+
+  .prog { display: flex; align-items: center; gap: 18px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line-2); }
+  .count { display: flex; align-items: baseline; gap: 6px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .count strong { font-size: 34px; font-weight: 800; letter-spacing: -0.035em; line-height: 1; color: var(--v-ink); }
+  .count span { font-size: 16px; font-weight: 700; color: var(--text-3); }
+  .count em { font-style: normal; font-size: 12.5px; color: var(--text-2); font-weight: 600; margin-left: 4px; }
+  .pbar-wrap { flex: 1; }
+  .pbar { height: 12px; border-radius: 7px; background: #EFEAFC; overflow: hidden; display: flex; }
+  .pbar i { display: block; height: 100%; }
+  .pbar .d { width: 77.5%; background: linear-gradient(90deg, #A47BFF, #7C3AED); border-radius: 7px 0 0 7px; }
+  .pbar .r { width: 1.67%; background: repeating-linear-gradient(135deg, #C4B5FD 0 3px, #DDD3FE 3px 6px); }
+  .pbar .f { width: .83%; background: var(--bad); }
+  .plegend { display: flex; gap: 14px; margin-top: 7px; font-size: 11.5px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .plegend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 5px; vertical-align: -0px; }
+  .plegend b { color: var(--text); font-weight: 700; margin-left: 2px; }
+  .plegend .pc { margin-left: auto; color: var(--v); font-weight: 800; font-size: 12px; }
+
+  /* 항목별 변환 표 */
+  .conv { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+  .conv-head { height: 48px; flex: none; display: flex; align-items: center; gap: 12px; padding: 0 16px; border-bottom: 1px solid var(--line); }
+  .conv-head h3 { font-size: 14px; font-weight: 800; }
+  .nowp { display: flex; align-items: center; gap: 9px; padding: 4px 11px 4px 4px; border-radius: 10px; background: var(--v-soft); }
+  .nowp .t { width: 30px; height: 30px; border-radius: 8px; box-shadow: none; }
+  .nowp .t svg { width: 22px; height: 22px; }
+  .nowp b { font-size: 12.5px; font-weight: 700; }
+  .nowp small { font-size: 11.5px; color: var(--text-3); margin-left: 6px; font-variant-numeric: tabular-nums; }
+  .seg { margin-left: auto; display: flex; padding: 3px; border-radius: 9px; background: #F4F1FC; }
+  .seg b { height: 26px; display: grid; place-items: center; padding: 0 11px; border-radius: 7px; font-size: 12px; font-weight: 600; color: var(--text-3); }
+  .seg b.on { background: #fff; color: var(--text); box-shadow: 0 1px 3px rgb(76 29 149 / .12); }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; table-layout: fixed; }
+  th { height: 30px; text-align: left; font-size: 11.5px; font-weight: 600; color: var(--text-3); padding: 0 12px; background: #FBFAFF; border-bottom: 1px solid var(--line); }
+  th .arr { color: var(--v-2); margin-right: 4px; }
+  td { height: 34px; padding: 0 12px; border-bottom: 1px solid #F1EDFA; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12.5px; }
+  tr:last-child td { border-bottom: 0; }
+  td.k { font-weight: 700; color: var(--text); }
+  td.o { color: var(--text-2); }
+  td .same { color: var(--text-3); }
+  td .hl { font-weight: 700; color: var(--v-ink); }
+  td .up { font-size: 11px; font-weight: 700; color: var(--v); background: var(--v-soft); padding: 2px 5px; border-radius: 5px; margin-left: 5px; }
+  td .pct { font-size: 11px; font-weight: 700; color: var(--ok); margin-left: 5px; }
+  .st { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700; }
+  .st svg { width: 12px; height: 12px; stroke-width: 2.6; }
+  .st.ok { background: #E8F7F1; color: var(--ok); }
+  .st.run { background: var(--v-soft); color: var(--v); }
+  .st.run i { width: 9px; height: 9px; border-radius: 50%; border: 1.8px solid var(--v); border-right-color: transparent; }
+  .st.wait { background: #F3F2F7; color: var(--text-3); }
+
+  /* 오른쪽 설정 요약 */
+  .aside { width: 300px; flex: none; display: flex; flex-direction: column; gap: 14px; }
+  .box { padding: 15px 16px; }
+  .box h3 { font-size: 13px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
+  .box h3 span { font-size: 12px; font-weight: 700; color: var(--v); }
+  .kv { margin-top: 10px; }
+  .kv li { display: flex; justify-content: space-between; align-items: center; height: 29px; font-size: 12.5px; border-bottom: 1px solid #F3F0FA; }
+  .kv li:last-child { border-bottom: 0; }
+  .kv span { color: var(--text-3); }
+  .kv b { font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .kv b i { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); }
+  .kv b em { font-style: normal; font-size: 11px; color: var(--v); background: var(--v-soft); padding: 2px 6px; border-radius: 5px; }
+  .opts { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line); }
+  .opts li { display: flex; justify-content: space-between; align-items: center; height: 31px; font-size: 12.5px; color: var(--text-2); }
+  .tg { width: 32px; height: 18px; border-radius: 10px; background: #DCD8E6; position: relative; flex: none; }
+  .tg::after { content: ""; position: absolute; left: 2px; top: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / .2); }
+  .tg.on { background: var(--v); }
+  .tg.on::after { left: 16px; }
+  .logbox { flex: 1; min-height: 0; overflow: hidden; }
+  .log { margin-top: 10px; display: flex; flex-direction: column; gap: 0; position: relative; }
+  .log li { display: grid; grid-template-columns: 58px 12px 1fr; gap: 6px; font-size: 12px; padding: 4px 0; align-items: start; }
+  .log time { color: var(--text-3); font-variant-numeric: tabular-nums; font-size: 11.5px; padding-top: 1px; }
+  .log i { width: 7px; height: 7px; border-radius: 50%; background: var(--v-3); margin-top: 5px; }
+  .log i.now { background: var(--v); box-shadow: 0 0 0 3px rgb(124 58 237 / .18); }
+  .log i.bad { background: var(--bad); }
+  .log span { color: var(--text-2); line-height: 1.4; }
+  .log span b { color: var(--text); font-weight: 700; }
+
+  .fails { margin-top: 6px; padding-top: 9px; border-top: 1px solid var(--line); }
+  .fails p { font-size: 12px; font-weight: 700; color: var(--text-2); margin-bottom: 7px; }
+  .fails p b { color: var(--bad); margin-left: 3px; }
+  .fi { display: flex; align-items: center; gap: 9px; padding: 5px 8px; border-radius: 10px; background: #FFF6F6; margin-top: 5px; }
+  .fi .t { width: 30px; height: 30px; border-radius: 8px; box-shadow: none; border-color: #F8DADA; }
+  .fi .t svg { width: 22px; height: 22px; }
+  .fi b { display: block; font-size: 12px; font-weight: 700; }
+  .fi small { display: block; font-size: 11px; color: var(--bad); }
+
+  /* 하단 마법사 버튼 줄 */
+  .foot { height: 56px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 20px; background: #fff; border-top: 1px solid var(--line); }
+  .foot .note { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-3); }
+  .foot .note svg { width: 15px; height: 15px; color: var(--v-2); }
+  .foot .sp { flex: 1; }
+  .btn { height: 36px; display: flex; align-items: center; gap: 7px; padding: 0 15px; border-radius: 10px; border: 1px solid var(--line-2); background: #fff; color: var(--text-2); font-weight: 700; font-size: 12.5px; }
+  .btn svg { width: 15px; height: 15px; }
+  .btn.ghost { border-color: transparent; color: var(--text-3); }
+  .btn.pri { background: var(--v); border-color: var(--v); color: #fff; box-shadow: 0 6px 14px -6px rgb(124 58 237 / .6); }
+  .btn.warn { color: var(--bad); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <!-- 상품 일러스트 -->
+    <symbol id="p-box" viewBox="0 0 32 32"><rect x="5" y="13" width="22" height="13" rx="3" fill="#E2E8F0"/><rect x="5" y="13" width="22" height="13" rx="3" fill="url(#steel)"/><rect x="3.5" y="9" width="25" height="5.5" rx="2" fill="#7C3AED"/><rect x="13" y="7" width="6" height="3" rx="1.2" fill="#5B21B6"/><path d="M8 17v6" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".7"/></symbol>
+    <symbol id="p-tumbler" viewBox="0 0 32 32"><path d="M10 9h12l-1.6 18.5a1.5 1.5 0 0 1-1.5 1.5h-5.8a1.5 1.5 0 0 1-1.5-1.5z" fill="#F9A8D4"/><path d="M10.4 13h11.2l-.4 4.5H10.8z" fill="#EC4899" opacity=".55"/><rect x="9" y="5.5" width="14" height="4.5" rx="1.6" fill="#BE185D"/><path d="M13 12v13" stroke="#fff" stroke-width="1.3" stroke-linecap="round" opacity=".6"/></symbol>
+    <symbol id="p-towel" viewBox="0 0 32 32"><rect x="5" y="20" width="22" height="6" rx="2" fill="#5EEAD4"/><rect x="6" y="14" width="20" height="6.5" rx="2" fill="#99F6E4"/><rect x="7" y="8" width="18" height="6.5" rx="2" fill="#14B8A6"/><path d="M7 11.2h18M6 17.2h20M5 23h22" stroke="#fff" stroke-width=".9" opacity=".55"/></symbol>
+    <symbol id="p-cushion" viewBox="0 0 32 32"><path d="M6 8c3 1.2 17 1.2 20 0 1.2 3 1.2 13 0 16-3-1.2-17-1.2-20 0-1.2-3-1.2-13 0-16z" fill="#FCD34D"/><path d="M6 8c3 1.2 17 1.2 20 0" stroke="#D97706" stroke-width="1.2" fill="none" opacity=".5"/><circle cx="16" cy="16" r="1.6" fill="#D97706"/><path d="M11 13c1.5 2 1.5 4 0 6M21 13c-1.5 2-1.5 4 0 6" stroke="#F59E0B" stroke-width="1.1" fill="none" opacity=".7"/></symbol>
+    <symbol id="p-lamp" viewBox="0 0 32 32"><path d="M10 6h12l3 10H7z" fill="#C4B5FD"/><path d="M10 6h12l3 10H7z" fill="url(#shade)"/><rect x="15" y="16" width="2" height="8" fill="#6B7280"/><rect x="10" y="24" width="12" height="3.5" rx="1.6" fill="#4B5563"/><ellipse cx="16" cy="17" rx="5" ry="1.5" fill="#FDE68A" opacity=".9"/></symbol>
+    <symbol id="p-board" viewBox="0 0 32 32"><rect x="6" y="7" width="17" height="20" rx="4" fill="#D6A26B"/><rect x="6" y="7" width="17" height="20" rx="4" fill="url(#wood)"/><rect x="21" y="13" width="6" height="8" rx="3" fill="#B7834F"/><circle cx="24" cy="17" r="1.4" fill="#fff"/><path d="M10 12v11M13.5 11v13" stroke="#B7834F" stroke-width=".9" opacity=".6"/></symbol>
+    <symbol id="p-mug" viewBox="0 0 32 32"><path d="M7 10h15v12a5 5 0 0 1-5 5h-5a5 5 0 0 1-5-5z" fill="#93C5FD"/><path d="M22 13h2.2a3 3 0 0 1 0 6H22" fill="none" stroke="#3B82F6" stroke-width="2.2"/><path d="M7 10h15v3H7z" fill="#3B82F6"/><path d="M11 16v6" stroke="#fff" stroke-width="1.3" stroke-linecap="round" opacity=".6"/></symbol>
+    <linearGradient id="steel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#CBD5E1"/><stop offset=".45" stop-color="#F8FAFC"/><stop offset="1" stop-color="#94A3B8"/></linearGradient>
+    <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".45"/><stop offset="1" stop-color="#8B5CF6" stop-opacity=".25"/></linearGradient>
+    <linearGradient id="wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".25"/><stop offset="1" stop-color="#7C4A1E" stop-opacity=".15"/></linearGradient>
+  </defs>
+</svg>
+
+<div class="win">
+  <header class="win-bar">
+    <span class="win-icon"><svg viewBox="0 0 16 16" width="16" height="16"><rect x="1" y="1" width="14" height="14" rx="4" fill="#7C3AED"/><path d="M4.5 9.5h5.5M8 7l2.5 2.5L8 12M11.5 6.5H6M8 4 5.5 6.5 8 9" fill="none" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" opacity=".95"/></svg></span>
+    <span class="win-title">상품이사 1.4.0 — 내 스토어 A → 내 스토어 B · 쿠팡</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <div class="top">
+      <div class="brand">
+        <span class="logo"><svg viewBox="0 0 24 24" class="ico" style="stroke:#fff;stroke-width:2"><path d="M3 9.5 12 4l9 5.5"/><path d="M5 9v10h14V9"/><path d="M9 14h6M13 12l2 2-2 2"/></svg></span>
+        <div><b>상품이사</b><small>스토어 간 상품 이동 마법사</small></div>
+      </div>
+      <div class="steps">
+        <div class="step done"><span class="n"><svg viewBox="0 0 24 24" class="ico"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><div><p>원본 스토어</p><small>내 스토어 A</small></div></div>
+        <i class="sline"></i>
+        <div class="step done"><span class="n"><svg viewBox="0 0 24 24" class="ico"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><div><p>상품 선택</p><small>240개 · 판매가 +5%</small></div></div>
+        <i class="sline"></i>
+        <div class="step done"><span class="n"><svg viewBox="0 0 24 24" class="ico"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><div><p>대상 설정</p><small>내 스토어 B · 쿠팡</small></div></div>
+        <i class="sline"></i>
+        <div class="step cur"><span class="n">4</span><div><p>이전</p><small>진행 중 · 78%</small></div></div>
+      </div>
+      <div class="top-r">
+        <span class="chip-api"><i></i>API 3곳 연결됨</span>
+        <span class="ibtn"><svg viewBox="0 0 24 24" class="ico"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span>
+      </div>
+    </div>
+
+    <div class="content">
+      <section class="stage">
+        <div class="card hero">
+          <div class="hero-head">
+            <h2>상품 이전 중</h2>
+            <span class="live"><i></i>09:24 시작</span>
+            <div class="meta"><span>속도<b>분당 7.8개</b></span><span>남은 시간<b>약 7분</b></span><span>실패<b class="bad">2건</b></span></div>
+          </div>
+
+          <div class="lane-wrap">
+            <div class="src">
+              <span class="lbl">보내는 곳</span>
+              <h4>내 스토어 A</h4>
+              <span class="sub">스마트스토어 · API 연결됨</span>
+              <div class="stack">
+                <span class="t" style="left:0"><svg><use href="#p-board"/></svg></span>
+                <span class="t" style="left:22px; top:-3px"><svg><use href="#p-lamp"/></svg></span>
+                <span class="t" style="left:44px; top:-6px"><svg><use href="#p-mug"/></svg></span>
+              </div>
+              <div class="cnt"><b>240개</b><small>전체 1,000개 중 선택</small></div>
+            </div>
+
+            <div class="lanes">
+              <div class="lane">
+                <span class="track"></span>
+                <span class="t q" style="left:4%"><svg><use href="#p-mug"/></svg></span>
+                <span class="t m" style="left:24%"><svg><use href="#p-lamp"/></svg></span>
+                <span class="streak" style="left:calc(48% - 34px); width:30px"><i style="top:3px;width:30px"></i><i style="top:9px;width:20px"></i></span>
+                <span class="t" style="left:48%"><svg><use href="#p-cushion"/></svg></span>
+                <span class="streak" style="left:calc(73% - 38px); width:34px"><i style="top:2px;width:34px"></i><i style="top:8px;width:24px"></i></span>
+                <span class="t lead" style="left:73%"><svg><use href="#p-towel"/></svg><b class="tag" style="left:24px">이미지 복사</b></span>
+              </div>
+              <div class="lane">
+                <span class="track"></span>
+                <span class="t q" style="left:11%"><svg><use href="#p-board"/></svg></span>
+                <span class="streak" style="left:calc(36% - 30px); width:26px"><i style="top:3px;width:26px"></i><i style="top:9px;width:16px"></i></span>
+                <span class="t" style="left:36%"><svg><use href="#p-tumbler"/></svg></span>
+                <span class="streak" style="left:calc(66% - 40px); width:36px"><i style="top:2px;width:36px"></i><i style="top:8px;width:26px"></i></span>
+                <span class="t lead" style="left:66%"><svg><use href="#p-box"/></svg><b class="tag" style="left:24px">옵션 변환</b></span>
+              </div>
+            </div>
+
+            <div class="dests">
+              <div class="dest">
+                <span class="di" style="background:#F2EDFF;color:#7C3AED"><svg viewBox="0 0 24 24" class="ico"><path d="M4 9.5 5.5 4h13L20 9.5"/><path d="M4 9.5a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0 2.7 2.7 0 0 0 5.3 0"/><path d="M5.5 12v8h13v-8M10 20v-4.5h4V20"/></svg></span>
+                <h4>내 스토어 B <span>192<small> / 240</small></span></h4>
+                <span class="sub">스마트스토어 · 받는 곳</span>
+                <div class="mini"><i style="width:80%"></i></div>
+              </div>
+              <div class="dest">
+                <span class="di word" style="background:#FFF1F2;color:#E11D48">쿠팡</span>
+                <h4>쿠팡 <span>186<small> / 240</small></span></h4>
+                <span class="sub">판매자 API · 이어서 등록</span>
+                <div class="mini"><i style="width:77.5%"></i></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="prog">
+            <div class="count"><strong>186</strong><span>/ 240</span><em>이전 완료</em></div>
+            <div class="pbar-wrap">
+              <div class="pbar"><i class="d"></i><i class="r"></i><i class="f"></i></div>
+              <div class="plegend">
+                <span><i style="background:#7C3AED"></i>완료<b>186</b></span>
+                <span><i style="background:#C4B5FD"></i>쿠팡 등록 중<b>4</b></span>
+                <span><i style="background:#E5484D"></i>실패 모음<b>2</b></span>
+                <span><i style="background:#E4DEF5"></i>대기<b>48</b></span>
+                <span class="pc">77.5%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card conv">
+          <div class="conv-head">
+            <h3>항목별 변환</h3>
+            <div class="nowp"><span class="t"><svg><use href="#p-box"/></svg></span><b>스텐 밀폐용기 6종 세트</b><small>A-10482 · 187번째</small></div>
+            <div class="seg"><b class="on">현재 상품</b><b>전체 요약</b><b>실패 2</b></div>
+          </div>
+          <table>
+            <colgroup><col style="width:112px"><col><col style="width:150px"><col style="width:222px"><col style="width:110px"></colgroup>
+            <thead><tr><th>항목</th><th>원본 · 내 스토어 A</th><th><span class="arr">→</span>내 스토어 B</th><th><span class="arr">→</span>쿠팡</th><th>상태</th></tr></thead>
+            <tbody>
+              <tr><td class="k">상품명</td><td class="o">스텐 밀폐용기 6종 세트 김치통 반찬통</td><td><span class="same">그대로 복사</span></td><td>스텐 밀폐용기 6종 세트 김치통</td><td><span class="st ok"><svg viewBox="0 0 24 24" class="ico"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>완료</span></td></tr>
+              <tr><td class="k">판매가</td><td class="o">24,900원</td><td><span class="hl">26,100원</span><span class="up">+5%</span></td><td><span class="hl">26,100원</span><span class="up">+5%</span></td><td><span class="st ok"><svg viewBox="0 0 24 24" class="ico"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>엑셀 반영</span></td></tr>
+              <tr><td class="k">카테고리</td><td class="o">주방용품 › 보관·밀폐용기</td><td><span class="same">동일 카테고리</span></td><td>주방용품 › 보관용기 › 스텐<span class="pct">일치 97%</span></td><td><span class="st ok"><svg viewBox="0 0 24 24" class="ico"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>매칭 완료</span></td></tr>
+              <tr><td class="k">옵션</td><td class="o">사이즈 6 × 색상 2 · 12개</td><td><span class="same">12개 그대로</span></td><td>단일형 옵션 12개로 변환</td><td><span class="st ok"><svg viewBox="0 0 24 24" class="ico"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>변환 완료</span></td></tr>
+              <tr><td class="k">이미지·상세</td><td class="o">대표 1 · 추가 4 · 상세설명</td><td><span class="same">복사 완료</span></td><td>대표 이미지 1000px 규격 변환</td><td><span class="st ok"><svg viewBox="0 0 24 24" class="ico"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>완료</span></td></tr>
+              <tr><td class="k">배송·반품</td><td class="o">택배 3,000원 · 반품 6,000원</td><td><span class="same">동일</span></td><td>출고지·반품지 코드 연결</td><td><span class="st run"><i></i>진행 중</span></td></tr>
+              <tr><td class="k">상품정보 고시</td><td class="o">주방용품 · 12항목</td><td><span class="same">동일</span></td><td>고시 항목 12개 매핑</td><td><span class="st wait">대기</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside class="aside">
+        <div class="card box">
+          <h3>이전 설정 <span>3단계로 돌아가기</span></h3>
+          <ul class="kv">
+            <li><span>보내는 곳</span><b><i></i>내 스토어 A</b></li>
+            <li><span>받는 곳</span><b><i></i>내 스토어 B · 쿠팡</b></li>
+            <li><span>이동 범위</span><b>골라서 240개</b></li>
+            <li><span>엑셀 수정</span><b><em>판매가 +5%</em>상품명 38개</b></li>
+          </ul>
+          <ul class="opts">
+            <li>이미지·상세설명 포함<i class="tg on"></i></li>
+            <li>쿠팡 등록 이어서 진행<i class="tg on"></i></li>
+            <li>실패 상품 따로 모으기<i class="tg on"></i></li>
+            <li>이동 후 원본 판매중지<i class="tg"></i></li>
+          </ul>
+        </div>
+        <div class="card box logbox">
+          <h3>진행 기록 <span>로그 저장</span></h3>
+          <ul class="log">
+            <li><time>09:48:12</time><i class="now"></i><span><b>187번째</b> 밀폐용기 쿠팡 옵션 변환</span></li>
+            <li><time>09:47:51</time><i class="bad"></i><span>쿠팡 카테고리 미매칭 <b>2건</b> → 실패 모음</span></li>
+            <li><time>09:41:30</time><i></i><span>내 스토어 B 등록 <b>150</b> / 240</span></li>
+            <li><time>09:24:02</time><i></i><span>엑셀 수정 반영 후 등록 시작</span></li>
+          </ul>
+          <div class="fails">
+            <p>실패 모음 <b>2</b></p>
+            <div class="fi"><span class="t"><svg><use href="#p-board"/></svg></span><div><b>원목 도마 3종 세트</b><small>쿠팡 카테고리 미매칭 · 직접 선택 필요</small></div></div>
+            <div class="fi"><span class="t"><svg><use href="#p-lamp"/></svg></span><div><b>LED 머리맡 무드등</b><small>쿠팡 카테고리 미매칭 · 직접 선택 필요</small></div></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="foot">
+      <span class="btn ghost"><svg viewBox="0 0 24 24" class="ico"><path d="M15 6l-6 6 6 6"/></svg>이전 단계</span>
+      <span class="note"><svg viewBox="0 0 24 24" class="ico"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>창을 최소화해도 이전은 계속됩니다 · 완료되면 결과를 엑셀로 저장합니다</span>
+      <span class="sp"></span>
+      <span class="btn"><svg viewBox="0 0 24 24" class="ico"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 9"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15"/><path d="M4 20v-5h5"/></svg>실패 2건 다시 시도</span>
+      <span class="btn"><svg viewBox="0 0 24 24" class="ico"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>일시정지</span>
+      <span class="btn pri"><svg viewBox="0 0 24 24" class="ico"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>이전 중지</span>
+    </footer>
+  </main>
+</div>
+</body>
+</html>

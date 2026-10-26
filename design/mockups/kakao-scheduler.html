@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>정각공지</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 정각공지: Windows 11 Fluent 밝은 테마. Mica 회색 위 흰 카드, 따뜻한 노랑 + 차콜. 주간 캘린더가 중심. */
+  :root {
+    --mica: #f3f3f3; --card: #fff; --line: rgb(0 0 0 / .07); --line-2: rgb(0 0 0 / .05);
+    --text: #1f1f1f; --text-2: #4f4f4f; --text-3: #8a8a8a;
+    --y: #f7c948; --y-2: #fdf1c7; --y-3: #a87d06; --char: #2b2b2b;
+    --g1: #f7c948; --g2: #7fb2e5; --g3: #9ccf9a;
+  }
+  body { word-break: keep-all; font: 400 13px/1.4 'Segoe UI Variable Text', 'Segoe UI', 'Pretendard Variable', sans-serif; color: var(--text); background: var(--mica); }
+  .win { --bar: #f3f3f3; --bar-fg: #1f1f1f; background: var(--mica); }
+  .ko { font-family: 'Pretendard Variable', 'Segoe UI', sans-serif; }
+  .n { font-variant-numeric: tabular-nums; }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .wrap { flex: 1; min-width: 0; display: flex; flex-direction: column; font-family: 'Pretendard Variable', 'Segoe UI', sans-serif; letter-spacing: -0.01em; }
+
+  .cmd { height: 50px; flex: none; display: flex; align-items: center; gap: 4px; padding: 0 12px; }
+  .cb { height: 34px; display: flex; align-items: center; gap: 7px; padding: 0 11px; border-radius: 5px; font-size: 13px; font-weight: 500; color: var(--text); }
+  .cb.run { background: var(--y); font-weight: 700; box-shadow: inset 0 -1px 0 rgb(0 0 0 / .12); }
+  .cb.run svg { fill: var(--char); stroke: none; }
+  .vsep { width: 1px; height: 22px; background: rgb(0 0 0 / .1); margin: 0 4px; }
+  .cmd .sp { flex: 1; }
+  .kt { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 15px; background: #fff; border: 1px solid var(--line); font-size: 12px; color: var(--text-2); }
+  .kt i { width: 8px; height: 8px; border-radius: 50%; background: #2fa84f; box-shadow: 0 0 0 3px rgb(47 168 79 / .15); }
+  .kt b { font-weight: 700; color: var(--text); }
+
+  .cols { flex: 1; min-height: 0; display: flex; gap: 10px; padding: 0 12px 10px; }
+  .pane { background: var(--card); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 1px 2px rgb(0 0 0 / .04); min-height: 0; }
+
+  /* 채팅방 목록 */
+  .rooms { width: 236px; flex: none; display: flex; flex-direction: column; padding: 14px 10px 10px; }
+  .ph { display: flex; align-items: baseline; justify-content: space-between; padding: 0 6px; }
+  .ph h2 { font-size: 14px; font-weight: 700; }
+  .ph span { font-size: 12px; color: var(--text-3); }
+  .find { margin: 10px 4px 6px; height: 32px; border-radius: 5px; background: #f9f9f9; border: 1px solid var(--line); border-bottom-color: rgb(0 0 0 / .2); display: flex; align-items: center; gap: 8px; padding: 0 10px; font-size: 12px; color: var(--text-3); }
+  .grp { display: flex; align-items: center; gap: 7px; padding: 10px 6px 5px; font-size: 12px; font-weight: 700; color: var(--text-2); }
+  .grp i { width: 8px; height: 8px; border-radius: 2px; }
+  .grp em { margin-left: auto; font-style: normal; font-weight: 600; color: var(--text-3); font-size: 11.5px; }
+  .room { display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 8px; border-radius: 5px; position: relative; }
+  .room.on { background: #f3f3f3; }
+  .room.on::before { content: ""; position: absolute; left: 0; top: 14px; bottom: 14px; width: 3px; border-radius: 2px; background: var(--y-3); }
+  .rav { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; flex: none; font-size: 12px; font-weight: 800; color: var(--char); }
+  .room b { display: block; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .room small { display: block; font-size: 11px; color: var(--text-3); margin-top: 1px; }
+  .room .cnt { margin-left: auto; font-size: 11.5px; color: var(--text-3); font-variant-numeric: tabular-nums; flex: none; }
+  .rooms .note { margin-top: auto; padding: 10px; border-radius: 6px; background: #fbf8ee; border: 1px solid #f1e6bf; font-size: 11.5px; color: #6b5a24; line-height: 1.5; display: flex; gap: 8px; }
+  .rooms .note svg { color: var(--y-3); margin-top: 1px; }
+  .preset { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 6px 12px; }
+  .preset span { height: 26px; display: flex; align-items: center; padding: 0 10px; border-radius: 13px; background: #f5f5f5; border: 1px solid var(--line); font-size: 12px; color: var(--text-2); }
+
+  /* 주간 캘린더 */
+  .cal { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 12px 14px 12px 8px; }
+  .cal-h { display: flex; align-items: center; gap: 10px; padding: 0 0 10px 8px; }
+  .cal-h h2 { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; }
+  .cal-h .arr { display: flex; gap: 2px; }
+  .cal-h .arr span { width: 28px; height: 28px; border-radius: 5px; display: grid; place-items: center; color: var(--text-2); }
+  .today { height: 28px; padding: 0 10px; border-radius: 5px; border: 1px solid var(--line); border-bottom-color: rgb(0 0 0 / .16); display: flex; align-items: center; font-size: 12px; font-weight: 600; }
+  .cal-h .sp { flex: 1; }
+  .views { display: flex; padding: 2px; border-radius: 6px; background: #f3f3f3; }
+  .views b { height: 26px; display: grid; place-items: center; padding: 0 12px; border-radius: 4px; font-size: 12px; font-weight: 600; color: var(--text-3); }
+  .views b.on { background: #fff; color: var(--text); box-shadow: 0 1px 2px rgb(0 0 0 / .1); }
+  .days { display: grid; grid-template-columns: 44px repeat(7, 1fr); flex: none; border-bottom: 1px solid var(--line); }
+  .days div { height: 46px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
+  .days small { font-size: 11.5px; color: var(--text-3); font-weight: 600; }
+  .days b { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; width: 30px; height: 26px; display: grid; place-items: center; border-radius: 13px; }
+  .days .on b { background: var(--char); color: #fff; }
+  .days .on small { color: var(--text); }
+  .days .sat small, .days .sat b { color: #3b6fb0; }
+  .days .sun small, .days .sun b { color: #c0504a; }
+  .grid { position: relative; flex: 1; min-height: 0; display: grid; grid-template-columns: 44px repeat(7, 1fr); }
+  .hrs { position: relative; }
+  .hrs span { position: absolute; right: 8px; font-size: 11px; color: var(--text-3); translate: 0 -50%; font-variant-numeric: tabular-nums; }
+  .col { position: relative; border-left: 1px solid var(--line-2); background-image: repeating-linear-gradient(180deg, transparent 0 calc(var(--h) - 1px), var(--line-2) calc(var(--h) - 1px) var(--h)); }
+  .col.on { background-color: rgb(247 201 72 / .07); }
+  .ev { position: absolute; left: 3px; right: 3px; border-radius: 5px; padding: 4px 6px 4px 8px; overflow: hidden; font-size: 11.5px; line-height: 1.3; color: var(--char); border-left: 3px solid; }
+  .ev b { display: block; font-size: 12px; font-weight: 700; line-height: 1.3; }
+  .ev .t { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; opacity: .8; font-variant-numeric: tabular-nums; }
+  .ev .t svg { width: 11px; height: 11px; stroke-width: 2.2; }
+  .ev.g1 { background: #fdf0c4; border-color: #e0ad1c; }
+  .ev.g2 { background: #e2eefa; border-color: #4a8fd6; }
+  .ev.g3 { background: #e5f3e3; border-color: #5aa957; }
+  .ev.done { opacity: 1; }
+  .ev.sel { box-shadow: 0 0 0 2px var(--char), 0 6px 14px -6px rgb(0 0 0 / .35); z-index: 5; padding-right: 22px; }
+  .ev .ok { position: absolute; right: 5px; top: 5px; width: 15px; height: 15px; border-radius: 50%; background: #2fa84f; display: grid; place-items: center; }
+  .ev .ok svg { width: 9px; height: 9px; stroke: #fff; stroke-width: 3; }
+  .ev.mini { padding: 3px 5px 3px 7px; }
+  .ev.mini b { font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .now { position: absolute; left: 44px; height: 0; border-top: 2px solid #d4483b; z-index: 2; }
+  .now::before { content: ""; position: absolute; left: -5px; top: -6px; width: 10px; height: 10px; border-radius: 50%; background: #d4483b; }
+  .now span { position: absolute; left: -44px; top: -9px; width: 40px; text-align: right; font-size: 11px; font-weight: 700; color: #d4483b; font-variant-numeric: tabular-nums; }
+
+  /* 미리보기 */
+  .prev { width: 300px; flex: none; display: flex; flex-direction: column; padding: 14px 14px 12px; }
+  .prev .ph { padding: 0; }
+  .ttl { margin-top: 10px; display: flex; align-items: center; gap: 8px; }
+  .ttl b { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+  .tag { height: 22px; display: inline-flex; align-items: center; gap: 4px; padding: 0 8px; border-radius: 11px; font-size: 11.5px; font-weight: 700; }
+  .tag.ok { background: #e3f4e6; color: #23803c; }
+  .tag svg { width: 12px; height: 12px; stroke-width: 2.4; }
+  .chat { margin-top: 10px; border-radius: 8px; background: #f2f1ee; border: 1px solid var(--line-2); padding: 10px 10px 10px; display: flex; flex-direction: column; gap: 6px; }
+  .chat .room-n { font-size: 11.5px; color: var(--text-3); text-align: center; }
+  .msg { align-self: flex-end; max-width: 236px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .who { font-size: 11px; color: var(--text-3); }
+  .bub { background: #fff; border: 1px solid rgb(0 0 0 / .08); border-radius: 12px 12px 4px 12px; padding: 9px 11px; font-size: 12.5px; line-height: 1.5; color: var(--text); box-shadow: 0 1px 1px rgb(0 0 0 / .04); }
+  .bub b { font-weight: 700; }
+  .bub ul { margin-top: 4px; }
+  .bub li { font-variant-numeric: tabular-nums; }
+  .att { width: 196px; border-radius: 10px; overflow: hidden; border: 1px solid rgb(0 0 0 / .08); background: #fff; }
+  .att .img { height: 70px; background: linear-gradient(135deg, #fff6d6, #fde7a6); position: relative; padding: 8px 10px; }
+  .att .img b { font-size: 11px; font-weight: 800; color: #6b4e00; }
+  .att .img .tt { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 6px; }
+  .att .img .tt i { height: 18px; border-radius: 3px; background: rgb(255 255 255 / .8); border-top: 3px solid #e0ad1c; }
+  .att .img .tt i:nth-child(2) { border-color: #c88e10; }
+  .att .img .tt i:nth-child(3) { border-color: #f0c64a; }
+  .att p { font-size: 11px; color: var(--text-3); padding: 5px 9px; }
+  .meta { font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .rep { align-self: flex-start; display: flex; gap: 7px; align-items: flex-start; }
+  .rep .rav { width: 24px; height: 24px; border-radius: 7px; font-size: 11px; background: #e6e2da; color: #6f665a; }
+  .rep .bub { border-radius: 12px 12px 12px 4px; background: #fff; }
+
+  .set { margin-top: 12px; display: flex; flex-direction: column; gap: 0; }
+  .set h3 { font-size: 12px; font-weight: 700; color: var(--text-2); margin-bottom: 8px; display: flex; justify-content: space-between; }
+  .set h3 span { color: var(--y-3); }
+  .wk { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .wk span { height: 28px; border-radius: 5px; display: grid; place-items: center; font-size: 12px; font-weight: 600; background: #f5f5f5; color: var(--text-3); border: 1px solid var(--line-2); }
+  .wk span.on { background: var(--y); color: var(--char); font-weight: 800; border-color: #e0ad1c; }
+  .row { display: flex; align-items: center; justify-content: space-between; height: 33px; border-bottom: 1px solid var(--line-2); font-size: 12.5px; }
+  .row:last-child { border-bottom: 0; }
+  .row span { color: var(--text-3); }
+  .row b { font-weight: 600; font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 6px; }
+  .big-t { display: flex; align-items: baseline; gap: 6px; margin-top: 10px; }
+  .big-t strong { font-size: 26px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .big-t span { font-size: 12px; color: var(--text-3); }
+  .sw { width: 34px; height: 18px; border-radius: 9px; background: var(--char); position: relative; }
+  .sw::after { content: ""; position: absolute; right: 3px; top: 3px; width: 12px; height: 12px; border-radius: 50%; background: #fff; }
+
+  .status { height: 28px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 16px; border-top: 1px solid var(--line); background: #eeeeee; font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .status b { display: flex; align-items: center; gap: 6px; font-weight: 700; color: #23803c; }
+  .status b i { width: 7px; height: 7px; border-radius: 50%; background: #2fa84f; }
+  .status .r { margin-left: auto; color: var(--text-3); }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar"><i class="win-icon"><svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="4" fill="#f7c948"/><circle cx="8" cy="8.4" r="4.1" fill="none" stroke="#2b2b2b" stroke-width="1.4"/><path d="M8 6.2v2.4l1.5 1" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linecap="round"/></svg></i><span class="win-title">정각공지 2.3.0</span><span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span></header>
+  <main class="win-body">
+    <div class="wrap">
+      <div class="cmd">
+        <span class="cb run"><svg class="i" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></svg>예약 실행 중</span>
+        <span class="cb"><svg class="i" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>중지</span>
+        <span class="vsep"></span>
+        <span class="cb"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>공지 추가</span>
+        <span class="cb"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/></svg>그룹 관리</span>
+        <span class="cb"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h12"/></svg>전송 기록</span>
+        <span class="cb"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>설정</span>
+        <span class="sp"></span>
+        <span class="kt"><i></i>PC 카카오톡 <b>로그인 확인됨</b></span>
+      </div>
+
+      <div class="cols">
+        <aside class="pane rooms">
+          <div class="ph"><h2>운영 중인 단톡방</h2><span>6곳 · 그룹 3</span></div>
+          <div class="find"><svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>채팅방 이름 검색</div>
+
+          <div class="grp"><i style="background:#e0ad1c"></i>수업 안내방<em>3곳</em></div>
+          <div class="room on"><span class="rav" style="background:#fdf0c4">토</span><div style="min-width:0"><b>토요 베이킹 수업방</b><small>오늘 09:00 전송됨</small></div><span class="cnt">12명</span></div>
+          <div class="room"><span class="rav" style="background:#fdf0c4">평</span><div style="min-width:0"><b>평일 저녁반 공지방</b><small>오늘 09:00 전송됨</small></div><span class="cnt">9명</span></div>
+          <div class="room"><span class="rav" style="background:#fdf0c4">원</span><div style="min-width:0"><b>원데이 클래스 안내방</b><small>오늘 09:00 전송됨</small></div><span class="cnt">21명</span></div>
+
+          <div class="grp"><i style="background:#4a8fd6"></i>공구 회원방<em>2곳</em></div>
+          <div class="room"><span class="rav" style="background:#e2eefa">재</span><div style="min-width:0"><b>베이킹 재료 공구방</b><small>다음 오늘 21:00</small></div><span class="cnt">148명</span></div>
+          <div class="room"><span class="rav" style="background:#e2eefa">픽</span><div style="min-width:0"><b>공구 픽업 안내방</b><small>다음 오늘 21:00</small></div><span class="cnt">63명</span></div>
+
+          <div class="grp"><i style="background:#5aa957"></i>단골 고객방<em>1곳</em></div>
+          <div class="room"><span class="rav" style="background:#e5f3e3">단</span><div style="min-width:0"><b>공방 단골 소식방</b><small>다음 목 11:00</small></div><span class="cnt">87명</span></div>
+
+          <div class="grp" style="padding-top:12px">문구 프리셋</div>
+          <div class="preset"><span>오픈 안내</span><span>마감 임박</span><span>재입고 소식</span></div>
+
+          <div class="note"><svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.5"/></svg><span>내가 운영하는 방과 수신에 동의한 고객 방만 등록해 주세요.</span></div>
+        </aside>
+
+        <section class="pane cal">
+          <div class="cal-h">
+            <h2 class="n">2026년 10월 26일 – 11월 1일</h2>
+            <span class="arr"><span><svg class="i" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg></span><span><svg class="i" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></span></span>
+            <span class="today">오늘</span>
+            <span class="sp"></span>
+            <div class="views"><b>일</b><b class="on">주</b><b>월</b><b>목록</b></div>
+          </div>
+          <div class="days">
+            <div></div>
+            <div class="on"><small>월</small><b>26</b></div><div><small>화</small><b>27</b></div><div><small>수</small><b>28</b></div><div><small>목</small><b>29</b></div><div><small>금</small><b>30</b></div><div class="sat"><small>토</small><b>31</b></div><div class="sun"><small>일</small><b>1</b></div>
+          </div>
+          <div class="grid" id="grid"></div>
+        </section>
+
+        <aside class="pane prev">
+          <div class="ph"><h2>공지 미리보기</h2><span>수업 안내방 · 3곳</span></div>
+          <div class="ttl"><b>주간 수업 일정 안내</b><span class="tag ok"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>오늘 전송 완료</span></div>
+          <div class="chat">
+            <p class="room-n">토요 베이킹 수업방 · 오전 9:00</p>
+            <div class="msg">
+              <span class="who">운영자(나)</span>
+              <div class="bub"><b>[이번 주 수업 일정 안내]</b><ul><li>화 19:00 저녁반 · 휘낭시에</li><li>목 19:00 저녁반 · 마들렌</li><li>토 10:30 주말반 · 단호박 파운드</li></ul>준비물: 앞치마, 밀폐 용기</div>
+              <div class="att"><div class="img"><b>10월 넷째 주 시간표</b><div class="tt"><i></i><i></i><i></i></div></div><p>주간 일정표.png · 1장</p></div>
+            </div>
+            <div class="rep"><span class="rav">회</span><div class="bub">확인했습니다! 토요일에 뵐게요</div></div>
+          </div>
+
+          <div class="set">
+            <h3>반복 설정 <span>매주 월 09:00</span></h3>
+            <div class="wk"><span class="on">월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span><span>일</span></div>
+            <div class="row" style="margin-top:6px"><span>보낼 시각</span><b>09:00</b></div>
+            <div class="row"><span>대상</span><b>수업 안내방 그룹 · 3곳</b></div>
+            <div class="row"><span>방 사이 간격</span><b>5초</b></div>
+            <div class="row"><span>이미지와 문구 함께</span><b><span class="sw"></span></b></div>
+            <div class="row"><span>마지막 전송</span><b style="color:#23803c">오늘 09:00:09 · 3곳 완료</b></div>
+          </div>
+        </aside>
+      </div>
+
+      <footer class="status"><b><i></i>실행 중</b><span>예약 공지 6건 · 이번 주 전송 12회</span><span>다음 전송 오늘 21:00 픽업 안내</span><span>전송 결과 기록 저장 켜짐</span><span class="r">정각공지 2.3.0</span></footer>
+    </div>
+  </main>
+</div>
+<script>
+  // 주간 캘린더: 08~22시. 공지 6건(월 09:00 주간 일정, 매일 21:00 픽업 안내, 수 16:00 보강, 목 11:00 재입고, 금 18:00 마감, 토 10:00 영업시간)
+  (function () {
+    const grid = document.getElementById('grid');
+    const H = grid.getBoundingClientRect().height, start = 8, end = 22, hh = (H - 2) / (end - start + 0.85);
+    const rep = '<svg class="i" viewBox="0 0 24 24"><path d="M17 2l4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14M7 22l-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>';
+    const img = '<svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>';
+    const ok = '<span class="ok"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>';
+    let hrs = '<div class="hrs">';
+    for (let h = start + 1; h <= end; h++) hrs += `<span style="top:${(h - start) * hh}px">${String(h).padStart(2, '0')}:00</span>`;
+    hrs += '</div>';
+    const ev = {
+      0: [[9, 0, 1.45, 'g1 sel done', '주간 수업 일정 안내', `09:00 ${rep}${img}`, ok], [21, 0, 0.8, 'g2 mini done0', '픽업 시간 안내', `21:00 ${rep}${img}`]],
+      1: [[21, 0, 0.8, 'g2 mini', '픽업 시간 안내', `21:00 ${rep}${img}`]],
+      2: [[16, 0, 1.45, 'g1', '수요일 보강 수업 안내', '16:00 · 1회'], [21, 0, 0.8, 'g2 mini', '픽업 시간 안내', `21:00 ${rep}${img}`]],
+      3: [[11, 0, 1.45, 'g3', '재료 재입고 소식', '11:00 · 1회'], [21, 0, 0.8, 'g2 mini', '픽업 시간 안내', `21:00 ${rep}${img}`]],
+      4: [[18, 0, 1.45, 'g2', '주말 공구 마감 1시간 전', `18:00 ${rep}`], [21, 0, 0.8, 'g2 mini', '픽업 시간 안내', `21:00 ${rep}${img}`]],
+      5: [[10, 0, 1.45, 'g3', '주말 공방 영업시간', `10:00 ${rep}`], [21, 0, 0.8, 'g2 mini', '픽업 시간 안내', `21:00 ${rep}${img}`]],
+      6: [[21, 0, 0.8, 'g2 mini', '픽업 시간 안내', `21:00 ${rep}${img}`]],
+    };
+    let cols = '';
+    for (let d = 0; d < 7; d++) {
+      cols += `<div class="col${d === 0 ? ' on' : ''}" style="--h:${hh}px">`;
+      (ev[d] || []).forEach(([h, m, len, cls, title, t, extra]) => {
+        cols += `<div class="ev ${cls}" style="top:${(h - start + m / 60) * hh + 1}px;height:${len * hh - 2}px"><b>${title}</b><span class="t">${t}</span>${extra || ''}</div>`;
+      });
+      cols += '</div>';
+    }
+    const nowY = (9 + 12 / 60 - start) * hh;
+    const cw = (grid.getBoundingClientRect().width - 44) / 7;
+    grid.innerHTML = hrs + cols + `<div class="now" style="top:${nowY}px;width:${cw}px"></div>`;
+  })();
+</script>
+</body>
+</html>

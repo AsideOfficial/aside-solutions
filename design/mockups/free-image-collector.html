@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>이미지줍줍</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 이미지줍줍: 밝은 갤러리 앱. 검색 + 조건 필터 + 메이슨리 사진(라이선스 배지·선택 체크) + 아래 다운로드 서랍. */
+  :root {
+    --bg: #fafafa; --surface: #fff; --line: #ececef; --line-2: #dedee3;
+    --text: #18181b; --text-2: #52525b; --text-3: #8e8e98;
+    --pink: #ec4899; --pink-d: #db2777; --pink-bg: #fdf2f8; --pink-soft: #fbcfe8;
+  }
+  body { font: 400 13px/1.4 'Pretendard Variable', sans-serif; color: var(--text); background: var(--bg); letter-spacing: -0.01em; word-break: keep-all; }
+  .win { --bar: #ffffff; --bar-fg: #27272a; background: var(--bg); }
+  .tnum { font-variant-numeric: tabular-nums; }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .app { flex: 1; min-width: 0; display: flex; flex-direction: column; position: relative; }
+
+  .hd { height: 62px; flex: none; display: flex; align-items: center; gap: 14px; padding: 0 20px; background: #fff; border-bottom: 1px solid var(--line); }
+  .logo { display: flex; align-items: center; gap: 9px; font-size: 15.5px; font-weight: 800; letter-spacing: -0.035em; }
+  .logo i { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(135deg, #f472b6, #db2777); display: grid; place-items: center; }
+  .sb { flex: 0 0 470px; height: 40px; display: flex; align-items: center; gap: 9px; padding: 0 5px 0 14px; border-radius: 20px; background: #f4f4f5; border: 1.5px solid transparent; box-shadow: inset 0 0 0 1.5px var(--pink); background: #fff; }
+  .sb > svg { color: var(--pink); }
+  .sb b { font-size: 14.5px; font-weight: 700; }
+  .sb .en { height: 24px; display: flex; align-items: center; gap: 5px; padding: 0 9px; border-radius: 12px; background: #f4f4f5; font-size: 11.5px; color: var(--text-2); }
+  .sb .sp { flex: 1; }
+  .sb .go { height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 14px; border-radius: 15px; background: var(--pink); color: #fff; font-weight: 700; font-size: 12.5px; }
+  .queue { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-3); }
+  .queue span { height: 26px; display: flex; align-items: center; gap: 5px; padding: 0 10px; border-radius: 13px; border: 1px dashed var(--line-2); color: var(--text-2); font-weight: 600; }
+  .queue span em { font-style: normal; color: var(--text-3); font-weight: 500; }
+  .hd .sp { flex: 1; }
+  .ib { height: 34px; display: flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: 9px; font-size: 12.5px; font-weight: 600; color: var(--text-2); }
+  .ib.line { border: 1px solid var(--line-2); background: #fff; }
+
+  .fl { height: 50px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 20px; }
+  .ft { height: 32px; display: flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: 16px; background: #fff; border: 1px solid var(--line-2); font-size: 12.5px; font-weight: 600; color: var(--text-2); }
+  .ft.on { background: var(--pink-bg); border-color: var(--pink-soft); color: var(--pink-d); }
+  .ft.on svg { stroke-width: 2.6; }
+  .seg { display: flex; padding: 3px; gap: 2px; border-radius: 16px; background: #f0f0f2; margin-left: 4px; }
+  .seg b { height: 26px; display: grid; place-items: center; padding: 0 12px; border-radius: 13px; font-size: 12px; font-weight: 600; color: var(--text-3); }
+  .seg b.on { background: #fff; color: var(--text); box-shadow: 0 1px 2px rgb(0 0 0 / .1); }
+  .fl .sp { flex: 1; }
+  .cnt { font-size: 12.5px; color: var(--text-3); }
+  .cnt b { color: var(--text); font-weight: 700; }
+  .cnt b.p { color: var(--pink-d); }
+  .sort { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--text-2); font-weight: 600; margin-left: 12px; }
+
+  .gal { position: relative; flex: 1; min-height: 0; overflow: hidden; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; padding: 2px 20px 0; align-items: start; }
+  .colm { display: flex; flex-direction: column; gap: 12px; }
+  .tile { position: relative; border-radius: 12px; overflow: hidden; background: #e7e5e4; box-shadow: 0 1px 2px rgb(0 0 0 / .06); }
+  .tile svg.ph { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .tile .lic { position: absolute; left: 9px; top: 9px; height: 22px; display: flex; align-items: center; gap: 4px; padding: 0 8px 0 6px; border-radius: 11px; background: rgb(255 255 255 / .92); font-size: 11px; font-weight: 700; color: #27272a; box-shadow: 0 1px 3px rgb(0 0 0 / .15); }
+  .tile .lic svg { width: 12px; height: 12px; stroke: #16a34a; stroke-width: 2.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .tile .ck { position: absolute; right: 9px; top: 9px; width: 24px; height: 24px; border-radius: 50%; border: 2px solid rgb(255 255 255 / .95); background: rgb(0 0 0 / .18); display: grid; place-items: center; }
+  .tile.sel .ck { background: var(--pink); border-color: #fff; box-shadow: 0 2px 6px rgb(219 39 119 / .45); }
+  .tile .ck svg { width: 13px; height: 13px; stroke: #fff; stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; opacity: 0; }
+  .tile.sel .ck svg { opacity: 1; }
+  .tile.sel { box-shadow: 0 0 0 2px var(--pink); }
+  .tile .sz { position: absolute; right: 9px; bottom: 9px; height: 20px; display: flex; align-items: center; padding: 0 7px; border-radius: 6px; background: rgb(24 24 27 / .62); color: #fff; font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tile .done { position: absolute; left: 9px; bottom: 9px; height: 20px; display: flex; align-items: center; gap: 4px; padding: 0 7px; border-radius: 6px; background: rgb(255 255 255 / .9); color: var(--pink-d); font-size: 11px; font-weight: 700; }
+  .tile .done svg { width: 11px; height: 11px; stroke: var(--pink-d); stroke-width: 2.6; fill: none; }
+  .tile .hov { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 11px 10px; background: linear-gradient(transparent, rgb(0 0 0 / .66)); color: #fff; }
+  .tile .hov b { display: block; font-size: 12.5px; font-weight: 700; }
+  .tile .hov small { display: block; font-size: 11px; opacity: .85; margin-top: 1px; }
+
+  .drawer { position: absolute; left: 0; right: 0; bottom: 0; height: 150px; background: #fff; border-top: 1px solid var(--line); border-radius: 16px 16px 0 0; box-shadow: 0 -12px 30px -12px rgb(24 24 27 / .2); display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 0; padding: 18px 20px 14px; z-index: 5; }
+  .drawer::before { content: ""; position: absolute; left: 50%; top: 7px; width: 40px; height: 4px; border-radius: 2px; background: #e4e4e7; translate: -50% 0; }
+  .dc { padding: 0 22px; border-left: 1px solid var(--line); min-width: 0; }
+  .dc:first-child { padding-left: 0; border-left: 0; }
+  .dc h4 { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 600; color: var(--text-3); }
+  .dc h4 span { color: var(--pink-d); font-weight: 700; }
+  .big { display: flex; align-items: baseline; gap: 8px; margin-top: 3px; font-variant-numeric: tabular-nums; }
+  .big strong { font-size: 32px; font-weight: 800; letter-spacing: -0.04em; line-height: 1.1; color: var(--pink-d); }
+  .big span { font-size: 18px; font-weight: 700; color: var(--text-3); }
+  .big em { font-style: normal; margin-left: auto; font-size: 12px; color: var(--text-2); }
+  .big em b { color: var(--text); }
+  .pb { height: 8px; border-radius: 4px; background: #f4f4f5; overflow: hidden; margin-top: 8px; }
+  .pb i { display: block; height: 100%; width: 80%; border-radius: 4px; background: linear-gradient(90deg, #f472b6, #db2777); }
+  .cur { display: flex; align-items: center; gap: 9px; margin-top: 9px; font-size: 12px; color: var(--text-2); }
+  .cur .th { width: 30px; height: 22px; border-radius: 5px; overflow: hidden; flex: none; }
+  .cur b { color: var(--text); font-weight: 600; }
+  .cur .mini { width: 64px; height: 4px; border-radius: 2px; background: #f4f4f5; overflow: hidden; margin-left: auto; }
+  .cur .mini i { display: block; height: 100%; width: 64%; background: var(--pink); }
+  .cur .pc { font-variant-numeric: tabular-nums; color: var(--text-3); font-size: 11.5px; }
+  .path { display: flex; align-items: center; gap: 8px; margin-top: 8px; height: 38px; padding: 0 6px 0 11px; border-radius: 10px; background: #f8f8f9; border: 1px solid var(--line); font-size: 12.5px; }
+  .path svg.fd { width: 18px; height: 18px; color: #f59e0b; fill: #fde68a; stroke: #d97706; }
+  .path code { flex: 1; font: 500 12.5px/1 'Consolas', 'Pretendard Variable', monospace; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .path .ob { height: 28px; display: flex; align-items: center; gap: 5px; padding: 0 10px; border-radius: 7px; background: #fff; border: 1px solid var(--line-2); font-size: 12px; font-weight: 600; color: var(--text-2); }
+  .kv { display: flex; gap: 14px; margin-top: 9px; font-size: 12px; color: var(--text-3); }
+  .kv b { color: var(--text); font-weight: 600; }
+  .src { margin-top: 8px; display: flex; align-items: center; gap: 10px; }
+  .src .csv { width: 34px; height: 38px; border-radius: 7px; background: #ecfdf3; border: 1px solid #bbf7d0; display: grid; place-items: center; color: #15803d; font: 800 11px/1 'Segoe UI', sans-serif; flex: none; }
+  .src b { display: block; font-size: 12.5px; font-weight: 700; }
+  .src small { display: block; font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
+  .nx { display: flex; gap: 6px; margin-top: 10px; align-items: center; font-size: 11.5px; color: var(--text-3); }
+  .nx span { height: 22px; display: flex; align-items: center; padding: 0 9px; border-radius: 11px; background: #f4f4f5; color: var(--text-2); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar">
+    <span class="win-icon"><svg viewBox="0 0 16 16" width="16" height="16"><rect x="1.5" y="1.5" width="13" height="13" rx="3.5" fill="#ec4899"/><path d="M4 11.5 6.8 8l2 2.3 1.4-1.6 1.8 2.8z" fill="#fff"/><circle cx="10.5" cy="5.4" r="1.3" fill="#fff"/></svg></span>
+    <span class="win-title">이미지줍줍 1.8.0 — 카페 인테리어 수집 중</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <div class="app">
+      <div class="hd">
+        <span class="logo"><i><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></i>이미지줍줍</span>
+        <div class="sb">
+          <svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <b>카페 인테리어</b>
+          <span class="en">+ cafe interior 함께 검색</span>
+          <span class="sp"></span>
+          <span class="go"><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px;stroke-width:2.4"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>수집 중지</span>
+        </div>
+        <div class="queue">다음 키워드<span>원목 테이블 <em>60장</em></span><span>라떼아트 <em>60장</em></span></div>
+        <span class="sp"></span>
+        <span class="ib line"><svg class="i" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>출처 목록</span>
+        <span class="ib"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.8 12h2.4M18.8 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/></svg></span>
+      </div>
+
+      <div class="fl">
+        <span class="ft on"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>상업용 가능</span>
+        <span class="ft on"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>가로형</span>
+        <span class="ft on"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>고해상도 2000px 이상</span>
+        <span class="ft"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>인물 제외</span>
+        <span class="seg"><b class="on">JPG</b><b>WebP</b></span>
+        <span class="sp"></span>
+        <span class="cnt">상업용 무료 사이트 3곳 · 검색 <b>1,284</b>장 중 조건 맞음 <b>612</b>장 · 선택 <b class="p">60</b>장</span>
+        <span class="sort">관련도순<svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="m6 9 6 6 6-6"/></svg></span>
+      </div>
+
+      <div class="gal" id="gal"></div>
+
+      <div class="drawer">
+        <div class="dc">
+          <h4>다운로드 <span>남은 시간 약 40초</span></h4>
+          <div class="big"><strong>48</strong><span>/ 60장</span><em>저장 <b>131MB</b> · 오류 0</em></div>
+          <div class="pb"><i></i></div>
+          <div class="cur"><span class="th" id="curth"></span><span><b>카페인테리어_049.jpg</b> · 2.8MB</span><span class="mini"><i></i></span><span class="pc">64%</span></div>
+        </div>
+        <div class="dc">
+          <h4>저장 폴더 <span>키워드별 폴더</span></h4>
+          <div class="path"><svg class="i fd" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><code>D:\블로그 이미지\카페 인테리어\</code><span class="ob">폴더 열기</span></div>
+          <div class="kv"><span>파일명 <b>카페인테리어_001~060</b></span><span>형식 <b>JPG</b></span></div>
+        </div>
+        <div class="dc">
+          <h4>출처·작가 기록 <span>라이선스 확인용</span></h4>
+          <div class="src"><span class="csv">CSV</span><div><b>출처_카페인테리어.csv</b><small>48건 기록 · 원본 주소 · 작가 · 라이선스</small></div></div>
+          <div class="nx">이어서 수집<span>원목 테이블</span><span>라떼아트</span></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script>
+  // CSS·SVG로 그린 '사진' 장면들. 각 장면은 viewBox 400×300, 색 조합(p)으로 변주한다.
+  let uid = 0;
+  const S = {
+    window(p) { const u = ++uid; return `
+      <defs><linearGradient id="sk${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${p.sky1}"/><stop offset="1" stop-color="${p.sky2}"/></linearGradient>
+      <linearGradient id="lt${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+      <rect width="400" height="300" fill="${p.wall}"/>
+      <rect x="40" y="34" width="200" height="164" rx="4" fill="url(#sk${u})"/>
+      <circle cx="90" cy="150" r="44" fill="${p.tree}" opacity=".85"/><circle cx="150" cy="168" r="38" fill="${p.tree}" opacity=".7"/><circle cx="208" cy="140" r="30" fill="${p.tree}" opacity=".6"/>
+      <path d="M140 34v164M40 116h200" stroke="${p.frame}" stroke-width="6"/><rect x="40" y="34" width="200" height="164" rx="4" fill="none" stroke="${p.frame}" stroke-width="8"/>
+      <polygon points="40,198 240,198 330,300 0,300" fill="url(#lt${u})"/>
+      <rect y="232" width="400" height="68" fill="${p.floor}"/>
+      <rect x="70" y="206" width="170" height="10" rx="3" fill="${p.wood}"/><rect x="84" y="216" width="6" height="52" fill="${p.wood2}"/><rect x="222" y="216" width="6" height="52" fill="${p.wood2}"/>
+      <rect x="120" y="186" width="22" height="20" rx="4" fill="#fff"/><rect x="152" y="192" width="16" height="14" rx="3" fill="${p.acc}"/>
+      <path d="M262 168h52a8 8 0 0 1 8 8v52h-68v-52a8 8 0 0 1 8-8z" fill="${p.chair}"/><rect x="258" y="226" width="68" height="10" rx="3" fill="${p.chair2}"/><path d="M264 236v40M320 236v40" stroke="${p.wood2}" stroke-width="5"/>
+      <path d="M340 0v62" stroke="#3f3f46" stroke-width="2"/><path d="M318 86a22 22 0 0 1 44 0z" fill="${p.lamp}"/><circle cx="340" cy="90" r="22" fill="#fff6d5" opacity=".35"/>
+      <rect x="352" y="214" width="30" height="30" rx="4" fill="${p.pot}"/><ellipse cx="358" cy="196" rx="10" ry="24" fill="${p.leaf}" transform="rotate(-20 358 196)"/><ellipse cx="376" cy="194" rx="10" ry="26" fill="${p.leaf}" opacity=".85" transform="rotate(18 376 194)"/>`; },
+    latte(p) { const u = ++uid; return `
+      <defs><radialGradient id="cf${u}" cx=".45" cy=".4" r=".7"><stop offset="0" stop-color="${p.crema}"/><stop offset="1" stop-color="${p.coffee}"/></radialGradient></defs>
+      <rect width="400" height="300" fill="${p.wood}"/>
+      ${[30, 82, 140, 196, 250].map((y, i) => `<path d="M0 ${y}c120 ${i % 2 ? -10 : 8} 260 ${i % 2 ? 12 : -6} 400 ${i % 2 ? -4 : 6}" stroke="${p.grain}" stroke-width="3" fill="none" opacity=".45"/>`).join('')}
+      <ellipse cx="214" cy="164" rx="98" ry="98" fill="#000" opacity=".12"/>
+      <circle cx="206" cy="154" r="96" fill="${p.saucer}"/><circle cx="206" cy="154" r="80" fill="none" stroke="#000" stroke-opacity=".05" stroke-width="2"/>
+      <rect x="276" y="140" width="56" height="26" rx="13" fill="#fff"/>
+      <circle cx="206" cy="154" r="66" fill="#fff"/><circle cx="206" cy="154" r="56" fill="url(#cf${u})"/>
+      <path d="M206 186c-30-20-40-32-40-46 0-12 10-20 20-20 8 0 14 5 20 12 6-7 12-12 20-12 10 0 20 8 20 20 0 14-10 26-40 46z" fill="${p.foam}" opacity=".95"/>
+      <path d="M206 186c-3-14-3-34 0-54" stroke="${p.coffee}" stroke-width="3" opacity=".35" fill="none"/>
+      <path d="M40 58c18-34 76-40 98-10-18-6-34 0-44 16-10-12-34-14-54-6z" fill="${p.bread}"/><path d="M58 52c8-8 18-12 26-12M84 48c8-6 18-8 26-6" stroke="${p.bread2}" stroke-width="3" fill="none"/>
+      <path d="M330 250l52-34" stroke="#d4d4d8" stroke-width="6" stroke-linecap="round"/>`; },
+    pendant(p) { const u = ++uid; return `
+      <defs><linearGradient id="dk${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${p.d1}"/><stop offset="1" stop-color="${p.d2}"/></linearGradient>
+      <radialGradient id="gw${u}"><stop offset="0" stop-color="#ffd27a" stop-opacity=".85"/><stop offset=".4" stop-color="#ffb347" stop-opacity=".3"/><stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient></defs>
+      <rect width="400" height="300" fill="url(#dk${u})"/>
+      ${[0, 1, 2, 3, 4, 5, 6, 7].map((i) => `<rect x="${i * 52}" y="0" width="2" height="230" fill="#fff" opacity=".04"/>`).join('')}
+      ${[[90, 110], [200, 140], [310, 96]].map(([x, y]) => `<path d="M${x} 0v${y - 26}" stroke="#111" stroke-width="2"/><circle cx="${x}" cy="${y + 8}" r="70" fill="url(#gw${u})"/><path d="M${x - 26} ${y}a26 24 0 0 1 52 0z" fill="${p.shade}"/><circle cx="${x}" cy="${y + 6}" r="9" fill="#fff4cf"/>`).join('')}
+      ${[[40, 60, 6], [150, 40, 4], [260, 50, 5], [360, 170, 7], [30, 200, 5], [250, 210, 4]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#ffd27a" opacity=".35"/>`).join('')}
+      <rect y="232" width="400" height="68" fill="${p.table}"/><rect y="232" width="400" height="5" fill="#fff" opacity=".12"/>
+      <ellipse cx="200" cy="248" rx="120" ry="6" fill="#ffd27a" opacity=".18"/>
+      <rect x="150" y="206" width="26" height="26" rx="5" fill="#f5f5f4"/><rect x="236" y="212" width="20" height="20" rx="4" fill="#e7e5e4"/>`; },
+    shelf(p) { const u = ++uid; return `
+      <rect width="400" height="300" fill="${p.wall}"/>
+      <rect x="0" y="0" width="400" height="300" fill="#fff" opacity=".08"/>
+      ${[110, 200].map((y) => `<rect x="40" y="${y}" width="320" height="10" rx="2" fill="${p.wood}"/><rect x="40" y="${y + 10}" width="320" height="4" fill="#000" opacity=".08"/>`).join('')}
+      <rect x="60" y="74" width="32" height="36" rx="6" fill="${p.c1}"/><path d="M92 82c12 0 12 20 0 20" stroke="${p.c1}" stroke-width="5" fill="none"/>
+      <rect x="108" y="66" width="26" height="44" rx="4" fill="${p.c2}"/><rect x="146" y="80" width="40" height="30" rx="14" fill="${p.c3}"/>
+      <rect x="206" y="88" width="22" height="22" rx="3" fill="${p.pot}"/><ellipse cx="212" cy="70" rx="8" ry="20" fill="${p.leaf}" transform="rotate(-18 212 70)"/><ellipse cx="226" cy="72" rx="8" ry="18" fill="${p.leaf}" opacity=".8" transform="rotate(22 226 72)"/>
+      <rect x="250" y="62" width="30" height="48" rx="12" fill="${p.c4}"/><rect x="292" y="76" width="44" height="34" rx="5" fill="${p.c2}"/>
+      <rect x="64" y="160" width="46" height="40" rx="6" fill="${p.c3}"/><rect x="122" y="168" width="30" height="32" rx="6" fill="${p.c4}"/><path d="M152 176c10 0 10 16 0 16" stroke="${p.c4}" stroke-width="5" fill="none"/>
+      <rect x="172" y="150" width="20" height="50" rx="3" fill="${p.c1}"/><rect x="196" y="156" width="20" height="44" rx="3" fill="${p.c2}"/>
+      <rect x="236" y="172" width="34" height="28" rx="14" fill="#fff"/><rect x="286" y="164" width="24" height="36" rx="4" fill="${p.pot}"/><ellipse cx="298" cy="146" rx="20" ry="12" fill="${p.leaf}"/>
+      <rect y="262" width="400" height="38" fill="${p.counter}"/>`; },
+    counter(p) { const u = ++uid; return `
+      <defs><linearGradient id="mt${u}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9ca3af"/><stop offset=".4" stop-color="#f4f4f5"/><stop offset="1" stop-color="#71717a"/></linearGradient></defs>
+      <rect width="400" height="300" fill="${p.wall}"/>
+      ${Array.from({ length: 10 }, (_, r) => Array.from({ length: 14 }, (_, c) => `<rect x="${c * 30 + (r % 2) * 15 - 15}" y="${r * 16}" width="28" height="14" rx="2" fill="${p.tile}" opacity=".55"/>`).join('')).join('')}
+      <rect x="250" y="26" width="120" height="92" rx="4" fill="${p.board}"/><g stroke="#fff" stroke-opacity=".7" stroke-width="3" stroke-linecap="round"><path d="M266 46h60M266 62h80M266 78h50M266 94h70"/></g>
+      <rect x="70" y="92" width="120" height="92" rx="8" fill="url(#mt${u})"/><rect x="82" y="104" width="96" height="22" rx="4" fill="#27272a"/><circle cx="96" cy="115" r="4" fill="#f87171"/><rect x="104" y="140" width="10" height="26" fill="#3f3f46"/><rect x="146" y="140" width="10" height="26" fill="#3f3f46"/><rect x="96" y="166" width="70" height="6" rx="2" fill="#52525b"/>
+      <rect x="0" y="184" width="400" height="14" fill="${p.top}"/><rect x="0" y="198" width="400" height="102" fill="${p.front}"/>
+      ${[30, 90, 150, 210, 270, 330, 390].map((x) => `<rect x="${x - 2}" y="198" width="3" height="102" fill="#000" opacity=".06"/>`).join('')}
+      <rect x="214" y="160" width="20" height="24" rx="4" fill="#fff"/><rect x="238" y="166" width="18" height="18" rx="4" fill="${p.acc}"/>
+      ${[80, 200, 320].map((x) => `<ellipse cx="${x}" cy="236" rx="30" ry="9" fill="${p.stool}"/><path d="M${x - 16} 244 ${x - 22} 300M${x + 16} 244 ${x + 22} 300" stroke="${p.stool}" stroke-width="5"/>`).join('')}`; },
+    brick(p) { const u = ++uid; return `
+      <defs><pattern id="bk${u}" width="48" height="24" patternUnits="userSpaceOnUse"><rect width="48" height="24" fill="${p.mortar}"/><rect x="1" y="1" width="46" height="10" rx="1" fill="${p.b1}"/><rect x="-23" y="13" width="46" height="10" rx="1" fill="${p.b2}"/><rect x="25" y="13" width="46" height="10" rx="1" fill="${p.b1}"/></pattern>
+      <radialGradient id="bl${u}" cx=".3" cy=".25" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset="1" stop-color="#000" stop-opacity=".25"/></radialGradient></defs>
+      <rect width="400" height="300" fill="url(#bk${u})"/><rect width="400" height="300" fill="url(#bl${u})"/>
+      <rect x="132" y="40" width="136" height="54" rx="6" fill="${p.sign}"/><path d="M176 56h34v18a12 12 0 0 1-12 12h-10a12 12 0 0 1-12-12z" fill="none" stroke="${p.signTx}" stroke-width="3.5"/><path d="M210 61h5a6 6 0 0 1 0 12h-5" fill="none" stroke="${p.signTx}" stroke-width="3.5"/><path d="M228 60h26M228 70h20M228 80h24" stroke="${p.signTx}" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+      <path d="M60 0v70M340 0v58" stroke="#3f3f46" stroke-width="2"/>
+      <path d="M44 70h32l-4 20h-24z" fill="${p.pot}"/>${[-30, -10, 10, 30].map((a) => `<path d="M60 90c${a / 2} 20 ${a} 40 ${a * 1.2} 70" stroke="${p.leaf}" stroke-width="5" fill="none" stroke-linecap="round"/>`).join('')}
+      <path d="M326 58h28l-4 18h-20z" fill="${p.pot}"/>${[-20, 0, 20].map((a) => `<path d="M340 76c${a / 2} 18 ${a} 34 ${a * 1.1} 56" stroke="${p.leaf}" stroke-width="4" fill="none" stroke-linecap="round"/>`).join('')}
+      <rect y="250" width="400" height="50" fill="${p.floor}"/>
+      <ellipse cx="200" cy="200" rx="58" ry="12" fill="${p.wood}"/><rect x="196" y="206" width="8" height="52" fill="#27272a"/><ellipse cx="200" cy="260" rx="26" ry="5" fill="#27272a"/>
+      <path d="M100 176h40v34h-40z" fill="${p.chair}"/><path d="M100 210v46M140 210v46" stroke="#27272a" stroke-width="4"/><rect x="96" y="206" width="48" height="8" rx="2" fill="${p.chair}"/>
+      <path d="M262 176h40v34h-40z" fill="${p.chair}"/><path d="M262 210v46M302 210v46" stroke="#27272a" stroke-width="4"/><rect x="258" y="206" width="48" height="8" rx="2" fill="${p.chair}"/>`; },
+    arch(p) { const u = ++uid; return `
+      <rect width="400" height="300" fill="${p.wall}"/>
+      <path d="M70 300V130a80 80 0 0 1 160 0v170z" fill="${p.arch}"/>
+      <path d="M96 300V136a54 54 0 0 1 108 0v164z" fill="${p.inner}"/>
+      <polygon points="230,40 320,40 260,300 170,300" fill="#fff" opacity=".18"/>
+      <circle cx="310" cy="112" r="40" fill="${p.mirror}" stroke="${p.frame}" stroke-width="6"/><path d="M290 96a26 26 0 0 1 22-12" stroke="#fff" stroke-width="4" opacity=".6" fill="none" stroke-linecap="round"/>
+      <rect y="248" width="400" height="52" fill="${p.floor}"/>
+      <path d="M262 212c0-30 70-30 70 0v18h-70z" fill="${p.chair}"/><rect x="256" y="226" width="82" height="14" rx="7" fill="${p.chair2}"/><path d="M266 240l-4 40M328 240l4 40" stroke="${p.wood}" stroke-width="5"/>
+      <rect x="128" y="226" width="44" height="40" rx="6" fill="${p.pot}"/>${[-40, -20, 0, 20, 40].map((a) => `<ellipse cx="${150 + a * .6}" cy="${196 - Math.abs(a) * .3}" rx="9" ry="30" fill="${p.leaf}" transform="rotate(${a} ${150 + a * .6} 222)"/>`).join('')}`; },
+    plant(p) { const u = ++uid; return `
+      <rect width="400" height="300" fill="${p.wall}"/>
+      ${[0, 1, 2].map((i) => `<polygon points="${120 + i * 70},0 ${160 + i * 70},0 ${60 + i * 70},300 ${20 + i * 70},300" fill="#fff" opacity=".16"/>`).join('')}
+      <rect y="236" width="400" height="64" fill="${p.floor}"/>
+      <path d="M200 236c-50 0-70-40-66-80 4-36 30-60 66-60s62 24 66 60c4 40-16 80-66 80z" fill="${p.rattan}"/>
+      <path d="M200 228c-38 0-54-30-50-62 4-28 24-46 50-46s46 18 50 46c4 32-12 62-50 62z" fill="none" stroke="${p.rattan2}" stroke-width="3" stroke-dasharray="6 5"/>
+      <rect x="150" y="200" width="100" height="22" rx="10" fill="${p.cushion}"/><path d="M164 236l-8 40M236 236l8 40" stroke="${p.rattan2}" stroke-width="5"/>
+      <rect x="44" y="196" width="56" height="50" rx="8" fill="${p.pot}"/>
+      ${[[50, 120, -30], [86, 96, 10], [30, 150, -55], [104, 140, 35], [70, 70, -5]].map(([x, y, a]) => `<g transform="rotate(${a} ${x} ${y})"><ellipse cx="${x}" cy="${y}" rx="26" ry="40" fill="${p.leaf}"/><path d="M${x} ${y - 36}v72M${x - 20} ${y - 8}l20 6M${x + 20} ${y - 8}l-20 6M${x - 18} ${y + 14}l18 6M${x + 18} ${y + 14}l-18 6" stroke="${p.vein}" stroke-width="2.5"/></g>`).join('')}
+      <rect x="300" y="176" width="70" height="8" rx="3" fill="${p.wood}"/><path d="M310 184v52M360 184v52" stroke="${p.wood}" stroke-width="5"/><rect x="318" y="158" width="18" height="18" rx="4" fill="#fff"/><rect x="342" y="150" width="14" height="26" rx="3" fill="${p.acc}"/>`; },
+    lake(p) { const u = ++uid; return `
+      <defs><linearGradient id="sy${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${p.s1}"/><stop offset="1" stop-color="${p.s2}"/></linearGradient>
+      <linearGradient id="wt${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${p.w1}"/><stop offset="1" stop-color="${p.w2}"/></linearGradient></defs>
+      <rect width="400" height="300" fill="url(#sy${u})"/><circle cx="290" cy="84" r="26" fill="${p.sun}" opacity=".9"/>
+      <polygon points="0,180 70,90 120,140 180,60 250,150 300,110 400,180" fill="${p.m1}"/>
+      <polygon points="0,190 60,140 130,176 210,120 290,172 350,140 400,170 400,196 0,196" fill="${p.m2}"/>
+      <rect y="194" width="400" height="106" fill="url(#wt${u})"/>
+      <polygon points="0,196 70,250 120,226 180,280 250,236 300,256 400,196" fill="${p.m1}" opacity=".25"/>
+      ${[210, 230, 254, 276].map((y, i) => `<path d="M${40 + i * 30} ${y}h${80 - i * 8}M${230 + i * 12} ${y + 6}h${60 - i * 6}" stroke="#fff" stroke-opacity=".35" stroke-width="2" stroke-linecap="round"/>`).join('')}
+      ${[20, 44, 66, 352, 376].map((x, i) => `<path d="M${x} ${196}l${10 + i % 2 * 3} -${40 + i * 4} ${10 + i % 2 * 3} ${40 + i * 4}z" fill="${p.tree}"/>`).join('')}`; },
+    hall(p) { const u = ++uid; return `
+      <defs><linearGradient id="hw${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${p.win1}"/><stop offset="1" stop-color="${p.win2}"/></linearGradient></defs>
+      <rect width="400" height="300" fill="${p.wall}"/>
+      ${[0, 1, 2, 3].map((i) => `<rect x="${36 + i * 86}" y="30" width="70" height="130" rx="3" fill="url(#hw${u})"/><path d="M${71 + i * 86} 30v130" stroke="${p.frame}" stroke-width="3"/>`).join('')}
+      <polygon points="0,170 400,170 400,300 0,300" fill="${p.floor}"/>
+      <polygon points="150,178 250,178 330,262 70,262" fill="${p.wood}"/><polygon points="70,262 330,262 330,270 70,270" fill="${p.wood2}"/>
+      ${[0, 1, 2, 3].map((i) => { const y = 182 + i * 20, w = 12 + i * 4, lx = 150 - i * 22 - w, rx = 250 + i * 22; return `<rect x="${lx}" y="${y - 22}" width="${w}" height="${22 + i * 4}" rx="3" fill="${p.chair}"/><rect x="${rx}" y="${y - 22}" width="${w}" height="${22 + i * 4}" rx="3" fill="${p.chair}"/>`; }).join('')}
+      ${[0, 1, 2].map((i) => `<path d="M${130 + i * 70} 0v${46 + i * 6}" stroke="#3f3f46" stroke-width="1.5"/><circle cx="${130 + i * 70}" cy="${54 + i * 6}" r="${8 + i}" fill="${p.lamp}"/>`).join('')}
+      <rect x="170" y="196" width="14" height="12" rx="2" fill="#fff"/><rect x="214" y="214" width="16" height="14" rx="3" fill="#fff"/>`; },
+  };
+  const P = {
+    window: [{ wall: '#efe6da', sky1: '#bfe3f5', sky2: '#eef7fb', tree: '#8bbf8e', frame: '#fbf8f3', floor: '#c9a27c', wood: '#9b6b43', wood2: '#7b5131', acc: '#e7a25b', chair: '#d9c2a3', chair2: '#bfa27e', lamp: '#2f2f33', pot: '#c96f4a', leaf: '#5e8f5b' },
+             { wall: '#e7ece6', sky1: '#ffd9b3', sky2: '#fff2e2', tree: '#a3b98d', frame: '#ffffff', floor: '#b5967a', wood: '#d6b48c', wood2: '#a8865f', acc: '#7aa6c2', chair: '#6f8f7a', chair2: '#56735f', lamp: '#d9c9a8', pot: '#e9e4dc', leaf: '#4f7d55' }],
+    latte: [{ wood: '#a5714a', grain: '#7d5233', saucer: '#f5f1ea', coffee: '#8a5530', crema: '#c98d5b', foam: '#f6e7d2', bread: '#e0a24f', bread2: '#b97a2e' },
+            { wood: '#d8c3a5', grain: '#b89c78', saucer: '#e9eef1', coffee: '#6e4022', crema: '#b9784a', foam: '#fbf1e4', bread: '#d99a45', bread2: '#a86f25' }],
+    pendant: [{ d1: '#2a2420', d2: '#46382d', shade: '#1c1c1e', table: '#6b4a32' }, { d1: '#1f2a33', d2: '#33424d', shade: '#c8a46a', table: '#5a4636' }],
+    shelf: [{ wall: '#c8d5c1', wood: '#a47a52', c1: '#f4efe6', c2: '#d98c6a', c3: '#7b9fb5', c4: '#e8c46a', pot: '#c96f4a', leaf: '#4f7d55', counter: '#8a6a4b' },
+            { wall: '#efe3d3', wood: '#7a573a', c1: '#ffffff', c2: '#a7c4a0', c3: '#e3a6a1', c4: '#556b7d', pot: '#d9cbb8', leaf: '#5d8a5a', counter: '#5c4532' }],
+    counter: [{ wall: '#f2ece2', tile: '#ffffff', board: '#2b2b2e', top: '#e9e5df', front: '#8e6747', acc: '#d97757', stool: '#2f2f33' },
+              { wall: '#dfe8e6', tile: '#f7faf9', board: '#27463f', top: '#fafaf9', front: '#cfc4b3', acc: '#4f9d8f', stool: '#b0855c' }],
+    brick: [{ mortar: '#d9cfc4', b1: '#b5654a', b2: '#a85a41', sign: '#2b211b', signTx: '#f5e6c8', pot: '#e5e0d8', leaf: '#5b8a52', floor: '#5d4636', wood: '#8f6544', chair: '#3a2f28' },
+            { mortar: '#ece6de', b1: '#e9e2d8', b2: '#ddd4c8', sign: '#1f5f57', signTx: '#ffffff', pot: '#c96f4a', leaf: '#4d7f4f', floor: '#a88d72', wood: '#c9a27c', chair: '#6d5845' }],
+    arch: [{ wall: '#ead9c6', arch: '#d8b597', inner: '#c99f7d', mirror: '#cfd8dc', frame: '#b7895f', floor: '#bf9b7a', chair: '#f2ebe2', chair2: '#e4d7c7', wood: '#8c6845', pot: '#b9694b', leaf: '#678f5e' },
+           { wall: '#e9e4dc', arch: '#cfc6b8', inner: '#bdb3a3', mirror: '#d9e4e8', frame: '#3f3f46', floor: '#d6ccbd', chair: '#c76f4f', chair2: '#b25f41', wood: '#6b5844', pot: '#f1ede6', leaf: '#5a8657' }],
+    plant: [{ wall: '#eef0ea', floor: '#cdb79c', rattan: '#c99b62', rattan2: '#a87a45', cushion: '#f3ede4', pot: '#e8e2d8', leaf: '#3f7d4f', vein: '#2f6a3f', wood: '#8f6747', acc: '#e48a5e' },
+            { wall: '#f6ebe0', floor: '#9c7f63', rattan: '#d8b47e', rattan2: '#b48c56', cushion: '#6f8f7a', pot: '#2f2f33', leaf: '#4c8b58', vein: '#356e43', wood: '#5c4532', acc: '#7aa6c2' }],
+    lake: [{ s1: '#9ccbe8', s2: '#f3e3cf', sun: '#fff1c9', m1: '#6f8fa6', m2: '#4f6b5c', w1: '#7fb0c9', w2: '#3f6d84', tree: '#2f4d3e' },
+           { s1: '#f5b48a', s2: '#fde3c4', sun: '#fff4dc', m1: '#9b7a8c', m2: '#5d5470', w1: '#c99ba0', w2: '#6a5878', tree: '#3b3345' }],
+    hall: [{ wall: '#f1ebe3', win1: '#d6ecf5', win2: '#f6fbfd', frame: '#ffffff', floor: '#cbb196', wood: '#a77a52', wood2: '#7f5a3b', chair: '#3f3f46', lamp: '#f6d58c' },
+           { wall: '#e4e8ea', win1: '#fde3c8', win2: '#fff7ee', frame: '#f8fafc', floor: '#b9a48d', wood: '#d9bf9b', wood2: '#a98e6b', chair: '#8c6a4f', lamp: '#ffffff' }],
+  };
+  const H = { '3:2': [159, '4000×2667'], '4:3': [179, '4032×3024'], '16:9': [134, '3840×2160'], '5:4': [191, '5000×4000'] };
+  const cols = [
+    [['window', 0, '3:2', 1], ['pendant', 0, '16:9', 1], ['arch', 0, '4:3', 1], ['hall', 1, '3:2', 1]],
+    [['latte', 0, '16:9', 1], ['counter', 0, '4:3', 1], ['lake', 0, '3:2', 0], ['shelf', 1, '16:9', 1]],
+    [['plant', 0, '4:3', 1, 'hov'], ['shelf', 0, '3:2', 1], ['brick', 1, '16:9', 1], ['window', 1, '4:3', 1]],
+    [['hall', 0, '3:2', 1], ['lake', 1, '5:4', 0], ['latte', 1, '16:9', 1], ['plant', 1, '3:2', 1]],
+    [['brick', 0, '5:4', 1], ['pendant', 1, '16:9', 1], ['counter', 1, '3:2', 1], ['arch', 1, '4:3', 1]],
+  ];
+  const sizes = { '3:2': ['4000×2667', '5472×3648', '6000×4000'], '4:3': ['4032×3024', '4608×3456'], '16:9': ['3840×2160', '5120×2880'], '5:4': ['5000×4000'] };
+  let n = 0, html = '';
+  cols.forEach((col, ci) => {
+    html += '<div class="colm">';
+    col.forEach(([scene, pi, ar, sel, extra], ri) => {
+      n++;
+      const h = H[ar][0], sz = sizes[ar][(ci + ri) % sizes[ar].length];
+      const saved = sel && ri < 2;
+      html += `<div class="tile${sel ? ' sel' : ''}" style="height:${h}px"><svg class="ph" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">${S[scene](P[scene][pi])}</svg>
+        <span class="lic"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>상업적 이용 가능</span>
+        <span class="ck"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span>
+        ${extra === 'hov' ? '<div class="hov"><b>밝은 창가의 라탄 의자</b><small>작가 s○○ · 출처·원본 주소 기록됨</small></div>' : `${saved ? '<span class="done"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>저장됨</span>' : ''}<span class="sz">${sz}</span>`}
+      </div>`;
+    });
+    html += '</div>';
+  });
+  document.getElementById('gal').innerHTML = html;
+  document.getElementById('curth').innerHTML = `<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%">${S.pendant(P.pendant[0])}</svg>`;
+</script>
+</body>
+</html>

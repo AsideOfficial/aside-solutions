@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>핀랭크</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 핀랭크: 지도 위에 순위 핀을 꽂아 보는 macOS 앱. 지도가 창 전체를 채우고 패널이 떠 있다. */
+  :root {
+    --g: #059669; --g-d: #047857; --g-50: #ecfdf5; --g-100: #d1fae5;
+    --ink: #111827; --ink-2: #4b5563; --ink-3: #8b93a1; --line: #e7e9ec; --line-2: #eef0f2;
+    --up: #059669; --down: #e11d48; --panel: rgb(255 255 255 / .94);
+  }
+  body { font: 400 13px/1.4 'Pretendard Variable', -apple-system, sans-serif; color: var(--ink); background: #f2f3ee; letter-spacing: -0.01em; }
+  .mac { background: #f2f3ee; }
+  .tnum, td, .num { font-variant-numeric: tabular-nums; }
+  svg.i { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  /* 통합 툴바 */
+  .tb { flex: none; height: 52px; position: relative; z-index: 10; display: flex; align-items: center; gap: 12px; padding: 0 14px 0 88px;
+        background: linear-gradient(#f7f7f6, #efefed); border-bottom: 1px solid #dcdcd9; }
+  .tb .mac-lights { top: 20px; left: 18px; }
+  .brand { display: flex; align-items: center; gap: 8px; }
+  .brand .logo { width: 24px; height: 24px; border-radius: 7px; background: linear-gradient(150deg, #10b981, #047857); display: grid; place-items: center; box-shadow: inset 0 -1px 0 rgb(0 0 0 / .15); }
+  .brand b { font-size: 14px; font-weight: 700; letter-spacing: -0.02em; }
+  .brand small { color: var(--ink-3); font-size: 11px; font-weight: 500; }
+  .seg { display: flex; padding: 2px; border-radius: 8px; background: #e3e4e1; margin-left: 10px; }
+  .seg span { height: 26px; padding: 0 12px; display: flex; align-items: center; gap: 6px; border-radius: 6px; font-size: 12px; font-weight: 500; color: var(--ink-2); }
+  .seg span.on { background: #fff; color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgb(0 0 0 / .12); }
+  .seg span.on svg { color: var(--g); }
+  .sp { flex: 1; }
+  .search { width: 300px; height: 30px; border-radius: 8px; background: #fff; border: 1px solid #d9dbd8; display: flex; align-items: center; gap: 8px; padding: 0 6px 0 10px; font-size: 13px; }
+  .search svg { color: var(--ink-3); }
+  .search b { font-weight: 600; flex: 1; }
+  .search .loc { height: 22px; padding: 0 8px; border-radius: 5px; background: var(--g-50); color: var(--g-d); font-size: 11.5px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+  .tbtn { height: 30px; padding: 0 12px; display: flex; align-items: center; gap: 6px; border-radius: 8px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); background: #fff; border: 1px solid #d9dbd8; }
+  .tbtn.pri { background: var(--g); border-color: var(--g-d); color: #fff; box-shadow: inset 0 1px 0 rgb(255 255 255 / .2); }
+  .tbtn em { font-style: normal; color: var(--ink-3); font-weight: 500; }
+
+  .stage { position: relative; flex: 1; overflow: hidden; }
+  .map { position: absolute; inset: 0; }
+
+  /* 떠 있는 패널 */
+  .panel { position: absolute; top: 14px; bottom: 14px; z-index: 5; border-radius: 14px; background: var(--panel);
+           border: 1px solid rgb(0 0 0 / .07); box-shadow: 0 18px 40px -16px rgb(17 24 39 / .28), 0 2px 6px rgb(17 24 39 / .06); display: flex; flex-direction: column; overflow: hidden; }
+  .left { left: 14px; width: 328px; }
+  .right { right: 14px; width: 352px; }
+  .ph { padding: 14px 16px 12px; border-bottom: 1px solid var(--line-2); }
+  .eyebrow { font-size: 11px; font-weight: 600; color: var(--ink-3); display: flex; align-items: center; gap: 6px; }
+  .kw { display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 19px; font-weight: 750; letter-spacing: -0.03em; }
+  .kw svg { color: var(--ink-3); }
+  .ph p.meta { margin-top: 5px; color: var(--ink-3); font-size: 11.5px; display: flex; gap: 6px; align-items: center; }
+  .ph p.meta i { width: 3px; height: 3px; border-radius: 50%; background: #c4c8ce; }
+
+  .mine { margin: 12px 12px 4px; padding: 12px 14px 10px; border-radius: 12px; background: linear-gradient(160deg, #ecfdf5, #f4fbf7); border: 1px solid #bfe9d5; }
+  .mine-top { display: flex; align-items: flex-start; justify-content: space-between; }
+  .mine-top p { font-size: 11px; font-weight: 600; color: var(--g-d); }
+  .mine-top b { display: block; font-size: 14px; font-weight: 700; margin-top: 2px; }
+  .big { display: flex; align-items: baseline; gap: 2px; font-variant-numeric: tabular-nums; }
+  .big strong { font-size: 34px; line-height: 1; font-weight: 800; letter-spacing: -0.04em; color: var(--g-d); }
+  .big span { font-size: 15px; font-weight: 700; color: var(--g-d); }
+  .chip-up { display: inline-flex; align-items: center; gap: 2px; height: 20px; padding: 0 7px; border-radius: 10px; background: var(--g); color: #fff; font-size: 11px; font-weight: 700; }
+  .mine-r { text-align: right; }
+  .mine-r small { display: block; font-size: 11px; color: var(--ink-3); margin-top: 4px; }
+  .spark-lbl { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+
+  .lh { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px 6px; font-size: 11.5px; font-weight: 600; color: var(--ink-3); }
+  .lh span { font-weight: 500; }
+  .rlist { padding: 0 8px; }
+  .rlist li { display: grid; grid-template-columns: 26px 1fr auto; align-items: center; gap: 10px; height: 43px; padding: 0 8px; border-radius: 9px; }
+  .rlist li + li { box-shadow: inset 0 1px 0 var(--line-2); }
+  .rlist .n { width: 24px; height: 24px; border-radius: 7px; display: grid; place-items: center; background: #f1f2f4; font-size: 12px; font-weight: 700; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .rlist b { display: block; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rlist small { display: block; font-size: 11px; color: var(--ink-3); margin-top: 1px; }
+  .rlist .rv { text-align: right; font-size: 11.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .rlist .rv small { margin-top: 1px; }
+  .rlist li.me { background: var(--g-50); box-shadow: inset 0 0 0 1.5px #86d9b5; }
+  .rlist li.me + li { box-shadow: none; }
+  .rlist li.me .n { background: var(--g); color: #fff; }
+  .rlist li.me b { color: var(--g-d); }
+  .tag-me { display: inline-block; margin-left: 5px; padding: 0 5px; border-radius: 4px; background: var(--g); color: #fff; font-size: 11px; font-weight: 700; vertical-align: 1px; }
+  .lfoot { margin-top: auto; padding: 10px 16px; border-top: 1px solid var(--line-2); display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--ink-2); }
+  .lfoot a { color: var(--g-d); font-weight: 600; display: flex; align-items: center; gap: 4px; }
+
+  /* 키워드 표 */
+  .rh { padding: 14px 16px 10px; display: flex; align-items: flex-start; justify-content: space-between; }
+  .rh h2 { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+  .rh p { font-size: 11.5px; color: var(--ink-3); margin-top: 3px; }
+  .mini-seg { display: flex; padding: 2px; border-radius: 7px; background: #f0f1f3; }
+  .mini-seg span { white-space: nowrap; height: 22px; padding: 0 9px; display: grid; place-items: center; border-radius: 5px; font-size: 11.5px; font-weight: 500; color: var(--ink-3); }
+  .mini-seg span.on { background: #fff; color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgb(0 0 0 / .1); }
+  table { width: 100%; border-collapse: collapse; }
+  th { height: 28px; padding: 0 8px; font-size: 11px; font-weight: 600; color: var(--ink-3); text-align: left; border-top: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2); background: #fafbfa; }
+  th:first-child, td:first-child { padding-left: 16px; }
+  th:last-child, td:last-child { padding-right: 16px; }
+  th.r, td.r { text-align: right; }
+  td { height: 46px; padding: 0 8px; border-bottom: 1px solid var(--line-2); white-space: nowrap; }
+  td b { display: block; font-size: 13px; font-weight: 600; }
+  td small { display: block; font-size: 11px; color: var(--ink-3); margin-top: 1px; }
+  tr.sel td { background: #f3fbf7; }
+  tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--g); }
+  .rk { font-size: 17px; font-weight: 800; letter-spacing: -0.03em; }
+  .rk span { font-size: 11px; font-weight: 600; color: var(--ink-3); margin-left: 1px; }
+  .dl { display: inline-flex; align-items: center; justify-content: center; gap: 2px; min-width: 38px; height: 20px; padding: 0 6px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+  .dl.u { color: var(--up); background: var(--g-50); }
+  .dl.d { color: var(--down); background: #fff1f3; }
+  .dl.f { color: var(--ink-3); background: #f2f3f5; }
+  .sum { display: flex; gap: 6px; padding: 10px 16px; border-bottom: 1px solid var(--line-2); }
+  .sum div { flex: 1; padding: 7px 10px; border-radius: 9px; background: #f6f7f8; }
+  .sum p { font-size: 11px; color: var(--ink-3); }
+  .sum b { font-size: 16px; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .sum b small { font-size: 11px; font-weight: 500; color: var(--ink-3); margin-left: 1px; }
+  .sched { padding: 11px 16px 0; }
+  .sched h3 { font-size: 11.5px; font-weight: 600; color: var(--ink-3); margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .sched h3 span { color: var(--g-d); }
+  .opt { display: flex; align-items: center; justify-content: space-between; height: 29px; font-size: 12.5px; color: var(--ink-2); }
+  .opt em { font-style: normal; color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tg { width: 30px; height: 18px; border-radius: 9px; background: #d5d8dc; position: relative; flex: none; }
+  .tg::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / .2); }
+  .tg.on { background: var(--g); }
+  .tg.on::after { left: 14px; }
+  .log { margin-top: auto; padding: 9px 16px 11px; border-top: 1px solid var(--line-2); background: #fafbfa; font-size: 11.5px; color: var(--ink-2); display: flex; flex-direction: column; gap: 4px; }
+  .log li { display: flex; gap: 8px; }
+  .log time { color: var(--ink-3); font-variant-numeric: tabular-nums; width: 54px; flex: none; }
+
+  /* 지도 위 컨트롤 */
+  .ctl { position: absolute; z-index: 4; display: flex; flex-direction: column; border-radius: 10px; background: #fff; box-shadow: 0 4px 14px rgb(17 24 39 / .14); overflow: hidden; }
+  .ctl span { width: 34px; height: 34px; display: grid; place-items: center; color: var(--ink-2); }
+  .ctl span + span { border-top: 1px solid var(--line); }
+  .legend { position: absolute; z-index: 4; left: 50%; translate: -50% 0; bottom: 16px; height: 34px; display: flex; align-items: center; gap: 14px; padding: 0 14px; border-radius: 17px; background: rgb(255 255 255 / .96); box-shadow: 0 4px 14px rgb(17 24 39 / .14); font-size: 12px; color: var(--ink-2); white-space: nowrap; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+  .legend b { color: var(--ink); font-weight: 600; }
+  .scale { position: absolute; z-index: 4; left: 360px; bottom: 22px; font-size: 11px; color: var(--ink-2); font-weight: 600; }
+  .scale i { display: block; width: 72px; height: 6px; margin-top: 3px; border: 2px solid #4b5563; border-top: 0; }
+  .when { position: absolute; z-index: 4; left: 50%; translate: -50% 0; top: 16px; height: 30px; display: flex; align-items: center; gap: 8px; padding: 0 12px; border-radius: 15px; background: rgb(17 24 39 / .86); color: #fff; font-size: 12px; white-space: nowrap; }
+  .when i { width: 7px; height: 7px; border-radius: 50%; background: #34d399; box-shadow: 0 0 0 3px rgb(52 211 153 / .3); }
+  .when span { color: #b6bcc6; }
+</style>
+</head>
+<body>
+<div class="mac">
+  <header class="tb">
+    <span class="mac-lights"><i></i><i></i><i></i></span>
+    <div class="brand">
+      <span class="logo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><path d="M9.5 9.5 12 7v6"/></svg></span>
+      <b>핀랭크</b><small>2.0.3</small>
+    </div>
+    <div class="seg">
+      <span class="on"><svg class="i" viewBox="0 0 24 24"><path d="m3 6 6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>순위 지도</span>
+      <span><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/></svg>날짜별 기록</span>
+      <span><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h7"/><circle cx="18" cy="16" r="3"/><path d="m20.2 18.2 1.8 1.8"/></svg>업체 정보 추출</span>
+    </div>
+    <span class="sp"></span>
+    <div class="search">
+      <svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <b>강남 필라테스</b>
+      <span class="loc"><svg class="i" style="width:12px;height:12px" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>강남역 기준</span>
+    </div>
+    <span class="sp"></span>
+    <span class="tbtn"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>예약 <em>매일 09:00</em></span>
+    <span class="tbtn"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 9h16M4 15h16M10 9v12"/></svg>시트 열기</span>
+    <span class="tbtn pri"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 4v5h-5"/></svg>순위 확인</span>
+  </header>
+
+  <main class="mac-body stage">
+    <!-- 양식화된 지도 (강남역 일대) -->
+    <svg class="map" viewBox="0 0 1280 748" preserveAspectRatio="none">
+      <defs>
+        <pattern id="blk" width="30" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(-8)">
+          <rect x="2.5" y="2.5" width="25" height="19" rx="3.5" fill="#e6e9e1"/>
+        </pattern>
+        <pattern id="blk2" width="46" height="34" patternUnits="userSpaceOnUse" patternTransform="rotate(-8)">
+          <rect x="3" y="3" width="40" height="28" rx="4" fill="#e3e6dd"/>
+        </pattern>
+        <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#059669" stop-opacity=".16"/><stop offset="1" stop-color="#059669" stop-opacity="0"/></radialGradient>
+        <filter id="ps" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="2" stdDeviation="1.6" flood-color="#111827" flood-opacity=".28"/></filter>
+      </defs>
+      <rect width="1280" height="748" fill="#f2f3ee"/>
+      <rect width="1280" height="748" fill="url(#blk)"/>
+      <path d="M640 0 L1280 0 L1280 330 L615 470 L600 300 Z" fill="url(#blk2)" opacity=".7"/>
+      <!-- 공원 -->
+      <path d="M418 560 q10 -22 42 -26 l58 -6 q20 2 22 22 l4 52 q-2 22 -24 24 l-70 6 q-24 0 -30 -22 z" fill="#d5ead2"/>
+      <path d="M842 196 l74 -12 q16 0 18 14 l6 40 q0 14 -14 16 l-72 10 q-14 0 -16 -14 l-6 -38 q0 -14 10 -16z" fill="#d5ead2"/>
+      <path d="M690 640 l60 -8 q14 0 16 12 l4 34 q0 12 -12 14 l-60 8 q-12 0 -14 -12 l-4 -34 q0 -12 10 -14z" fill="#d5ead2"/>
+      <!-- 골목 -->
+      <g stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round">
+        <path d="M440 0 L480 748"/><path d="M520 0 L556 748"/><path d="M680 0 L716 748"/><path d="M860 0 L900 748"/><path d="M380 0 L414 748"/>
+        <path d="M0 360 L1280 210"/><path d="M0 520 L1280 380"/><path d="M0 640 L1280 470"/><path d="M0 140 L1280 30"/><path d="M0 430 L615 380"/>
+      </g>
+      <g stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".9">
+        <path d="M720 300 L760 420"/><path d="M640 560 L700 552"/><path d="M470 380 L520 372"/><path d="M800 560 L860 548"/><path d="M560 250 L640 240"/><path d="M700 180 L760 172"/>
+      </g>
+      <!-- 큰길: 외곽선 -->
+      <g fill="none" stroke="#d6d9d2" stroke-linecap="round" stroke-linejoin="round">
+        <path stroke-width="18" d="M560 0 L600 300 L615 470 L650 748"/>
+        <path stroke-width="18" d="M615 470 L1280 330"/>
+        <path stroke-width="18" d="M615 470 L0 590"/>
+        <path stroke-width="15" d="M0 250 L1280 150"/>
+        <path stroke-width="13" d="M760 0 L800 748"/>
+        <path stroke-width="13" d="M960 0 L1000 748"/>
+        <path stroke-width="13" d="M0 704 L1280 540"/>
+        <path stroke-width="12" d="M0 72 L1280 0"/>
+      </g>
+      <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round">
+        <path stroke-width="15" d="M560 0 L600 300 L615 470 L650 748"/>
+        <path stroke-width="15" d="M615 470 L1280 330"/>
+        <path stroke-width="15" d="M615 470 L0 590"/>
+        <path stroke-width="12" d="M0 250 L1280 150"/>
+        <path stroke-width="10" d="M760 0 L800 748"/>
+        <path stroke-width="10" d="M960 0 L1000 748"/>
+        <path stroke-width="10" d="M0 704 L1280 540"/>
+        <path stroke-width="9" d="M0 72 L1280 0"/>
+      </g>
+      <g fill="none" stroke="#f5d48a" stroke-width="1.4" stroke-dasharray="10 8" opacity=".8">
+        <path d="M560 0 L600 300 L615 470 L650 748"/><path d="M615 470 L1280 330"/><path d="M615 470 L0 590"/>
+      </g>
+      <!-- 길 이름 · 동 이름 -->
+      <g font-family="Pretendard Variable" font-size="11.5" font-weight="600" fill="#8f968c" letter-spacing=".5">
+        <text transform="translate(573 66) rotate(82)">강남대로</text>
+        <text transform="translate(676 462) rotate(-12)">테헤란로</text>
+        <text transform="translate(400 524) rotate(-11)">서초대로</text>
+        <text transform="translate(392 212) rotate(-4.5)">봉은사로</text>
+        <text transform="translate(781 140) rotate(87)">논현로</text>
+      </g>
+      <g font-family="Pretendard Variable" font-size="13" font-weight="700" fill="#a6ac9f" letter-spacing="3">
+        <text x="668" y="138">논현동</text><text x="452" y="642">서초동</text><text x="822" y="530">역삼동</text>
+      </g>
+      <!-- 지하철역 -->
+      <g font-family="Pretendard Variable" font-size="11.5" font-weight="700">
+        <g transform="translate(615 470)"><circle r="9" fill="#fff" stroke="#3aa655" stroke-width="3"/><text x="-48" y="26" fill="#3d4a3f">강남역</text></g>
+        <g transform="translate(800 431)"><circle r="8" fill="#fff" stroke="#3aa655" stroke-width="3"/><text x="12" y="-8" fill="#3d4a3f">역삼역</text></g>
+        <g transform="translate(587 204)"><circle r="8" fill="#fff" stroke="#c9a227" stroke-width="3"/><text x="-60" y="-8" fill="#3d4a3f">신논현역</text></g>
+      </g>
+      <!-- 기준 위치 반경 -->
+      <circle cx="615" cy="470" r="200" fill="url(#glow)"/>
+      <circle cx="615" cy="470" r="200" fill="none" stroke="#059669" stroke-width="1.5" stroke-dasharray="5 5" opacity=".55"/>
+      <g transform="translate(615 670)">
+        <rect x="-62" y="-11" width="124" height="22" rx="11" fill="#fff" stroke="#a7e3c8"/>
+        <text y="4" text-anchor="middle" font-family="Pretendard Variable" font-size="11" font-weight="600" fill="#047857">기준 위치 반경 1km</text>
+      </g>
+
+      <!-- 광고 결과(순위에서 제외) -->
+      <g opacity=".85" font-family="Pretendard Variable">
+        <g transform="translate(676 600)"><path d="M0 0 C-4 -7 -14 -12 -14 -24 A14 14 0 1 1 14 -24 C14 -12 4 -7 0 0Z" fill="#fff" stroke="#b8bec6" stroke-width="1.5" stroke-dasharray="3 2"/><text y="-20" text-anchor="middle" font-size="11" font-weight="700" fill="#9aa1ab">광고</text></g>
+        <g transform="translate(508 300)"><path d="M0 0 C-4 -7 -14 -12 -14 -24 A14 14 0 1 1 14 -24 C14 -12 4 -7 0 0Z" fill="#fff" stroke="#b8bec6" stroke-width="1.5" stroke-dasharray="3 2"/><text y="-20" text-anchor="middle" font-size="11" font-weight="700" fill="#9aa1ab">광고</text></g>
+      </g>
+
+      <!-- 경쟁 업체 순위 핀 -->
+      <g font-family="Pretendard Variable" font-size="12" font-weight="800" text-anchor="middle" filter="url(#ps)">
+        <g transform="translate(556 402)"><path d="M0 0 C-4 -7 -13 -12 -13 -23 A13 13 0 1 1 13 -23 C13 -12 4 -7 0 0Z" fill="#1f2937"/><text y="-19" fill="#fff">1</text></g>
+        <g transform="translate(700 528)"><path d="M0 0 C-4 -7 -13 -12 -13 -23 A13 13 0 1 1 13 -23 C13 -12 4 -7 0 0Z" fill="#1f2937"/><text y="-19" fill="#fff">2</text></g>
+        <g transform="translate(838 474)"><path d="M0 0 C-4 -7 -13 -12 -13 -23 A13 13 0 1 1 13 -23 C13 -12 4 -7 0 0Z" fill="#fff" stroke="#374151" stroke-width="1.5"/><text y="-19" fill="#1f2937">4</text></g>
+        <g transform="translate(520 548)"><path d="M0 0 C-4 -7 -13 -12 -13 -23 A13 13 0 1 1 13 -23 C13 -12 4 -7 0 0Z" fill="#fff" stroke="#374151" stroke-width="1.5"/><text y="-19" fill="#1f2937">5</text></g>
+        <g transform="translate(628 300)"><path d="M0 0 C-4 -7 -13 -12 -13 -23 A13 13 0 1 1 13 -23 C13 -12 4 -7 0 0Z" fill="#fff" stroke="#374151" stroke-width="1.5"/><text y="-19" fill="#1f2937">6</text></g>
+        <g transform="translate(728 360)"><path d="M0 0 C-4 -7 -13 -12 -13 -23 A13 13 0 1 1 13 -23 C13 -12 4 -7 0 0Z" fill="#fff" stroke="#374151" stroke-width="1.5"/><text y="-19" fill="#1f2937">7</text></g>
+        <g transform="translate(466 452)"><path d="M0 0 C-4 -7 -13 -12 -13 -23 A13 13 0 1 1 13 -23 C13 -12 4 -7 0 0Z" fill="#fff" stroke="#374151" stroke-width="1.5"/><text y="-19" fill="#1f2937">8</text></g>
+        <g transform="translate(790 600)"><path d="M0 0 C-4 -7 -13 -12 -13 -23 A13 13 0 1 1 13 -23 C13 -12 4 -7 0 0Z" fill="#fff" stroke="#374151" stroke-width="1.5"/><text y="-19" fill="#1f2937">9</text></g>
+        <g transform="translate(436 336)"><path d="M0 0 C-4 -7 -13 -12 -13 -23 A13 13 0 1 1 13 -23 C13 -12 4 -7 0 0Z" fill="#fff" stroke="#374151" stroke-width="1.5"/><text y="-19" font-size="11" fill="#1f2937">10</text></g>
+      </g>
+
+      <!-- 내 업체 -->
+      <g transform="translate(660 418)">
+        <ellipse cx="0" cy="0" rx="16" ry="5" fill="#059669" opacity=".25"/>
+        <circle cx="0" cy="-34" r="30" fill="#059669" opacity=".12"/>
+        <g filter="url(#ps)"><path d="M0 0 C-6 -10 -19 -17 -19 -33 A19 19 0 1 1 19 -33 C19 -17 6 -10 0 0Z" fill="#059669" stroke="#fff" stroke-width="2.5"/></g>
+        <text y="-27" text-anchor="middle" font-family="Pretendard Variable" font-size="17" font-weight="800" fill="#fff">3</text>
+        <g transform="translate(28 -62)" filter="url(#ps)">
+          <rect width="176" height="44" rx="10" fill="#fff"/>
+          <path d="M-6 30 L2 24 L2 36Z" fill="#fff"/>
+        </g>
+        <g transform="translate(28 -62)" font-family="Pretendard Variable">
+          <text x="12" y="18" font-size="12.5" font-weight="700" fill="#111827">온핏 필라테스 강남점</text>
+          <text x="12" y="35" font-size="11" fill="#6b7280">오늘 3위 · 어제 5위</text>
+          <rect x="128" y="24" width="38" height="16" rx="8" fill="#059669"/>
+          <text x="147" y="36" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">▲ 2</text>
+        </g>
+      </g>
+    </svg>
+
+    <div class="when"><i></i>오늘 09:00 예약 확인 완료 <span>· 광고 2건 제외 · 다음 실행 내일 09:00</span></div>
+
+    <!-- 왼쪽: 키워드 검색 순위 -->
+    <section class="panel left">
+      <div class="ph">
+        <p class="eyebrow">키워드 검색 순위</p>
+        <div class="kw">강남 필라테스 <svg class="i" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div>
+        <p class="meta">강남역 2번 출구 기준 <i></i> 광고 제외 일반 결과 <i></i> 10.26 (월) 09:00</p>
+      </div>
+      <div class="mine">
+        <div class="mine-top">
+          <div><p>내 업체</p><b>온핏 필라테스 강남점</b></div>
+          <div class="mine-r">
+            <div class="big"><strong>3</strong><span>위</span></div>
+            <small><span class="chip-up">▲ 2</span> 어제 5위</small>
+          </div>
+        </div>
+        <svg width="298" height="58" viewBox="0 0 298 58" style="margin-top:8px">
+          <defs><linearGradient id="sf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#059669" stop-opacity=".22"/><stop offset="1" stop-color="#059669" stop-opacity="0"/></linearGradient></defs>
+          <g stroke="#cfeadf" stroke-width="1"><line x1="0" y1="6" x2="298" y2="6" stroke-dasharray="3 3"/><line x1="0" y1="52" x2="298" y2="52"/></g>
+          <text x="0" y="17" font-size="11" font-family="Pretendard Variable" fill="#6fae93">1위</text>
+          <path id="sp-area" fill="url(#sf)"/>
+          <polyline id="sp-line" fill="none" stroke="#059669" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+          <g id="sp-dots"></g>
+        </svg>
+        <div class="spark-lbl"><span>10.13</span><span>14일 순위 이력 · 평균 5.9위</span><span>오늘</span></div>
+      </div>
+      <div class="lh">검색 결과 <span>광고 2건 제외 · 총 52곳</span></div>
+      <ul class="rlist">
+        <li><span class="n">1</span><div><b>바른자세 필라테스 강남</b><small>필라테스 · 서초동 · 0.3km</small></div><div class="rv">리뷰 1,482<small>–</small></div></li>
+        <li><span class="n">2</span><div><b>코어웍스 필라테스</b><small>필라테스 · 역삼동 · 0.5km</small></div><div class="rv">리뷰 1,105<small style="color:#059669;font-weight:700">▲ 1</small></div></li>
+        <li class="me"><span class="n">3</span><div><b>온핏 필라테스 강남점<span class="tag-me">내 업체</span></b><small>필라테스 · 역삼동 · 0.2km</small></div><div class="rv">리뷰 864<small style="color:#059669;font-weight:700">▲ 2</small></div></li>
+        <li><span class="n">4</span><div><b>리본 필라테스 역삼</b><small>필라테스 · 역삼동 · 1.0km</small></div><div class="rv">리뷰 932<small style="color:#e11d48;font-weight:700">▼ 2</small></div></li>
+        <li><span class="n">5</span><div><b>모던바디 필라테스</b><small>필라테스 · 서초동 · 0.6km</small></div><div class="rv">리뷰 711<small style="color:#e11d48;font-weight:700">▼ 1</small></div></li>
+        <li><span class="n">6</span><div><b>숨 필라테스 신논현</b><small>필라테스 · 논현동 · 0.8km</small></div><div class="rv">리뷰 590<small>–</small></div></li>
+        <li><span class="n">7</span><div><b>라인핏 스튜디오</b><small>요가·필라테스 · 역삼동 · 0.6km</small></div><div class="rv">리뷰 448<small>–</small></div></li>
+        <li><span class="n">8</span><div><b>더코어 필라테스</b><small>필라테스 · 서초동 · 0.7km</small></div><div class="rv">리뷰 402<small>–</small></div></li>
+      </ul>
+      <div class="lfoot">경쟁 업체 52곳 공개 정보<a>표로 추출 <svg class="i" style="width:13px;height:13px" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a></div>
+    </section>
+
+    <!-- 오른쪽: 키워드별 순위 -->
+    <section class="panel right">
+      <div class="rh">
+        <div><h2>키워드별 순위</h2><p>키워드 7개 · 구글 시트 연동</p></div>
+        <div class="mini-seg"><span class="on">오늘</span><span>7일</span><span>30일</span></div>
+      </div>
+      <table>
+        <thead><tr><th>키워드 · 기준 위치</th><th class="r">순위</th><th class="r">변동</th><th class="r">14일</th></tr></thead>
+        <tbody id="kwt"></tbody>
+      </table>
+      <div class="sum">
+        <div><p>상승</p><b style="color:#059669">3<small>개</small></b></div>
+        <div><p>유지</p><b>2<small>개</small></b></div>
+        <div><p>하락</p><b style="color:#e11d48">2<small>개</small></b></div>
+        <div><p>평균 순위</p><b>5.7<small>위</small></b></div>
+      </div>
+      <div class="sched">
+        <h3>예약 실행 <span>매일 09:00</span></h3>
+        <div class="opt">결과를 구글 시트에 기록 <i class="tg on"></i></div>
+        <div class="opt">어제 순위와 비교 <i class="tg on"></i></div>
+        <div class="opt">업체 정보 함께 추출 <i class="tg"></i></div>
+      </div>
+      <ul class="log">
+        <li><time>09:00:05</time>예약 실행 · 키워드 7개 확인 시작</li>
+        <li><time>09:00:41</time>강남 필라테스 3위 (어제 5위)</li>
+        <li><time>09:02:30</time>확인 완료 · 시트 ‘순위기록’에 기록</li>
+      </ul>
+    </section>
+
+    <div class="ctl" style="right:382px; bottom:16px">
+      <span><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
+      <span><svg class="i" viewBox="0 0 24 24"><path d="M5 12h14"/></svg></span>
+    </div>
+    <div class="ctl" style="right:382px; bottom:94px">
+      <span style="color:#059669"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></span>
+    </div>
+    <div class="scale">250m<i></i></div>
+    <div class="legend"><span><i style="background:#059669"></i><b>내 업체</b></span><span><i style="background:#1f2937"></i>1·2위</span><span><i style="background:#fff;box-shadow:inset 0 0 0 1.5px #374151"></i>경쟁 업체</span><span><i style="background:#fff;box-shadow:inset 0 0 0 1.5px #b8bec6"></i>광고 (순위 제외)</span></div>
+  </main>
+</div>
+<script>(() => {
+  // 내 업체 14일 순위 이력 (10.13 ~ 10.26). 숫자가 작을수록 위.
+  const hist = [8, 8, 7, 7, 6, 7, 6, 5, 5, 6, 5, 5, 5, 3];
+  const W = 298, t0 = 6, bot = 52, maxR = 9;
+  const y = (r) => t0 + (r - 1) / (maxR - 1) * (bot - t0);
+  const x = (i) => 22 + i * (W - 32) / (hist.length - 1);
+  const pts = hist.map((r, i) => `${x(i).toFixed(1)},${y(r).toFixed(1)}`);
+  document.getElementById('sp-line').setAttribute('points', pts.join(' '));
+  document.getElementById('sp-area').setAttribute('d', `M${x(0)},${bot} L${pts.join(' L')} L${x(hist.length - 1)},${bot} Z`);
+  document.getElementById('sp-dots').innerHTML = hist.map((r, i) => i === hist.length - 1
+    ? `<circle cx="${x(i)}" cy="${y(r)}" r="5" fill="#fff" stroke="#059669" stroke-width="2.5"/>`
+    : `<circle cx="${x(i)}" cy="${y(r)}" r="1.8" fill="#059669"/>`).join('');
+
+  // 키워드별 순위: [키워드, 기준 위치, 오늘, 어제, 14일 이력]
+  const rows = [
+    ['강남 필라테스', '강남역', 3, 5, [8, 8, 7, 7, 6, 7, 6, 5, 5, 6, 5, 5, 5, 3]],
+    ['역삼 필라테스', '역삼동', 2, 3, [4, 4, 3, 4, 3, 3, 3, 2, 3, 3, 3, 3, 3, 2]],
+    ['강남역 필라테스', '강남역', 4, 4, [6, 6, 5, 5, 5, 4, 5, 4, 4, 4, 4, 4, 4, 4]],
+    ['신논현 필라테스', '신논현역', 6, 5, [5, 5, 5, 4, 5, 5, 5, 5, 6, 5, 5, 5, 5, 6]],
+    ['강남 기구필라테스', '강남역', 5, 8, [11, 10, 10, 9, 9, 9, 8, 8, 9, 8, 8, 8, 8, 5]],
+    ['강남 개인 필라테스', '강남역', 9, 9, [12, 12, 11, 11, 10, 10, 10, 9, 10, 9, 9, 9, 9, 9]],
+    ['역삼 1:1 필라테스', '역삼동', 11, 9, [8, 8, 9, 9, 9, 8, 9, 9, 9, 10, 9, 9, 9, 11]],
+  ];
+  const spark = (h) => {
+    const mx = Math.max(...h), mn = Math.min(...h), w = 62, ht = 20;
+    const p = h.map((r, i) => `${(1 + i * (w - 2) / (h.length - 1)).toFixed(1)},${(2 + (mx === mn ? .5 : (r - mn) / (mx - mn)) * (ht - 4)).toFixed(1)}`);
+    const last = p[p.length - 1].split(',');
+    const c = h[h.length - 1] < h[h.length - 2] ? '#059669' : h[h.length - 1] > h[h.length - 2] ? '#e11d48' : '#9aa1ab';
+    return `<svg width="${w}" height="${ht}" style="display:inline-block;vertical-align:middle"><polyline points="${p.join(' ')}" fill="none" stroke="${c}" stroke-width="1.6" stroke-linejoin="round"/><circle cx="${last[0]}" cy="${last[1]}" r="2.4" fill="${c}"/></svg>`;
+  };
+  document.getElementById('kwt').innerHTML = rows.map(([k, loc, t, yd, h], i) => {
+    const d = yd - t;
+    const chip = d > 0 ? `<span class="dl u">▲ ${d}</span>` : d < 0 ? `<span class="dl d">▼ ${-d}</span>` : `<span class="dl f">–</span>`;
+    return `<tr${i === 0 ? ' class="sel"' : ''}><td><b>${k}</b><small>${loc} · 어제 ${yd}위</small></td><td class="r"><span class="rk">${t}<span>위</span></span></td><td class="r">${chip}</td><td class="r">${spark(h)}</td></tr>`;
+  }).join('');
+})();</script>
+</body>
+</html>

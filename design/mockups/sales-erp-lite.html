@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>장부지기</title>
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 장부지기: 사무실 PC에서 하루 종일 켜 두는 국산 ERP. 푸른 회색 바탕, 트리 메뉴, MDI 탭, 촘촘한 표. */
+  :root {
+    --bg: #e9eef5; --face: #f4f7fb; --line: #b9c5d6; --line-2: #d3dbe6; --line-3: #e3e8ef;
+    --text: #18212f; --text-2: #465366; --text-3: #7a879a;
+    --b: #1d4ed8; --b-2: #1e40af; --b-soft: #e5edfd; --b-mid: #9db8f3;
+    --ok: #15803d; --ok-soft: #e3f4e8; --amb: #b45309; --amb-soft: #fdf1dc; --org: #c2410c; --org-soft: #fde6d8; --red: #b91c1c; --red-soft: #fde2e2;
+  }
+  body { font: 400 12px/1.35 'Malgun Gothic', 'Segoe UI', sans-serif; color: var(--text); background: var(--bg); }
+  .num { font-family: 'Segoe UI', 'Malgun Gothic', sans-serif; font-variant-numeric: tabular-nums; }
+  .win { --bar: #d5deea; --bar-fg: #18212f; background: var(--bg); }
+  .win-body { flex-direction: column; }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+  .menu { height: 25px; flex: none; display: flex; align-items: center; padding: 0 4px; background: linear-gradient(#fbfcfe, #eaf0f7); border-bottom: 1px solid var(--line); }
+  .menu span { padding: 3px 10px; }
+  .menu span.on { background: var(--b); color: #fff; }
+
+  .tools { height: 56px; flex: none; display: flex; align-items: center; gap: 2px; padding: 0 8px; background: var(--face); border-bottom: 1px solid var(--line); }
+  .tb { width: 70px; height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border: 1px solid transparent; border-radius: 3px; }
+  .tb svg { width: 22px; height: 22px; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .tb.a { background: linear-gradient(#fff, #e8eef8); border-color: #a9bbd6; }
+  .sep { width: 1px; height: 36px; background: var(--line); margin: 0 6px; }
+  .tools .sp { flex: 1; }
+  .period { display: flex; align-items: center; gap: 6px; }
+  .period label { color: var(--text-2); }
+  .date { height: 24px; display: flex; align-items: center; gap: 6px; padding: 0 6px 0 8px; background: #fff; border: 1px solid #9aa9be; }
+  .date svg { width: 13px; height: 13px; color: var(--text-3); }
+  .qbtn { height: 24px; padding: 0 14px; display: flex; align-items: center; gap: 5px; background: var(--b); color: #fff; border: 1px solid var(--b-2); font-weight: 700; }
+  .qbtn svg { width: 13px; height: 13px; stroke-width: 2.2; }
+  .user { display: flex; align-items: center; gap: 8px; margin-left: 14px; padding-left: 14px; border-left: 1px solid var(--line); }
+  .user i { width: 26px; height: 26px; border-radius: 50%; background: var(--b-soft); border: 1px solid var(--b-mid); display: grid; place-items: center; color: var(--b); font-style: normal; font-weight: 700; }
+  .user b { display: block; }
+  .user small { color: var(--text-3); font-size: 11px; }
+
+  .work { flex: 1; min-height: 0; display: flex; }
+
+  /* 트리 메뉴 */
+  .tree { width: 212px; flex: none; display: flex; flex-direction: column; background: #fff; border-right: 1px solid var(--line); }
+  .tree-h { height: 27px; flex: none; display: flex; align-items: center; padding: 0 10px; font-weight: 700; color: #fff; background: linear-gradient(#3a64c9, #2550b8); }
+  .tree-s { margin: 6px; height: 24px; display: flex; align-items: center; gap: 6px; padding: 0 7px; border: 1px solid #a9b6c9; color: var(--text-3); }
+  .tree-s svg { width: 13px; height: 13px; }
+  .tree ul { padding: 2px 0 0 6px; }
+  .tree li { height: 22px; display: flex; align-items: center; gap: 5px; white-space: nowrap; position: relative; }
+  .tree .pm { width: 9px; height: 9px; border: 1px solid #8796ab; background: #fff; position: relative; flex: none; }
+  .tree .pm::before { content: ""; position: absolute; left: 1px; right: 1px; top: 3px; height: 1px; background: #3b4656; }
+  .tree .pm.c::after { content: ""; position: absolute; top: 1px; bottom: 1px; left: 3px; width: 1px; background: #3b4656; }
+  .tree .fd { width: 16px; height: 14px; flex: none; }
+  .tree li.g { font-weight: 700; }
+  .tree li.c { padding-left: 22px; }
+  .tree li.c::before { content: ""; position: absolute; left: 10px; top: 0; bottom: 0; border-left: 1px dotted #a5b1c2; }
+  .tree li.c::after { content: ""; position: absolute; left: 10px; width: 8px; top: 11px; border-top: 1px dotted #a5b1c2; }
+  .tree li.c .dc { width: 12px; height: 14px; flex: none; color: #5d6b80; }
+  .tree li.c span.t { padding: 1px 4px; }
+  .tree li.sel span.t { background: var(--b); color: #fff; }
+  .tree li em { font-style: normal; margin-left: auto; margin-right: 8px; font-size: 11px; color: var(--text-3); font-family: 'Segoe UI', sans-serif; }
+  .tree li em.w { color: var(--red); font-weight: 700; }
+  .tree-f { margin-top: auto; padding: 8px 10px; border-top: 1px solid var(--line-2); background: var(--face); color: var(--text-2); font-size: 11px; line-height: 1.7; }
+  .tree-f b { color: var(--text); font-weight: 400; }
+  .tree-f i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); margin-right: 5px; }
+
+  /* MDI */
+  .mdi { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .mtabs { height: 29px; flex: none; display: flex; align-items: flex-end; gap: 2px; padding: 0 6px; background: #d9e1ec; border-bottom: 1px solid var(--line); }
+  .mt { height: 25px; display: flex; align-items: center; gap: 8px; padding: 0 8px 0 10px; background: #edf1f7; border: 1px solid var(--line); border-bottom: none; color: var(--text-2); }
+  .mt.on { height: 27px; margin-bottom: -1px; background: var(--face); color: var(--text); font-weight: 700; border-top: 2px solid var(--b); }
+  .mt svg { width: 13px; height: 13px; }
+  .mt .x { width: 9px; height: 9px; position: relative; opacity: .55; }
+  .mt .x::before, .mt .x::after { content: ""; position: absolute; left: 50%; top: 50%; width: 10px; height: 1.2px; background: #333; translate: -50% -50%; rotate: 45deg; }
+  .mt .x::after { rotate: -45deg; }
+  .mtabs .sp { flex: 1; }
+  .mtabs .stamp { align-self: center; color: var(--text-3); font-size: 11px; }
+
+  .dash { flex: 1; min-height: 0; padding: 10px; display: grid; grid-template-columns: 1fr 418px; grid-template-rows: 82px 1fr 214px; gap: 10px; background: var(--face); }
+  .kpis { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .kpi { background: #fff; border: 1px solid var(--line); border-top: 3px solid var(--b); padding: 9px 12px 8px; position: relative; }
+  .kpi p { color: var(--text-2); display: flex; justify-content: space-between; }
+  .kpi p span { font-size: 11px; color: var(--text-3); }
+  .kpi strong { display: block; margin-top: 5px; font: 700 23px/1 'Segoe UI', 'Malgun Gothic', sans-serif; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+  .kpi strong small { font: 400 12px 'Malgun Gothic', sans-serif; color: var(--text-2); margin-left: 3px; }
+  .kpi .d { margin-top: 6px; font-size: 11px; color: var(--text-3); }
+  .kpi .d b { font-weight: 700; }
+  .kpi .up { color: var(--b); }
+  .kpi.buy { border-top-color: #64748b; }
+  .kpi.ar { border-top-color: var(--org); }
+  .kpi.ar strong { color: var(--org); }
+  .kpi.st { border-top-color: var(--red); }
+  .kpi.st strong { color: var(--red); }
+
+  .box { background: #fff; border: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+  .bh { height: 28px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 10px; background: linear-gradient(#f8fafd, #e9eef6); border-bottom: 1px solid var(--line); }
+  .bh b { font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .bh b svg { width: 14px; height: 14px; color: var(--b); }
+  .bh .sp { flex: 1; }
+  .bh .u { color: var(--text-3); font-size: 11px; }
+  .bh .lg { display: flex; gap: 10px; color: var(--text-2); font-size: 11px; }
+  .bh .lg i { display: inline-block; width: 10px; height: 10px; margin-right: 4px; vertical-align: -1px; }
+  .bh .more { color: var(--b); font-size: 11px; }
+  .mseg { display: flex; border: 1px solid #9aa9be; }
+  .mseg span { padding: 1px 8px; font-size: 11px; background: #fff; }
+  .mseg span.on { background: var(--b); color: #fff; }
+
+  .chart { flex: 1; padding: 6px 10px 4px; }
+
+  .aging { padding: 9px 10px 7px; border-bottom: 1px solid var(--line-3); }
+  .aging .bar { display: flex; height: 14px; }
+  .aging .bar i { display: block; height: 100%; }
+  .aging .lgd { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 6px; font-size: 11px; color: var(--text-2); }
+  .aging .lgd span { display: flex; flex-direction: column; gap: 1px; }
+  .aging .lgd b { font: 700 12px 'Segoe UI', sans-serif; color: var(--text); font-variant-numeric: tabular-nums; }
+  .aging .lgd em { font-style: normal; display: flex; align-items: center; gap: 4px; }
+  .aging .lgd em::before { content: ""; width: 8px; height: 8px; background: var(--c); }
+
+  table.t { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  .t th { height: 24px; background: #eef2f8; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line-2); font-weight: 400; color: var(--text-2); text-align: center; padding: 0 6px; }
+  .t th:last-child, .t td:last-child { border-right: none; }
+  .t td { height: 25px; border-bottom: 1px solid var(--line-3); border-right: 1px solid var(--line-3); padding: 0 8px; white-space: nowrap; }
+  .t td.r { text-align: right; font-family: 'Segoe UI', sans-serif; }
+  .t td.c { text-align: center; }
+  .t td.m { color: var(--text-2); font-family: 'Segoe UI', sans-serif; }
+  .t tr:nth-child(even) td { background: #fafbfd; }
+  .t tr.sel td { background: #dbe6fd; }
+  .t tr.sum td { background: #f1f4f9; font-weight: 700; border-top: 1px solid var(--line); }
+  .ag { display: inline-block; min-width: 54px; text-align: center; padding: 1px 6px; font-size: 11px; font-weight: 700; border: 1px solid; }
+  .ag.g1 { color: var(--ok); background: var(--ok-soft); border-color: #a7d7b5; }
+  .ag.g2 { color: var(--amb); background: var(--amb-soft); border-color: #efcf96; }
+  .ag.g3 { color: var(--org); background: var(--org-soft); border-color: #f3b896; }
+  .ag.g4 { color: #fff; background: var(--red); border-color: var(--red); }
+  .kind { display: inline-block; width: 46px; text-align: center; font-size: 11px; padding: 1px 0; border: 1px solid; }
+  .kind.out { color: var(--b); border-color: var(--b-mid); background: var(--b-soft); }
+  .kind.in { color: #475569; border-color: #b6c0cd; background: #eef1f5; }
+  .kind.cash { color: var(--ok); border-color: #a7d7b5; background: var(--ok-soft); }
+  .kind.mail { color: #7c3aed; border-color: #cdb8f6; background: #f2ecfe; }
+  .kind.q { color: var(--amb); border-color: #efcf96; background: var(--amb-soft); }
+  .st-ok { color: var(--ok); }
+  .st-ing { color: var(--amb); }
+
+  .low li { display: grid; grid-template-columns: 1fr 92px 52px; gap: 10px; align-items: center; height: 31px; padding: 0 10px; border-bottom: 1px solid var(--line-3); }
+  .low li b { font-weight: 400; }
+  .low li small { display: block; color: var(--text-3); font-size: 11px; font-family: 'Segoe UI', sans-serif; }
+  .low .lb { height: 8px; background: #edf0f4; position: relative; }
+  .low .lb i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--red); }
+  .low .lb s { position: absolute; top: -3px; bottom: -3px; width: 2px; background: #334155; text-decoration: none; }
+  .low .q { text-align: right; font-family: 'Segoe UI', sans-serif; font-variant-numeric: tabular-nums; color: var(--text-2); }
+  .low .q b { color: var(--red); font-weight: 700; }
+
+  .status { height: 24px; flex: none; display: flex; align-items: center; background: #d5deea; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+  .status span { padding: 0 12px; height: 16px; display: flex; align-items: center; gap: 6px; border-right: 1px solid #b2bfd1; color: var(--text-2); }
+  .status span.ok { color: var(--ok); font-weight: 700; }
+  .status span.ok i { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+  .status .r { margin-left: auto; border-left: 1px solid #b2bfd1; }
+  .status .k { font-family: 'Segoe UI', sans-serif; font-size: 11px; padding: 0 8px; }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar">
+    <span class="win-icon"><svg viewBox="0 0 16 16"><rect x="1.5" y="1.5" width="13" height="13" rx="2" fill="#1d4ed8"/><path d="M4.5 4.5h7M4.5 7.5h7M4.5 10.5h4" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+    <span class="win-title">장부지기 2.3.5 — (주)한빛상사 · 장부지기.accdb</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <nav class="menu"><span>기초정보(B)</span><span>영업관리(S)</span><span>구매관리(P)</span><span>재고관리(I)</span><span>자금관리(M)</span><span>현황·보고서(R)</span><span>환경설정(O)</span><span>창(W)</span><span>도움말(H)</span></nav>
+
+    <div class="tools">
+      <span class="tb a"><svg viewBox="0 0 24 24" stroke="#1d4ed8"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5M9 13h6M12 10v6"/></svg>거래 입력</span>
+      <span class="tb"><svg viewBox="0 0 24 24" stroke="#7c3aed"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></svg>명세표 발송</span>
+      <span class="tb"><svg viewBox="0 0 24 24" stroke="#0f766e"><path d="M3 8.5 12 4l9 4.5v10L12 23l-9-4.5z" transform="translate(0 -1.5)"/><path d="M3 7 12 11.5 21 7M12 11.5V21.5"/></svg>재고 조회</span>
+      <span class="tb"><svg viewBox="0 0 24 24" stroke="#15803d"><rect x="3.5" y="3.5" width="17" height="17" rx="1.5"/><path d="M3.5 9h17M3.5 14.5h17M9 3.5v17"/></svg>엑셀 저장</span>
+      <span class="tb"><svg viewBox="0 0 24 24" stroke="#475569"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></svg>백업</span>
+      <span class="sep"></span>
+      <span class="tb"><svg viewBox="0 0 24 24" stroke="#475569"><path d="M7 9V3.5h10V9"/><rect x="3.5" y="9" width="17" height="8" rx="1.5"/><path d="M7 14h10v6.5H7z"/></svg>인쇄</span>
+      <span class="tb"><svg viewBox="0 0 24 24" stroke="#475569"><path d="M20 11A8 8 0 0 0 5.6 6.4L3.5 8.5"/><path d="M3.5 3.5v5h5M4 13a8 8 0 0 0 14.4 4.6l2.1-2.1"/><path d="M20.5 20.5v-5h-5"/></svg>새로고침</span>
+      <span class="sp"></span>
+      <div class="period"><label>조회 기간</label><span class="date num">2026-10-01<svg class="i" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="1.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>~<span class="date num">2026-10-31<svg class="i" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="1.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span><span class="qbtn"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>조회</span></div>
+      <div class="user"><i>관</i><div><b>관리자</b><small>(주)한빛상사</small></div></div>
+    </div>
+
+    <div class="work">
+      <aside class="tree">
+        <div class="tree-h">업무 메뉴</div>
+        <div class="tree-s"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>메뉴 찾기</div>
+        <ul>
+          <li class="g"><i class="pm"></i><svg class="fd" viewBox="0 0 16 14"><path d="M8 1.2 9.9 5l4.1.5-3 2.9.8 4.1L8 10.5l-3.8 2 .8-4.1-3-2.9 4.1-.5z" fill="#f5b301" stroke="#c48a00" stroke-width=".7"/></svg>즐겨찾기</li>
+          <li class="c sel"><svg class="dc" viewBox="0 0 12 14"><rect x="1" y="1" width="10" height="12" rx="1" fill="#fff" stroke="currentColor"/><path d="M3 5h6M3 8h6M3 11h3" stroke="currentColor"/></svg><span class="t">대시보드</span></li>
+          <li class="g"><i class="pm"></i><svg class="fd" viewBox="0 0 16 14"><path d="M1 2.5h5l1.5 1.5H15v9H1z" fill="#ffd56b" stroke="#c8961e" stroke-width=".8"/></svg>기초정보</li>
+          <li class="c"><svg class="dc" viewBox="0 0 12 14"><rect x="1" y="1" width="10" height="12" rx="1" fill="#fff" stroke="currentColor"/><path d="M3 5h6M3 8h6M3 11h3" stroke="currentColor"/></svg><span class="t">거래처 등록</span><em>148</em></li>
+          <li class="c"><svg class="dc" viewBox="0 0 12 14"><rect x="1" y="1" width="10" height="12" rx="1" fill="#fff" stroke="currentColor"/><path d="M3 5h6M3 8h6M3 11h3" stroke="currentColor"/></svg><span class="t">품목 등록</span><em>1,326</em></li>
+          <li class="g"><i class="pm"></i><svg class="fd" viewBox="0 0 16 14"><path d="M1 2.5h5l1.5 1.5H15v9H1z" fill="#ffd56b" stroke="#c8961e" stroke-width=".8"/></svg>영업</li>
+          <li class="c"><svg class="dc" viewBox="0 0 12 14"><rect x="1" y="1" width="10" height="12" rx="1" fill="#fff" stroke="currentColor"/><path d="M3 5h6M3 8h6M3 11h3" stroke="currentColor"/></svg><span class="t">견적서</span></li>
+          <li class="c"><svg class="dc" viewBox="0 0 12 14"><rect x="1" y="1" width="10" height="12" rx="1" fill="#fff" stroke="currentColor"/><path d="M3 5h6M3 8h6M3 11h3" stroke="currentColor"/></svg><span class="t">주문서</span></li>
+          <li class="c"><svg class="dc" viewBox="0 0 12 14"><rect x="1" y="1" width="10" height="12" rx="1" fill="#fff" stroke="currentColor"/><path d="M3 5h6M3 8h6M3 11h3" stroke="currentColor"/></svg><span class="t">거래명세서</span></li>
+          <li class="c"><svg class="dc" viewBox="0 0 12 14"><rect x="1" y="1" width="10" height="12" rx="1" fill="#fff" stroke="currentColor"/><path d="M3 5h6M3 8h6M3 11h3" stroke="currentColor"/></svg><span class="t">출고 (매출)</span></li>
+          <li class="g"><i class="pm"></i><svg class="fd" viewBox="0 0 16 14"><path d="M1 2.5h5l1.5 1.5H15v9H1z" fill="#ffd56b" stroke="#c8961e" stroke-width=".8"/></svg>구매</li>
+          <li class="c"><svg class="dc" viewBox="0 0 12 14"><rect x="1" y="1" width="10" height="12" rx="1" fill="#fff" stroke="currentColor"/><path d="M3 5h6M3 8h6M3 11h3" stroke="currentColor"/></svg><span class="t">발주서</span></li>
+          <li class="c"><svg class="dc" viewBox="0 0 12 14"><rect x="1" y="1" width="10" height="12" rx="1" fill="#fff" stroke="currentColor"/><path d="M3 5h6M3 8h6M3 11h3" stroke="currentColor"/></svg><span class="t">입고 (매입)</span></li>
+          <li class="g"><i class="pm"></i><svg class="fd" viewBox="0 0 16 14"><path d="M1 2.5h5l1.5 1.5H15v9H1z" fill="#ffd56b" stroke="#c8961e" stroke-width=".8"/></svg>재고</li>
+          <li class="c"><svg class="dc" viewBox="0 0 12 14"><rect x="1" y="1" width="10" height="12" rx="1" fill="#fff" stroke="currentColor"/><path d="M3 5h6M3 8h6M3 11h3" stroke="currentColor"/></svg><span class="t">현재고·예상 재고</span></li>
+          <li class="c"><svg class="dc" viewBox="0 0 12 14"><rect x="1" y="1" width="10" height="12" rx="1" fill="#fff" stroke="currentColor"/><path d="M3 5h6M3 8h6M3 11h3" stroke="currentColor"/></svg><span class="t">품목별 수불부</span></li>
+          <li class="c"><svg class="dc" viewBox="0 0 12 14"><rect x="1" y="1" width="10" height="12" rx="1" fill="#fff" stroke="currentColor"/><path d="M3 5h6M3 8h6M3 11h3" stroke="currentColor"/></svg><span class="t">재고 부족</span><em class="w">7</em></li>
+          <li class="g"><i class="pm"></i><svg class="fd" viewBox="0 0 16 14"><path d="M1 2.5h5l1.5 1.5H15v9H1z" fill="#ffd56b" stroke="#c8961e" stroke-width=".8"/></svg>자금</li>
+          <li class="c"><svg class="dc" viewBox="0 0 12 14"><rect x="1" y="1" width="10" height="12" rx="1" fill="#fff" stroke="currentColor"/><path d="M3 5h6M3 8h6M3 11h3" stroke="currentColor"/></svg><span class="t">입출금 내역</span></li>
+          <li class="c"><svg class="dc" viewBox="0 0 12 14"><rect x="1" y="1" width="10" height="12" rx="1" fill="#fff" stroke="currentColor"/><path d="M3 5h6M3 8h6M3 11h3" stroke="currentColor"/></svg><span class="t">미수금 현황</span><em class="w">12곳</em></li>
+          <li class="g"><i class="pm"></i><svg class="fd" viewBox="0 0 16 14"><path d="M1 2.5h5l1.5 1.5H15v9H1z" fill="#ffd56b" stroke="#c8961e" stroke-width=".8"/></svg>손익</li>
+          <li class="c"><svg class="dc" viewBox="0 0 12 14"><rect x="1" y="1" width="10" height="12" rx="1" fill="#fff" stroke="currentColor"/><path d="M3 5h6M3 8h6M3 11h3" stroke="currentColor"/></svg><span class="t">거래처별 손익</span></li>
+          <li class="c"><svg class="dc" viewBox="0 0 12 14"><rect x="1" y="1" width="10" height="12" rx="1" fill="#fff" stroke="currentColor"/><path d="M3 5h6M3 8h6M3 11h3" stroke="currentColor"/></svg><span class="t">품목별 손익</span></li>
+        </ul>
+        <div class="tree-f"><i></i>자동 백업 <b>30분마다</b><br>D:\장부백업 · 마지막 <b class="num">10:06</b></div>
+      </aside>
+
+      <section class="mdi">
+        <div class="mtabs">
+          <span class="mt on"><svg class="i" viewBox="0 0 24 24" style="color:#1d4ed8"><rect x="3" y="3" width="7.5" height="9" rx="1"/><rect x="13.5" y="3" width="7.5" height="5" rx="1"/><rect x="13.5" y="11" width="7.5" height="10" rx="1"/><rect x="3" y="15" width="7.5" height="6" rx="1"/></svg>대시보드<i class="x"></i></span>
+          <span class="mt"><svg class="i" viewBox="0 0 24 24"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5"/></svg>견적서 Q-2610-014<i class="x"></i></span>
+          <span class="mt"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg>미수금 현황<i class="x"></i></span>
+          <span class="sp"></span>
+          <span class="stamp num">기준 2026-10-26 (월) 10:07</span>
+        </div>
+
+        <div class="dash">
+          <div class="kpis">
+            <div class="kpi"><p>이번 달 매출<span>10/01~10/26</span></p><strong>48,320,000<small>원</small></strong><div class="d"><b class="up">▲ 12.8%</b> 전월 대비 · 출고 312건</div></div>
+            <div class="kpi buy"><p>이번 달 매입<span>10/01~10/26</span></p><strong>31,050,000<small>원</small></strong><div class="d"><b class="up">▲ 11.7%</b> · 매출총이익 17,270,000원</div></div>
+            <div class="kpi ar"><p>거래처 미수금<span>12곳</span></p><strong>12,700,000<small>원</small></strong><div class="d">90일 초과 <b style="color:#b91c1c">1곳 · 1,100,000원</b></div></div>
+            <div class="kpi st"><p>재고 부족 품목<span>안전재고 미달</span></p><strong>7<small>개 품목</small></strong><div class="d">예상 재고 0 이하 <b style="color:#b91c1c">3개</b> · 발주 필요</div></div>
+          </div>
+
+          <div class="box">
+            <div class="bh"><b><svg class="i" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>월별 매출·매입 추이</b><span class="lg"><span><i style="background:#1d4ed8"></i>매출</span><span><i style="background:#a9c0f2"></i>매입</span><span><i style="background:#f59e0b;height:2px;vertical-align:3px"></i>매출총이익</span></span><span class="sp"></span><span class="u">단위: 만원</span><span class="mseg"><span class="on">월별</span><span>분기별</span></span></div>
+            <div class="chart">
+              <svg width="598" height="258" viewBox="0 0 598 258" class="num" style="font-size:11px">
+<g stroke="#e3e8ef"><line x1="46" y1="12.0" x2="592" y2="12.0"/><line x1="46" y1="48.666666666666664" x2="592" y2="48.666666666666664"/><line x1="46" y1="85.33333333333333" x2="592" y2="85.33333333333333"/><line x1="46" y1="122.0" x2="592" y2="122.0"/><line x1="46" y1="158.66666666666666" x2="592" y2="158.66666666666666"/><line x1="46" y1="195.33333333333334" x2="592" y2="195.33333333333334"/></g>
+<line x1="46" y1="232" x2="592" y2="232" stroke="#9aa9be"/>
+<g fill="#7a879a" text-anchor="end"><text x="40" y="16.0">6,000</text><text x="40" y="52.666666666666664">5,000</text><text x="40" y="89.33333333333333">4,000</text><text x="40" y="126.0">3,000</text><text x="40" y="162.66666666666666">2,000</text><text x="40" y="199.33333333333334">1,000</text><text x="40" y="236.0">0</text></g>
+<rect x="52.8" y="147.4" width="15" height="84.6" fill="#4f7be6"/>
+<rect x="69.8" y="176.9" width="15" height="55.1" fill="#a9c0f2"/>
+<text x="68.8" y="247" text-anchor="middle" fill="#7a879a">25.11</text>
+<rect x="98.2" y="121.3" width="15" height="110.7" fill="#4f7be6"/>
+<rect x="115.2" y="159.0" width="15" height="73.0" fill="#a9c0f2"/>
+<text x="114.2" y="247" text-anchor="middle" fill="#7a879a">25.12</text>
+<rect x="143.8" y="135.4" width="15" height="96.6" fill="#4f7be6"/>
+<rect x="160.8" y="169.1" width="15" height="62.9" fill="#a9c0f2"/>
+<text x="159.8" y="247" text-anchor="middle" fill="#7a879a">26.01</text>
+<rect x="189.2" y="109.2" width="15" height="122.8" fill="#4f7be6"/>
+<rect x="206.2" y="151.0" width="15" height="81.0" fill="#a9c0f2"/>
+<text x="205.2" y="247" text-anchor="middle" fill="#7a879a">26.02</text>
+<rect x="234.8" y="115.3" width="15" height="116.7" fill="#4f7be6"/>
+<rect x="251.8" y="156.8" width="15" height="75.2" fill="#a9c0f2"/>
+<text x="250.8" y="247" text-anchor="middle" fill="#7a879a">26.03</text>
+<rect x="280.2" y="91.1" width="15" height="140.9" fill="#4f7be6"/>
+<rect x="297.2" y="140.4" width="15" height="91.6" fill="#a9c0f2"/>
+<text x="296.2" y="247" text-anchor="middle" fill="#7a879a">26.04</text>
+<rect x="325.8" y="99.2" width="15" height="132.8" fill="#4f7be6"/>
+<rect x="342.8" y="146.3" width="15" height="85.7" fill="#a9c0f2"/>
+<text x="341.8" y="247" text-anchor="middle" fill="#7a879a">26.05</text>
+<rect x="371.2" y="83.1" width="15" height="148.9" fill="#4f7be6"/>
+<rect x="388.2" y="135.2" width="15" height="96.8" fill="#a9c0f2"/>
+<text x="387.2" y="247" text-anchor="middle" fill="#7a879a">26.06</text>
+<rect x="416.8" y="93.1" width="15" height="138.9" fill="#4f7be6"/>
+<rect x="433.8" y="142.1" width="15" height="89.9" fill="#a9c0f2"/>
+<text x="432.8" y="247" text-anchor="middle" fill="#7a879a">26.07</text>
+<rect x="462.2" y="66.9" width="15" height="165.1" fill="#4f7be6"/>
+<rect x="479.2" y="125.6" width="15" height="106.4" fill="#a9c0f2"/>
+<text x="478.2" y="247" text-anchor="middle" fill="#7a879a">26.08</text>
+<rect x="507.8" y="75.0" width="15" height="157.0" fill="#4f7be6"/>
+<rect x="524.8" y="130.1" width="15" height="101.9" fill="#a9c0f2"/>
+<text x="523.8" y="247" text-anchor="middle" fill="#7a879a">26.09</text>
+<rect x="553.2" y="54.8" width="15" height="177.2" fill="#1d4ed8"/>
+<rect x="570.2" y="118.2" width="15" height="113.8" fill="#a9c0f2"/>
+<text x="569.2" y="247" text-anchor="middle" fill="#1d4ed8" font-weight="700">26.10</text>
+<polyline points="68.8,202.5 114.2,194.2 159.8,198.3 205.2,190.2 250.8,190.5 296.2,182.7 341.8,184.8 387.2,179.9 432.8,183.0 478.2,173.3 523.8,176.9 569.2,168.7" fill="none" stroke="#f59e0b" stroke-width="2"/>
+<circle cx="68.8" cy="202.5" r="2.6" fill="#fff" stroke="#f59e0b" stroke-width="1.6"/><circle cx="114.2" cy="194.2" r="2.6" fill="#fff" stroke="#f59e0b" stroke-width="1.6"/><circle cx="159.8" cy="198.3" r="2.6" fill="#fff" stroke="#f59e0b" stroke-width="1.6"/><circle cx="205.2" cy="190.2" r="2.6" fill="#fff" stroke="#f59e0b" stroke-width="1.6"/><circle cx="250.8" cy="190.5" r="2.6" fill="#fff" stroke="#f59e0b" stroke-width="1.6"/><circle cx="296.2" cy="182.7" r="2.6" fill="#fff" stroke="#f59e0b" stroke-width="1.6"/><circle cx="341.8" cy="184.8" r="2.6" fill="#fff" stroke="#f59e0b" stroke-width="1.6"/><circle cx="387.2" cy="179.9" r="2.6" fill="#fff" stroke="#f59e0b" stroke-width="1.6"/><circle cx="432.8" cy="183.0" r="2.6" fill="#fff" stroke="#f59e0b" stroke-width="1.6"/><circle cx="478.2" cy="173.3" r="2.6" fill="#fff" stroke="#f59e0b" stroke-width="1.6"/><circle cx="523.8" cy="176.9" r="2.6" fill="#fff" stroke="#f59e0b" stroke-width="1.6"/><circle cx="569.2" cy="168.7" r="2.6" fill="#fff" stroke="#f59e0b" stroke-width="1.6"/>
+<g><rect x="507.2" y="27.8" width="72" height="19" fill="#1d4ed8"/><text x="543.2" y="40.8" text-anchor="middle" fill="#fff" font-weight="700">4,832만원</text></g>
+
+</svg>
+            </div>
+          </div>
+
+          <div class="box" style="grid-row: span 2">
+            <div class="bh"><b><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg>거래처 미수금 · 경과일</b><span class="sp"></span><span class="more">전체 보기 ›</span></div>
+            <div class="aging">
+              <div class="bar"><i style="flex:729;background:#16a34a"></i><i style="flex:296;background:#f59e0b"></i><i style="flex:135;background:#ea580c"></i><i style="flex:110;background:#b91c1c"></i></div>
+              <div class="lgd">
+                <span><em style="--c:#16a34a">30일 이내</em><b>7,290,000</b></span>
+                <span><em style="--c:#f59e0b">31~60일</em><b>2,960,000</b></span>
+                <span><em style="--c:#ea580c">61~90일</em><b>1,350,000</b></span>
+                <span><em style="--c:#b91c1c">90일 초과</em><b>1,100,000</b></span>
+              </div>
+            </div>
+            <table class="t">
+              <thead><tr><th>거래처</th><th>미수금</th><th>최종 입금</th><th>경과</th></tr></thead>
+              <tbody>
+                <tr><td>대성유통</td><td class="r">3,850,000</td><td class="m c">10-26</td><td class="c"><span class="ag g1">18일</span></td></tr>
+                <tr><td>한솔마트</td><td class="r">2,420,000</td><td class="m c">09-14</td><td class="c"><span class="ag g2">42일</span></td></tr>
+                <tr><td>미래식자재</td><td class="r">1,980,000</td><td class="m c">10-20</td><td class="c"><span class="ag g1">12일</span></td></tr>
+                <tr><td>우리상회</td><td class="r">1,350,000</td><td class="m c">08-20</td><td class="c"><span class="ag g3">67일</span></td></tr>
+                <tr class="sel"><td>동해수산</td><td class="r">1,100,000</td><td class="m c">07-23</td><td class="c"><span class="ag g4">95일</span></td></tr>
+                <tr><td>그린푸드</td><td class="r">860,000</td><td class="m c">10-08</td><td class="c"><span class="ag g1">25일</span></td></tr>
+                <tr><td>세종상사</td><td class="r">540,000</td><td class="m c">09-18</td><td class="c"><span class="ag g2">38일</span></td></tr>
+                <tr><td>외 5곳</td><td class="r">600,000</td><td class="m c">-</td><td class="c"><span class="ag g1">30일 이내</span></td></tr>
+                <tr class="sum"><td>합계 12곳</td><td class="r">12,700,000</td><td></td><td></td></tr>
+              </tbody>
+            </table>
+            <div class="bh" style="border-top:1px solid var(--line)"><b><svg class="i" viewBox="0 0 24 24" style="color:#b91c1c"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg>재고 부족 품목</b><span class="sp"></span><span class="u">현재고 / 안전재고</span></div>
+            <ul class="low">
+              <li><div><b>국산 참기름 300ml</b><small>HB-1042</small></div><span class="lb"><i style="width:30%"></i><s style="left:100%;margin-left:-2px"></s></span><span class="q"><b>12</b> / 40</span></li>
+              <li><div><b>진간장 1.8L</b><small>HB-1107</small></div><span class="lb"><i style="width:36%"></i><s style="left:100%;margin-left:-2px"></s></span><span class="q"><b>18</b> / 50</span></li>
+              <li><div><b>김밥김 100매</b><small>HB-2210</small></div><span class="lb"><i style="width:30%"></i><s style="left:100%;margin-left:-2px"></s></span><span class="q"><b>9</b> / 30</span></li>
+            </ul>
+          </div>
+
+          <div class="box">
+            <div class="bh"><b><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>오늘 처리한 전표</b><span class="sp"></span><span class="u">입력한 거래는 재고·미수금·손익에 바로 반영됩니다</span></div>
+            <table class="t">
+              <thead><tr><th style="width:62px">시각</th><th style="width:62px">구분</th><th style="width:96px">전표번호</th><th>거래처</th><th>내용</th><th style="width:100px">금액</th><th style="width:76px">상태</th></tr></thead>
+              <tbody>
+                <tr><td class="m c">10:06</td><td class="c"><span class="kind cash">입금</span></td><td class="m">R-2610-031</td><td>대성유통</td><td>계좌 입금 · 미수금 반영</td><td class="r">2,000,000</td><td class="c st-ok">반영</td></tr>
+                <tr><td class="m c">10:04</td><td class="c"><span class="kind mail">발송</span></td><td class="m">S-2610-118</td><td>한솔마트</td><td>거래명세표 메일 · 전잔액 표시</td><td class="r">1,836,000</td><td class="c st-ok">발송 완료</td></tr>
+                <tr class="sel"><td class="m c">10:02</td><td class="c"><span class="kind out">출고</span></td><td class="m">S-2610-118</td><td>한솔마트</td><td>진간장 1.8L 외 5건</td><td class="r">1,836,000</td><td class="c st-ok">저장</td></tr>
+                <tr><td class="m c">09:41</td><td class="c"><span class="kind in">입고</span></td><td class="m">P-2610-052</td><td>해밀식품</td><td>국산 참기름 300ml 외 3건</td><td class="r">2,640,000</td><td class="c st-ok">저장</td></tr>
+                <tr><td class="m c">09:18</td><td class="c"><span class="kind q">견적</span></td><td class="m">Q-2610-014</td><td>그린푸드</td><td>11월 정기 납품 견적</td><td class="r">3,245,000</td><td class="c st-ing">작성 중</td></tr>
+                <tr><td class="m c">09:05</td><td class="c"><span class="kind out">출고</span></td><td class="m">S-2610-117</td><td>미래식자재</td><td>냉동 만두 1kg 외 2건</td><td class="r">980,000</td><td class="c st-ok">저장</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="status"><span class="ok"><i></i>저장 완료</span><span>거래처 148곳</span><span>품목 1,326개</span><span>마지막 백업 10:06</span><span>발송 메일 연결됨</span><span class="r">단가: 거래처별 우선</span><span class="k">NUM</span><span class="k" style="border-right:none">2026-10-26 (월)</span></footer>
+  </main>
+</div>
+</body>
+</html>

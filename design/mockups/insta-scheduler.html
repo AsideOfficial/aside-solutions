@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>피드타이머</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 피드타이머: 흰 바탕 + 핑크→오렌지 그라데이션. 왼쪽 피드 미리보기, 가운데 주간 일정, 오른쪽 게시물 작성. */
+  :root {
+    --p: #e8457c; --o: #f7833a; --grad: linear-gradient(120deg, #e8457c, #f7833a);
+    --ink: #17171c; --ink-2: #555a66; --ink-3: #9096a2; --line: #ececf0; --line-2: #f3f3f6; --soft: #f8f8fa;
+  }
+  body { font: 400 13px/1.45 'Pretendard Variable', 'Segoe UI', sans-serif; color: var(--ink); background: #fff; letter-spacing: -0.01em; }
+  .win { --bar: #fff; --bar-fg: #2a2a30; background: #fff; }
+  .tnum, .num { font-variant-numeric: tabular-nums; }
+  svg.i { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .gtext { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+  .top { flex: none; height: 58px; display: flex; align-items: center; gap: 14px; padding: 0 18px; border-bottom: 1px solid var(--line); }
+  .logo { display: flex; align-items: center; gap: 9px; }
+  .logo span { width: 30px; height: 30px; border-radius: 9px; background: var(--grad); display: grid; place-items: center; box-shadow: 0 4px 10px -3px rgb(232 69 124 / .5); }
+  .logo b { font-size: 16px; font-weight: 800; letter-spacing: -0.03em; }
+  .acct { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 10px 0 4px; border-radius: 18px; border: 1px solid var(--line); margin-left: 8px; }
+  .ring { width: 28px; height: 28px; border-radius: 50%; padding: 2px; background: var(--grad); flex: none; }
+  .ring i { display: block; width: 100%; height: 100%; border-radius: 50%; border: 2px solid #fff; background: radial-gradient(circle at 40% 35%, #f6e2cf, #c58f62 70%); }
+  .acct b { font-size: 13px; font-weight: 700; }
+  .acct small { font-size: 11.5px; color: var(--ink-3); margin-left: 2px; }
+  .acct .other { width: 24px; height: 24px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #5b4a42, #2c2420); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--line); margin-left: 6px; }
+  .week { display: flex; align-items: center; gap: 6px; margin-left: 10px; font-size: 13.5px; font-weight: 700; }
+  .week span { width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center; color: var(--ink-2); background: var(--soft); }
+  .week em { font-style: normal; padding: 0 4px; }
+  .run { margin-left: auto; display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 16px; background: #fff3f6; color: var(--p); font-size: 12.5px; font-weight: 700; }
+  .run i { width: 8px; height: 8px; border-radius: 50%; background: var(--grad); box-shadow: 0 0 0 3px rgb(232 69 124 / .18); }
+  .run span { color: var(--ink-2); font-weight: 500; }
+  .btn { height: 34px; display: flex; align-items: center; gap: 6px; padding: 0 13px; border-radius: 9px; border: 1px solid var(--line); font-size: 13px; font-weight: 600; color: var(--ink-2); }
+  .btn.pri { border: 0; background: var(--grad); color: #fff; box-shadow: 0 6px 14px -6px rgb(232 69 124 / .6); }
+
+  .main { flex: 1; min-height: 0; display: flex; gap: 0; }
+  .feed { width: 316px; flex: none; padding: 16px 16px 14px; border-right: 1px solid var(--line); background: var(--soft); display: flex; flex-direction: column; }
+  .h3 { font-size: 12px; font-weight: 700; color: var(--ink-3); display: flex; justify-content: space-between; align-items: center; }
+  .h3 span { font-weight: 500; }
+  .prof { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+  .prof .ring { width: 54px; height: 54px; padding: 2.5px; }
+  .prof .ring i { border-width: 3px; }
+  .prof b { font-size: 14px; font-weight: 700; }
+  .stats { display: flex; gap: 14px; margin-top: 4px; font-size: 12px; color: var(--ink-2); }
+  .stats strong { color: var(--ink); font-weight: 700; margin-right: 2px; font-variant-numeric: tabular-nums; }
+  .grid { margin-top: 14px; display: grid; grid-template-columns: repeat(3, 92px); gap: 3px; border-radius: 10px; overflow: hidden; }
+  .tile { position: relative; width: 92px; height: 92px; }
+  .tile > svg { width: 92px; height: 92px; }
+  .tile .sch { position: absolute; left: 5px; bottom: 5px; height: 20px; display: flex; align-items: center; gap: 3px; padding: 0 6px; border-radius: 10px; background: rgb(255 255 255 / .94); font-size: 11px; font-weight: 700; color: var(--p); box-shadow: 0 2px 6px rgb(0 0 0 / .15); white-space: nowrap; }
+  .tile .sch svg { width: 11px; height: 11px; stroke-width: 2.2; }
+  .tile.pending::after { content: ""; position: absolute; inset: 0; box-shadow: inset 0 0 0 2px rgb(255 255 255 / .9), inset 0 0 0 3.5px rgb(232 69 124 / .9); }
+  .tile .multi { position: absolute; right: 5px; top: 5px; width: 16px; height: 16px; color: #fff; filter: drop-shadow(0 1px 2px rgb(0 0 0 / .4)); }
+  .tile .new { position: absolute; left: 5px; top: 5px; height: 18px; display: flex; align-items: center; padding: 0 6px; border-radius: 9px; background: rgb(23 23 28 / .72); color: #fff; font-size: 11px; font-weight: 600; }
+  .gl { margin-top: 10px; display: flex; gap: 14px; font-size: 11.5px; color: var(--ink-2); }
+  .gl i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+  .accts { margin-top: auto; padding: 12px 12px 10px; border-radius: 12px; background: #fff; border: 1px solid var(--line); }
+  .ac { display: flex; align-items: center; gap: 10px; height: 44px; margin-top: 6px; padding: 0 8px; border-radius: 9px; }
+  .ac.on { background: #fff3f6; }
+  .ac .ring { width: 32px; height: 32px; }
+  .av2 { width: 32px; height: 32px; border-radius: 50%; flex: none; background: radial-gradient(circle at 40% 35%, #6a584c, #2c2420); box-shadow: 0 0 0 2px #fff, 0 0 0 3px #d6d8de; }
+  .ac b { display: block; font-size: 13px; font-weight: 700; }
+  .ac small { display: block; font-size: 11px; color: var(--ink-3); }
+  .ac em { margin-left: auto; font-style: normal; font-size: 11.5px; font-weight: 700; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .ac.on em { color: var(--p); }
+  .lim { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line-2); display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--ink-2); }
+  .opts { margin-top: 12px; padding-top: 4px; border-top: 1px solid var(--line-2); }
+  .opt { display: flex; align-items: center; justify-content: space-between; height: 30px; font-size: 12.5px; color: var(--ink-2); }
+  .tg { width: 32px; height: 19px; border-radius: 10px; background: #d9dbe1; position: relative; flex: none; }
+  .tg::after { content: ""; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / .2); }
+  .tg.on { background: var(--grad); }
+  .tg.on::after { left: 15px; }
+  .rules { margin-top: auto; padding: 11px 12px; border-radius: 10px; background: #fff; border: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
+  .rules div { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-2); }
+  .rules b { color: var(--ink); font-weight: 600; }
+
+  /* 가운데 주간 일정 */
+  .plan { flex: 1; min-width: 0; padding: 16px 20px 0; display: flex; flex-direction: column; }
+  .strip { margin-top: 10px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .strip div { height: 54px; border-radius: 10px; border: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
+  .strip p { font-size: 11px; color: var(--ink-3); font-weight: 600; }
+  .strip b { font-size: 15px; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .strip .dots { display: flex; gap: 3px; height: 5px; }
+  .strip .dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--grad); }
+  .strip .dots i.d { background: #c9ccd3; }
+  .strip .today { border: 0; background: var(--grad); color: #fff; box-shadow: 0 6px 14px -6px rgb(232 69 124 / .6); }
+  .strip .today p { color: rgb(255 255 255 / .85); }
+  .strip .today .dots i { background: #fff; }
+  .strip .today .dots i.d { background: rgb(255 255 255 / .55); }
+  .strip .sel { border-color: var(--p); box-shadow: inset 0 0 0 1px var(--p); }
+  .days { margin-top: 12px; flex: 1; min-height: 0; }
+  .day { display: grid; grid-template-columns: 54px 1fr; gap: 10px; }
+  .day + .day { border-top: 1px solid var(--line-2); }
+  .dl { padding-top: 13px; }
+  .dl b { display: block; font-size: 13px; font-weight: 700; }
+  .dl small { display: block; font-size: 11px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .dl.today b { color: var(--p); }
+  .posts { padding: 6px 0; display: flex; flex-direction: column; gap: 6px; position: relative; }
+  .post { display: grid; grid-template-columns: 46px 52px 1fr auto; align-items: center; gap: 12px; height: 64px; padding: 0 12px 0 10px; border-radius: 12px; border: 1px solid var(--line); background: #fff; }
+  .post time { font-size: 15px; font-weight: 750; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  .post .th { position: relative; width: 52px; height: 52px; border-radius: 8px; overflow: hidden; }
+  .post .th svg { width: 52px; height: 52px; }
+  .post .cap { min-width: 0; }
+  .post .cap b { display: block; font-size: 13px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .post .cap p { font-size: 12px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .post .meta { display: flex; gap: 8px; margin-top: 2px; font-size: 11px; color: var(--ink-3); }
+  .post .meta em { font-style: normal; font-weight: 700; }
+  .post.done { background: var(--soft); border-color: transparent; }
+  .post.done time { color: var(--ink-3); }
+  .post.edit { border: 1.5px solid transparent; background: linear-gradient(#fff, #fff) padding-box, var(--grad) border-box; box-shadow: 0 8px 20px -10px rgb(232 69 124 / .45); }
+  .st { height: 22px; display: inline-flex; align-items: center; gap: 4px; padding: 0 8px; border-radius: 11px; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+  .st svg { width: 12px; height: 12px; stroke-width: 2.4; }
+  .st.ok { color: #1f9d6b; background: #e8f7f0; }
+  .st.sc { color: #fff; background: var(--grad); }
+  .st.wt { color: var(--ink-2); background: #f0f1f4; }
+  .empty { height: 34px; display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-3); }
+  .empty span { color: var(--p); font-weight: 600; }
+  .now { position: relative; height: 0; margin: 2px 0 2px; }
+  .now::before { content: ""; position: absolute; left: 0; right: 0; top: 0; border-top: 1.5px dashed var(--p); }
+  .now b { position: absolute; left: -2px; top: -9px; height: 18px; display: flex; align-items: center; padding: 0 7px; border-radius: 9px; background: var(--p); color: #fff; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* 오른쪽 작성 */
+  .comp { width: 352px; flex: none; border-left: 1px solid var(--line); padding: 16px 18px 14px; display: flex; flex-direction: column; }
+  .ch { display: flex; align-items: center; justify-content: space-between; }
+  .ch h2 { font-size: 15px; font-weight: 750; letter-spacing: -0.02em; }
+  .ch span { font-size: 11.5px; color: var(--ink-3); }
+  .imgs { margin-top: 12px; display: flex; gap: 8px; }
+  .img { position: relative; width: 98px; height: 98px; border-radius: 10px; overflow: hidden; }
+  .img svg { width: 98px; height: 98px; }
+  .img .no { position: absolute; left: 6px; top: 6px; width: 20px; height: 20px; border-radius: 50%; background: rgb(23 23 28 / .7); color: #fff; font-size: 11px; font-weight: 700; display: grid; place-items: center; }
+  .img.first::after { content: ""; position: absolute; inset: 0; border-radius: 10px; box-shadow: inset 0 0 0 2.5px var(--p); }
+  .add { width: 98px; height: 98px; border-radius: 10px; border: 1.5px dashed #d6d8de; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--ink-3); font-size: 11.5px; }
+  .label { margin-top: 12px; display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--ink-2); }
+  .label span { font-weight: 500; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .ta { word-break: keep-all; margin-top: 6px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: #fff; font-size: 12.5px; line-height: 1.6; color: var(--ink); box-shadow: 0 0 0 3px rgb(232 69 124 / .08); border-color: #f4b6ca; }
+  .ta .tpl { background: linear-gradient(transparent 60%, rgb(247 131 58 / .22) 60%); font-weight: 600; }
+  .ta .tag { color: var(--p); font-weight: 600; white-space: nowrap; }
+  .ta .cursor { display: inline-block; width: 1.5px; height: 14px; background: var(--p); vertical-align: -2px; margin-left: 1px; }
+  .sets { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .sets span { height: 26px; display: flex; align-items: center; gap: 4px; padding: 0 10px; border-radius: 13px; border: 1px solid var(--line); font-size: 12px; color: var(--ink-2); font-weight: 500; }
+  .sets span.on { border: 0; background: #fff0f4; color: var(--p); font-weight: 700; box-shadow: inset 0 0 0 1px #f6b3c8; }
+  .sets small { color: var(--ink-3); font-weight: 500; font-size: 11px; }
+  .when { margin-top: 10px; display: grid; grid-template-columns: 1fr 96px; gap: 8px; }
+  .fld { height: 38px; display: flex; align-items: center; gap: 8px; padding: 0 11px; border-radius: 9px; border: 1px solid var(--line); font-size: 13px; font-weight: 600; }
+  .fld svg { color: var(--p); }
+  .fld.t { font-size: 15px; font-weight: 750; font-variant-numeric: tabular-nums; justify-content: center; }
+  .hint { margin-top: 7px; display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #1f9d6b; }
+  .cbtn { margin-top: auto; padding-top: 10px; display: flex; gap: 8px; }
+  .cbtn span { height: 40px; flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 10px; font-size: 13.5px; font-weight: 700; border: 1px solid var(--line); color: var(--ink-2); }
+  .cbtn span.pri { flex: 1.6; border: 0; background: var(--grad); color: #fff; box-shadow: 0 8px 18px -8px rgb(232 69 124 / .7); }
+
+  .status { flex: none; height: 26px; display: flex; align-items: center; gap: 18px; padding: 0 16px; border-top: 1px solid var(--line); background: #fbfbfc; font-size: 11.5px; color: var(--ink-3); }
+  .status b { font-weight: 700; color: var(--p); }
+  .status .r { margin-left: auto; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <radialGradient id="bg-latte" cx="35%" cy="30%" r="85%"><stop offset="0" stop-color="#dcb898"/><stop offset="1" stop-color="#8a5b3e"/></radialGradient>
+    <radialGradient id="coffee" cx="45%" cy="40%" r="60%"><stop offset="0" stop-color="#c48f62"/><stop offset="1" stop-color="#874f2f"/></radialGradient>
+    <linearGradient id="bg-iced" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d6f1e8"/><stop offset="1" stop-color="#86c8b5"/></linearGradient>
+    <linearGradient id="cold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a4a2e"/><stop offset="1" stop-color="#3a2015"/></linearGradient>
+    <radialGradient id="bg-gift" cx="40%" cy="30%" r="85%"><stop offset="0" stop-color="#ffdbe6"/><stop offset="1" stop-color="#ef7f9e"/></radialGradient>
+    <linearGradient id="bg-store" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe7d1"/><stop offset="1" stop-color="#fbb184"/></linearGradient>
+    <pattern id="awn" width="10" height="20" patternUnits="userSpaceOnUse"><rect width="5" height="20" fill="#e8457c"/><rect x="5" width="5" height="20" fill="#fff6f0"/></pattern>
+    <linearGradient id="bg-beans" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3e7d7"/><stop offset="1" stop-color="#cfb393"/></linearGradient>
+    <radialGradient id="bg-cookie" cx="40%" cy="35%" r="80%"><stop offset="0" stop-color="#f8e5d0"/><stop offset="1" stop-color="#d9a97e"/></radialGradient>
+    <linearGradient id="bg-plant" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1f5ee"/><stop offset="1" stop-color="#c7dbbf"/></linearGradient>
+    <radialGradient id="bg-cup" cx="45%" cy="35%" r="80%"><stop offset="0" stop-color="#6a584c"/><stop offset="1" stop-color="#241e1b"/></radialGradient>
+    <radialGradient id="bg-crois" cx="40%" cy="30%" r="85%"><stop offset="0" stop-color="#fcf0df"/><stop offset="1" stop-color="#e3bf92"/></radialGradient>
+    <linearGradient id="crust" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eab26a"/><stop offset="1" stop-color="#b56e2c"/></linearGradient>
+    <radialGradient id="vig" cx="50%" cy="45%" r="75%"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".18"/></radialGradient>
+
+    <!-- 밤 크림 라떼 (위에서 본 컵) -->
+    <symbol id="ph-latte" viewBox="0 0 100 100">
+      <rect width="100" height="100" fill="url(#bg-latte)"/>
+      <ellipse cx="55" cy="58" rx="36" ry="35" fill="#3b2216" opacity=".22"/>
+      <circle cx="50" cy="52" r="35" fill="#f6efe6"/><circle cx="50" cy="52" r="29.5" fill="none" stroke="#e5d8c8" stroke-width="1.2"/>
+      <rect x="72" y="47" width="18" height="10" rx="5" fill="#fff"/>
+      <circle cx="50" cy="52" r="24" fill="#fff"/><circle cx="50" cy="52" r="20" fill="url(#coffee)"/>
+      <path d="M50 65c-10-7.5-12.5-13-9-17.2 2.8-3.3 7.2-2.4 9 1.6 1.8-4 6.2-4.9 9-1.6 3.5 4.2 1 9.7-9 17.2z" fill="#f5e5cf"/>
+      <path d="M50 49.5v11" stroke="#d9b48c" stroke-width="1.2"/>
+      <path d="M8 90q4-11 11-11 7 0 9 11-10 5-20 0z" fill="#7a4326"/><path d="M8 90q10 5 20 0-2 4.5-10 4.5T8 90z" fill="#dcb68d"/>
+      <path d="M26 96q3-9 9-9 6 0 7 9-8 4-16 0z" fill="#6b3a20"/>
+      <rect width="100" height="100" fill="url(#vig)"/>
+    </symbol>
+    <!-- 아이스 아메리카노 -->
+    <symbol id="ph-iced" viewBox="0 0 100 100">
+      <rect width="100" height="100" fill="url(#bg-iced)"/>
+      <ellipse cx="51" cy="90" rx="22" ry="4" fill="#1d4d40" opacity=".18"/>
+      <rect x="55" y="6" width="5" height="62" rx="2.5" fill="#e8457c" transform="rotate(12 57 37)"/>
+      <path d="M30 24h40l-5 63q-.3 3-3.3 3H38.3q-3 0-3.3-3z" fill="#fff" opacity=".38" stroke="#fff" stroke-width="1"/>
+      <path d="M32 42h36l-3.6 44q-.2 2-2.2 2H37.8q-2 0-2.2-2z" fill="url(#cold)"/>
+      <rect x="37" y="33" width="15" height="13" rx="3" fill="#fff" opacity=".6" transform="rotate(-10 44 40)"/>
+      <rect x="52" y="37" width="13" height="12" rx="3" fill="#fff" opacity=".5" transform="rotate(14 58 43)"/>
+      <rect x="42" y="52" width="12" height="11" rx="3" fill="#fff" opacity=".22"/>
+      <path d="M34.5 29l3.5 55" stroke="#fff" stroke-width="2.2" opacity=".55" stroke-linecap="round"/>
+      <rect width="100" height="100" fill="url(#vig)"/>
+    </symbol>
+    <!-- 선물 상자 -->
+    <symbol id="ph-gift" viewBox="0 0 100 100">
+      <rect width="100" height="100" fill="url(#bg-gift)"/>
+      <ellipse cx="51" cy="86" rx="31" ry="5" fill="#8a2346" opacity=".18"/>
+      <rect x="24" y="48" width="52" height="36" rx="3" fill="#fff"/><rect x="24" y="48" width="52" height="5" fill="#f6e3ea"/>
+      <rect x="20" y="38" width="60" height="13" rx="3" fill="#fff"/>
+      <rect x="46" y="38" width="8" height="46" fill="#e8457c"/>
+      <path d="M50 38c-9-13-21-12-19-4 1.5 5 11 5 19 4zM50 38c9-13 21-12 19-4-1.5 5-11 5-19 4z" fill="#e8457c"/>
+      <circle cx="50" cy="37" r="3.5" fill="#c92f63"/>
+      <g fill="#fff"><circle cx="16" cy="22" r="2"/><circle cx="84" cy="18" r="2.4"/><circle cx="88" cy="60" r="1.8"/></g>
+      <g fill="#f7833a"><rect x="12" y="58" width="5" height="3" rx="1" transform="rotate(30 14 59)"/><rect x="78" y="30" width="5" height="3" rx="1" transform="rotate(-25 80 31)"/><circle cx="26" cy="14" r="1.6"/></g>
+      <rect width="100" height="100" fill="url(#vig)"/>
+    </symbol>
+    <!-- 매장 외관 -->
+    <symbol id="ph-store" viewBox="0 0 100 100">
+      <rect width="100" height="100" fill="url(#bg-store)"/>
+      <rect y="86" width="100" height="14" fill="#e59a6f"/>
+      <rect x="16" y="28" width="68" height="60" fill="#fff8f0"/>
+      <rect x="30" y="17" width="40" height="9" rx="2" fill="#3a2a22"/><g fill="#f6d8b8"><rect x="35" y="20.5" width="18" height="2" rx="1"/><circle cx="62" cy="21.5" r="1.6"/></g>
+      <path d="M12 28h76v9q-4.75 6-9.5 0-4.75 6-9.5 0-4.75 6-9.5 0-4.75 6-9.5 0-4.75 6-9.5 0-4.75 6-9.5 0-4.75 6-9.5 0-4.75 6-9.5 0z" fill="url(#awn)"/>
+      <rect x="22" y="48" width="30" height="27" rx="2" fill="#bfe1ef"/><path d="M26 72l14-20M34 72l12-17" stroke="#fff" stroke-width="2" opacity=".65"/><rect x="22" y="73" width="30" height="3" fill="#d9c3ae"/>
+      <rect x="58" y="48" width="19" height="40" rx="1.5" fill="#7a4b30"/><circle cx="73" cy="69" r="1.5" fill="#f2c79a"/><rect x="61" y="52" width="13" height="14" rx="1" fill="#a8d3e6" opacity=".7"/>
+      <ellipse cx="20" cy="84" rx="5" ry="6" fill="#4f9a62"/><rect x="16.5" y="84" width="7" height="6" rx="1" fill="#c96f45"/>
+      <rect width="100" height="100" fill="url(#vig)"/>
+    </symbol>
+    <!-- 원두 봉투 -->
+    <symbol id="ph-beans" viewBox="0 0 100 100">
+      <rect width="100" height="100" fill="url(#bg-beans)"/>
+      <ellipse cx="50" cy="88" rx="38" ry="4" fill="#5b3a24" opacity=".18"/>
+      <path d="M16 34h28l3 52H13z" fill="#b8865a"/><path d="M16 34l3.5-6 3.5 6 3.5-6 3.5 6 3.5-6 3.5 6 3.5-6 3.5 6z" fill="#a47448"/>
+      <rect x="20" y="52" width="22" height="17" rx="1.5" fill="#fff7ec"/><rect x="23" y="56" width="16" height="2.5" fill="#e8457c"/><rect x="23" y="61" width="11" height="2" fill="#c9b49c"/>
+      <path d="M52 26h30l3 60H49z" fill="#8c5a36"/><path d="M52 26l3.75-6 3.75 6 3.75-6 3.75 6 3.75-6 3.75 6 3.75-6 3.75 6z" fill="#77492a"/>
+      <rect x="56" y="46" width="24" height="19" rx="1.5" fill="#fff7ec"/><rect x="59" y="50" width="18" height="2.5" fill="#f7833a"/><rect x="59" y="55" width="12" height="2" fill="#c9b49c"/>
+      <g fill="#4e2f1c"><ellipse cx="30" cy="92" rx="4.5" ry="3.2" transform="rotate(-20 30 92)"/><ellipse cx="41" cy="94" rx="4.5" ry="3.2" transform="rotate(25 41 94)"/><ellipse cx="62" cy="93" rx="4.5" ry="3.2" transform="rotate(-35 62 93)"/><ellipse cx="88" cy="80" rx="4.5" ry="3.2" transform="rotate(40 88 80)"/></g>
+      <g stroke="#2a180d" stroke-width=".9" fill="none"><path d="M27 92.5q3-2 6 0"/><path d="M38.5 94q2.5 1.5 5 0"/><path d="M59.5 93.5q2.5-2 5 0"/><path d="M86 80q2 1.5 4 0"/></g>
+      <rect width="100" height="100" fill="url(#vig)"/>
+    </symbol>
+    <!-- 쿠키 -->
+    <symbol id="ph-cookie" viewBox="0 0 100 100">
+      <rect width="100" height="100" fill="url(#bg-cookie)"/>
+      <ellipse cx="54" cy="60" rx="38" ry="35" fill="#5b3a24" opacity=".16"/>
+      <ellipse cx="50" cy="55" rx="37" ry="35" fill="#fff"/><ellipse cx="50" cy="55" rx="30" ry="28" fill="none" stroke="#efe5da" stroke-width="1.2"/>
+      <circle cx="40" cy="47" r="15" fill="#c98a4e"/><circle cx="61" cy="57" r="15" fill="#d39457"/><circle cx="45" cy="68" r="13" fill="#be7f45"/>
+      <g fill="#4a2c1d"><circle cx="35" cy="43" r="2.2"/><circle cx="44" cy="50" r="1.8"/><circle cx="40" cy="40" r="1.5"/><circle cx="58" cy="52" r="2.2"/><circle cx="66" cy="60" r="1.9"/><circle cx="60" cy="64" r="1.6"/><circle cx="42" cy="67" r="2"/><circle cx="49" cy="72" r="1.6"/></g>
+      <rect width="100" height="100" fill="url(#vig)"/>
+    </symbol>
+    <!-- 화분 -->
+    <symbol id="ph-plant" viewBox="0 0 100 100">
+      <rect width="100" height="100" fill="url(#bg-plant)"/>
+      <rect x="58" y="8" width="34" height="50" fill="#fbfdf9" stroke="#dfe8da" stroke-width="2"/><path d="M75 8v50M58 33h34" stroke="#dfe8da" stroke-width="2"/>
+      <rect y="80" width="100" height="20" fill="#d9c9b4"/>
+      <path d="M47 64C40 52 34 44 22 40M49 64c2-14 4-24 12-34M48 64c4-8 10-12 22-14" stroke="#2f7a4b" stroke-width="1.8" fill="none"/>
+      <path d="M22 40c-9-2-14 6-12 13 8 2 16-2 18-9-2-2-4-3-6-4z" fill="#3f8f5b"/>
+      <path d="M61 30c-2-10 6-16 14-14 1 9-4 16-14 14z" fill="#357f4f"/>
+      <path d="M70 50c6-6 15-5 18 1-6 6-14 6-18-1z" fill="#4fa36a"/>
+      <path d="M38 48c-6-10-1-20 8-21 4 9 1 17-8 21z" fill="#4a9a63"/>
+      <g stroke="#c7dbbf" stroke-width="1.4"><path d="M14 47l6 2M18 53l5-3"/><path d="M66 22l5 2M68 27l5-3"/></g>
+      <path d="M34 66h28l-4 22H38z" fill="#d67b4e"/><rect x="32" y="62" width="32" height="6" rx="2" fill="#e38c5f"/>
+      <rect width="100" height="100" fill="url(#vig)"/>
+    </symbol>
+    <!-- 라떼 (옆에서 본 컵) -->
+    <symbol id="ph-cup" viewBox="0 0 100 100">
+      <rect width="100" height="100" fill="url(#bg-cup)"/>
+      <rect y="72" width="100" height="28" fill="#3a2e28"/>
+      <ellipse cx="48" cy="79" rx="31" ry="6" fill="#ede7e0"/>
+      <path d="M68 52q11 0 11 7.5T68 67" stroke="#faf7f3" stroke-width="4" fill="none"/>
+      <path d="M27 46h42v16q0 15-21 15T27 62z" fill="#faf7f3"/>
+      <ellipse cx="48" cy="46" rx="21" ry="4.5" fill="#8a5a3a"/><ellipse cx="48" cy="46" rx="9" ry="2" fill="#e9d2b6"/>
+      <g stroke="#fff" stroke-width="2" fill="none" opacity=".35" stroke-linecap="round"><path d="M42 38q-4-6 0-12t0-12"/><path d="M53 36q-4-5 0-10t0-10"/></g>
+      <rect width="100" height="100" fill="url(#vig)"/>
+    </symbol>
+    <!-- 크루아상 -->
+    <symbol id="ph-crois" viewBox="0 0 100 100">
+      <rect width="100" height="100" fill="url(#bg-crois)"/>
+      <ellipse cx="53" cy="64" rx="39" ry="30" fill="#7a4a22" opacity=".14"/>
+      <ellipse cx="50" cy="60" rx="38" ry="29" fill="#fff"/>
+      <g fill="url(#crust)" stroke="#a8652a" stroke-width=".7">
+        <ellipse cx="26" cy="66" rx="8" ry="10" transform="rotate(-40 26 66)"/><ellipse cx="74" cy="66" rx="8" ry="10" transform="rotate(40 74 66)"/>
+        <ellipse cx="35" cy="57" rx="10" ry="12.5" transform="rotate(-22 35 57)"/><ellipse cx="65" cy="57" rx="10" ry="12.5" transform="rotate(22 65 57)"/>
+        <ellipse cx="50" cy="54" rx="12" ry="14"/>
+      </g>
+      <g stroke="#f6d39a" stroke-width="1.2" opacity=".7" fill="none"><path d="M45 47q5-3 10 0"/><path d="M31 52q3-3 7-2"/><path d="M62 50q4-1 7 2"/></g>
+      <rect width="100" height="100" fill="url(#vig)"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="win">
+  <header class="win-bar">
+    <span class="win-icon"><svg viewBox="0 0 16 16" width="16" height="16"><defs><linearGradient id="wi" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8457c"/><stop offset="1" stop-color="#f7833a"/></linearGradient></defs><rect x="1" y="1" width="14" height="14" rx="4" fill="url(#wi)"/><circle cx="8" cy="8.5" r="3.6" fill="none" stroke="#fff" stroke-width="1.3"/><path d="M8 6.8v1.9l1.2.8" stroke="#fff" stroke-width="1.1" fill="none" stroke-linecap="round"/></svg></span>
+    <span class="win-title">피드타이머 1.4.0 — 카페 온결</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <div class="col">
+      <div class="top">
+        <div class="logo"><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg></span><b>피드타이머</b></div>
+        <div class="acct"><span class="ring"><i></i></span><b>카페 온결</b><small>@cafe.ongyeol</small><svg class="i" style="color:#9096a2;width:13px;height:13px" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg><span class="other"></span></div>
+        <div class="week"><span><svg class="i" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg></span><em class="tnum">10월 26일 – 11월 1일</em><span><svg class="i" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></span></div>
+        <div class="run"><i></i>예약 실행 중 <span>다음 게시 수 18:00</span></div>
+        <span class="btn"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>캘린더</span>
+        <span class="btn pri"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>게시물 추가</span>
+      </div>
+
+      <div class="main">
+        <!-- 피드 미리보기 -->
+        <aside class="feed">
+          <div class="h3">피드 미리보기 <span>예약 게시물 포함</span></div>
+          <div class="prof">
+            <span class="ring"><i></i></span>
+            <div><b>cafe.ongyeol</b><div class="stats"><span><strong>214</strong>게시물</span><span><strong>3,482</strong>팔로워</span><span><strong>180</strong>팔로잉</span></div></div>
+          </div>
+          <div class="grid">
+            <div class="tile pending"><svg><use href="#ph-beans"/></svg><svg class="multi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="7" width="13" height="13" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg><span class="sch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>일 10:00</span></div>
+            <div class="tile pending"><svg><use href="#ph-store"/></svg><span class="sch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>금 12:00</span></div>
+            <div class="tile pending"><svg><use href="#ph-gift"/></svg><svg class="multi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="7" width="13" height="13" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg><span class="sch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>수 18:00</span></div>
+            <div class="tile"><svg><use href="#ph-iced"/></svg><span class="new">오늘 13:00</span></div>
+            <div class="tile"><svg><use href="#ph-latte"/></svg><svg class="multi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="7" width="13" height="13" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg><span class="new">오늘 11:00</span></div>
+            <div class="tile"><svg><use href="#ph-cookie"/></svg></div>
+            <div class="tile"><svg><use href="#ph-plant"/></svg></div>
+            <div class="tile"><svg><use href="#ph-cup"/></svg></div>
+            <div class="tile"><svg><use href="#ph-crois"/></svg></div>
+          </div>
+          <div class="gl"><span><i style="background:linear-gradient(120deg,#e8457c,#f7833a)"></i>예약 3건</span><span><i style="background:#17171c;opacity:.72"></i>오늘 게시 2건</span><span><i style="background:#d6d8de"></i>지난 게시물</span></div>
+          <div class="accts">
+            <div class="h3">연결 계정 <span>직접 운영 · 2개</span></div>
+            <div class="ac on"><span class="ring"><i></i></span><div><b>카페 온결</b><small>@cafe.ongyeol · 매장</small></div><em>이번 주 5건</em></div>
+            <div class="ac"><span class="av2"></span><div><b>온결 로스터리</b><small>@ongyeol.roastery · 브랜드</small></div><em>이번 주 3건</em></div>
+            <div class="lim"><svg class="i" style="width:13px;height:13px" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>계정별 하루 최대 2개 · 2시간 간격</div>
+          </div>
+        </aside>
+
+        <!-- 주간 일정 -->
+        <section class="plan">
+          <div class="h3">이번 주 게시 일정 <span>예약 5건 · 완료 2건</span></div>
+          <div class="strip">
+            <div class="today"><p>월</p><b>26</b><span class="dots"><i></i><i></i></span></div>
+            <div><p>화</p><b>27</b><span class="dots"></span></div>
+            <div class="sel"><p>수</p><b>28</b><span class="dots"><i></i></span></div>
+            <div><p>목</p><b>29</b><span class="dots"></span></div>
+            <div><p>금</p><b>30</b><span class="dots"><i></i></span></div>
+            <div><p>토</p><b>31</b><span class="dots"></span></div>
+            <div><p>일</p><b>1</b><span class="dots"><i></i></span></div>
+          </div>
+          <div class="days">
+            <div class="day">
+              <div class="dl today"><b>월 · 오늘</b><small>10.26</small></div>
+              <div class="posts">
+                <div class="post done"><time>11:00</time><span class="th"><svg><use href="#ph-latte"/></svg></span><div class="cap"><b>가을 한정 신메뉴, 밤 크림 라떼가 나왔어요</b><div class="meta"><span>사진 3장</span><span><em>#</em> 12</span><span>세트 ‘매장 기본’</span></div></div><span class="st ok"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>게시 완료</span></div>
+                <div class="post done"><time>13:00</time><span class="th"><svg><use href="#ph-iced"/></svg></span><div class="cap"><b>평일 11~14시 아메리카노 2,500원</b><div class="meta"><span>사진 1장</span><span><em>#</em> 8</span><span>세트 ‘매장 기본’</span></div></div><span class="st ok"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>게시 완료</span></div>
+                <div class="now"><b>지금 13:24</b></div>
+              </div>
+            </div>
+            <div class="day"><div class="dl"><b>화</b><small>10.27</small></div><div class="empty">예약 없음 · <span>+ 12:00에 추가</span></div></div>
+            <div class="day">
+              <div class="dl"><b>수</b><small>10.28</small></div>
+              <div class="posts"><div class="post edit"><time>18:00</time><span class="th"><svg><use href="#ph-gift"/></svg></span><div class="cap"><b>[방문 인증 이벤트] 사진 태그하고 드립백 받아 가세요</b><div class="meta"><span>사진 2장</span><span><em>#</em> 9</span><span>세트 ‘이벤트’</span></div></div><span class="st sc"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>예약됨</span></div></div>
+            </div>
+            <div class="day"><div class="dl"><b>목</b><small>10.29</small></div><div class="empty">예약 없음</div></div>
+            <div class="day">
+              <div class="dl"><b>금</b><small>10.30</small></div>
+              <div class="posts"><div class="post"><time>12:00</time><span class="th"><svg><use href="#ph-store"/></svg></span><div class="cap"><b>이번 주말은 10시부터 21시까지 문을 엽니다</b><div class="meta"><span>사진 1장</span><span><em>#</em> 7</span><span>세트 ‘매장 기본’</span></div></div><span class="st sc"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>예약됨</span></div></div>
+            </div>
+            <div class="day"><div class="dl"><b>토</b><small>10.31</small></div><div class="empty">예약 없음</div></div>
+            <div class="day">
+              <div class="dl"><b>일</b><small>11.01</small></div>
+              <div class="posts"><div class="post"><time>10:00</time><span class="th"><svg><use href="#ph-beans"/></svg></span><div class="cap"><b>11월에 만나는 원두 4종을 소개합니다</b><div class="meta"><span>사진 4장</span><span><em>#</em> 11</span><span>세트 ‘신메뉴’</span></div></div><span class="st sc"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>예약됨</span></div></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 게시물 작성 -->
+        <aside class="comp">
+          <div class="ch"><h2>게시물 편집</h2><span>문구 템플릿 ‘이벤트 안내’</span></div>
+          <div class="imgs">
+            <div class="img first"><svg><use href="#ph-gift"/></svg><span class="no">1</span></div>
+            <div class="img"><svg><use href="#ph-cookie"/></svg><span class="no">2</span></div>
+            <div class="add"><svg class="i" style="width:20px;height:20px" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8v8M8 12h8"/></svg>사진 추가</div>
+          </div>
+          <div class="label">캡션 <span>164 / 2,200자</span></div>
+          <div class="ta">
+            [방문 인증 이벤트]<br>
+            매장에서 찍은 사진을 @cafe.ongyeol 태그와 함께 올려 주세요. 추첨으로 10분께 드립백 세트를 보내 드려요.<br>
+            이벤트 기간: <span class="tpl">10월 28일(수) ~ 11월 3일(화)</span><br>
+            <span class="tag">#망원동카페</span> <span class="tag">#망원카페</span> <span class="tag">#카페온결</span> <span class="tag">#가을이벤트</span> <span class="tag">#드립백</span> <span class="tag">#마포카페</span> <span class="tag">#디저트카페</span> <span class="tag">#카페추천</span> <span class="tag">#이벤트</span><span class="cursor"></span>
+          </div>
+          <div class="label">해시태그 세트 <span>9 / 30개</span></div>
+          <div class="sets"><span>매장 기본 <small>12</small></span><span class="on"><svg class="i" style="width:12px;height:12px" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>이벤트 <small>9</small></span><span>신메뉴 <small>11</small></span></div>
+          <div class="label">게시 시각</div>
+          <div class="when">
+            <div class="fld"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>10월 28일 (수)</div>
+            <div class="fld t">18:00</div>
+          </div>
+          <p class="hint"><svg class="i" style="width:13px;height:13px" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>같은 날 게시 1건 · 간격 규칙에 맞습니다</p>
+          <div class="opts">
+            <div class="opt">해시태그 세트 자동 덧붙이기 <i class="tg on"></i></div>
+            <div class="opt">게시 결과를 기록 파일에 저장 <i class="tg on"></i></div>
+            <div class="opt">PC 시작 시 자동 실행 <i class="tg"></i></div>
+          </div>
+          <div class="cbtn"><span>미리보기</span><span class="pri"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>예약 저장</span></div>
+        </aside>
+      </div>
+
+      <footer class="status">
+        <b>● 실행 중</b><span>연결 계정 2개</span><span>이번 주 예약 5건 · 완료 2건</span><span>13:00:03 점심 할인 안내 게시 완료</span>
+        <span class="r">본인이 운영하는 프로페셔널 계정 · 다음 게시 수 18:00</span>
+      </footer>
+    </div>
+  </main>
+</div>
+</body>
+</html>

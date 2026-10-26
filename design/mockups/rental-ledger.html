@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>건물주노트</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2.0.5/fonts/variable/woff2/SUIT-Variable.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 건물주노트: 따뜻한 장부 느낌의 밝은 테마. 층별 호실 타일 + 오늘의 브리핑 + 일할 계산이 보이는 퇴실 정산. */
+  :root {
+    --bg: #fbf8f3; --paper: #fffdf9; --line: #ece3d6; --line-2: #f3ece2;
+    --ink: #2a2118; --ink-2: #6b5d4e; --ink-3: #a39483;
+    --amber: #b45309; --amber-2: #d97706; --amber-50: #fef3e2; --red: #b42318; --red-50: #fdecec; --green: #3f7d4e;
+  }
+  body { font: 400 13px/1.45 'SUIT Variable', 'Malgun Gothic', sans-serif; color: var(--ink); background: var(--bg); }
+  .win { --bar: #f4eee5; --bar-fg: #4a3d30; background: var(--bg); }
+  .tnum, .num, td { font-variant-numeric: tabular-nums; }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  .side { width: 200px; flex: none; background: #f4eee5; border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 14px 12px 12px; }
+  .bld { padding: 12px; border-radius: 12px; background: var(--paper); border: 1px solid var(--line); }
+  .bld .ic { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(150deg, #d97706, #92400e); display: grid; place-items: center; }
+  .bld b { display: block; margin-top: 8px; font-size: 15px; font-weight: 800; letter-spacing: -0.02em; }
+  .bld small { display: block; font-size: 11.5px; color: var(--ink-3); }
+  .menu { margin-top: 14px; display: flex; flex-direction: column; gap: 2px; }
+  .menu a { height: 36px; display: flex; align-items: center; gap: 10px; padding: 0 10px; border-radius: 8px; font-size: 13.5px; font-weight: 600; color: var(--ink-2); }
+  .menu a.on { background: var(--paper); color: var(--amber); box-shadow: 0 1px 2px rgb(120 80 30 / .1), inset 0 0 0 1px var(--line); }
+  .menu a em { margin-left: auto; font-style: normal; min-width: 20px; height: 18px; padding: 0 6px; border-radius: 9px; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; display: grid; place-items: center; }
+  .menu a em.n { background: #e9dfd0; color: var(--ink-2); }
+  .menu .cap { margin: 12px 10px 4px; font-size: 11px; font-weight: 700; color: var(--ink-3); letter-spacing: .04em; }
+  .safe { margin-top: auto; padding: 10px; border-radius: 10px; background: #efe7db; font-size: 11.5px; color: var(--ink-2); display: flex; gap: 8px; align-items: flex-start; }
+  .safe svg { color: var(--green); margin-top: 1px; }
+  .safe b { display: block; color: var(--ink); font-weight: 700; }
+
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .head { flex: none; height: 56px; display: flex; align-items: center; gap: 8px; padding: 0 18px; border-bottom: 1px solid var(--line); background: var(--paper); }
+  .head h1 { font-size: 17px; font-weight: 800; letter-spacing: -0.03em; }
+  .head .date { font-size: 12.5px; color: var(--ink-3); margin-left: 6px; margin-right: auto; }
+  .tb { height: 34px; display: flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line); background: #fff; font-size: 13px; font-weight: 700; color: var(--ink-2); white-space: nowrap; }
+  .tb.pri { background: var(--amber); border-color: var(--amber); color: #fff; box-shadow: 0 4px 10px -4px rgb(180 83 9 / .55); }
+
+  .content { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; padding: 14px 18px; }
+  .row1 { flex: none; display: flex; gap: 14px; height: 332px; }
+  .card { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; }
+
+  /* 건물 */
+  .bldg { flex: 1; min-width: 0; padding: 12px 16px 12px; display: flex; flex-direction: column; }
+  .ch { display: flex; align-items: center; gap: 12px; }
+  .ch h2 { font-size: 14px; font-weight: 800; }
+  .legend { margin-left: auto; display: flex; gap: 12px; font-size: 11.5px; color: var(--ink-2); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+  .legend b { font-weight: 800; color: var(--ink); margin-left: 2px; }
+  .roof { margin: 8px 0 0 46px; height: 14px; border-radius: 8px 8px 0 0; background: repeating-linear-gradient(90deg, #c9a27a 0 10px, #b88f66 10px 12px); position: relative; }
+  .roof::after { content: ""; position: absolute; left: -6px; right: -6px; bottom: -3px; height: 4px; border-radius: 2px; background: #8a6440; }
+  .floors { display: flex; flex-direction: column; gap: 6px; padding-top: 7px; }
+  .fl { display: grid; grid-template-columns: 38px repeat(5, minmax(0, 1fr)); gap: 8px; align-items: stretch; }
+  .fl > b { display: grid; place-items: center; font-size: 12px; font-weight: 800; color: var(--ink-3); border-right: 2px solid #d8c7b0; padding-right: 6px; }
+  .u { position: relative; height: 58px; padding: 7px 9px; border-radius: 9px; background: #fff; border: 1px solid #eadfcf; display: flex; flex-direction: column; justify-content: space-between; }
+  .u .t { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+  .u .t b { font-size: 14px; font-weight: 800; letter-spacing: -0.02em; }
+  .u .t i { font-style: normal; font-size: 11px; font-weight: 800; height: 18px; display: inline-flex; align-items: center; padding: 0 6px; border-radius: 9px; white-space: nowrap; }
+  .u p { font-size: 11.5px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+  .u.due { background: var(--red-50); border-color: #f0bdb8; }
+  .u.due .t i { background: var(--red); color: #fff; }
+  .u.out { background: var(--amber-50); border-color: #f2c88f; }
+  .u.out .t i { background: var(--amber); color: #fff; }
+  .u.vac { background: repeating-linear-gradient(135deg, transparent 0 6px, rgb(200 180 150 / .12) 6px 12px); border: 1.5px dashed #d6c6ae; }
+  .u.vac b, .u.vac p { color: var(--ink-3); }
+  .u.exp .t i { background: #fff; color: var(--amber); box-shadow: inset 0 0 0 1px #e8b46f; }
+  .u.sel { box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--amber); }
+  .u.com { background: #f3ece2; border-color: transparent; justify-content: center; align-items: center; }
+  .u.com p { color: var(--ink-3); font-size: 11.5px; text-align: center; }
+  .ground { margin: 6px 0 0 46px; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #d8c7b0, #e9dccb); }
+
+  /* 브리핑 */
+  .brief { width: 344px; flex: none; padding: 14px 16px; display: flex; flex-direction: column; background: linear-gradient(170deg, #fff8ec, var(--paper) 45%); }
+  .bh { display: flex; justify-content: space-between; align-items: baseline; }
+  .bh h2 { font-size: 15px; font-weight: 800; }
+  .bh span { font-size: 12px; color: var(--ink-3); }
+  .bi { margin-top: 10px; display: grid; grid-template-columns: 40px 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 11px; background: #fff; border: 1px solid var(--line); }
+  .bi .ic { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; }
+  .bi p { font-size: 12px; color: var(--ink-3); font-weight: 600; }
+  .bi strong { display: block; font-size: 13px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bi .n { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; text-align: right; line-height: 1; }
+  .bi .n small { font-size: 13px; font-weight: 700; margin-left: 1px; }
+  .bi.out .ic { background: var(--amber-50); color: var(--amber); }
+  .bi.out .n { color: var(--amber); }
+  .bi.bill .ic { background: #eef4ea; color: var(--green); }
+  .bi.bill .n { color: var(--green); }
+  .bi.due .ic { background: var(--red-50); color: var(--red); }
+  .bi.due .n { color: var(--red); }
+  .collect { margin-top: auto; padding-top: 10px; }
+  .collect p { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-2); }
+  .collect p b { color: var(--ink); font-weight: 800; font-variant-numeric: tabular-nums; }
+  .collect .bar { margin-top: 6px; height: 8px; border-radius: 4px; background: #efe5d7; overflow: hidden; display: flex; }
+  .collect .bar i { display: block; height: 100%; }
+  .collect small { display: block; margin-top: 5px; font-size: 11.5px; color: var(--ink-3); }
+
+  /* 정산 */
+  .settle { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 13px 16px 12px; }
+  .sh { display: flex; align-items: center; gap: 8px; }
+  .sh h2 { font-size: 15px; font-weight: 800; letter-spacing: -0.02em; margin-right: 4px; }
+  .pill { height: 24px; display: inline-flex; align-items: center; gap: 5px; padding: 0 9px; border-radius: 12px; background: #f3ece2; font-size: 12px; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
+  .pill.a { background: var(--amber-50); color: var(--amber); box-shadow: inset 0 0 0 1px #f2c88f; }
+  .sh .sp { flex: 1; }
+  .sbody { flex: 1; min-height: 0; display: flex; gap: 18px; margin-top: 10px; }
+  .calc { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .tl { position: relative; height: 54px; }
+  .tl .track { position: absolute; left: 0; right: 0; top: 16px; height: 16px; border-radius: 8px; overflow: hidden; display: flex; }
+  .tl .used { flex: 12; background: linear-gradient(90deg, #f0b25c, #d97706); display: flex; align-items: center; padding-left: 10px; color: #fff; font-size: 11px; font-weight: 800; white-space: nowrap; }
+  .tl .left { flex: 19; background: repeating-linear-gradient(135deg, #e7f0e2 0 6px, #d9e8d2 6px 12px); display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; color: var(--green); font-size: 11px; font-weight: 800; white-space: nowrap; }
+  .tl .mk { position: absolute; top: 0; font-size: 11px; color: var(--ink-3); font-weight: 600; translate: -50% 0; white-space: nowrap; }
+  .tl .mk.b { top: 36px; }
+  .tl .out { position: absolute; top: 10px; height: 28px; width: 2px; background: var(--ink); left: 38.7%; }
+  .tl .out::after { content: "퇴실 10/31"; position: absolute; top: -12px; left: 6px; font-size: 11px; font-weight: 800; color: var(--ink); white-space: nowrap; }
+  table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  th { height: 26px; font-size: 11.5px; font-weight: 700; color: var(--ink-3); text-align: left; border-bottom: 1px solid var(--line); }
+  th.r, td.r { text-align: right; }
+  td { height: 29px; font-size: 12.5px; border-bottom: 1px dashed var(--line); white-space: nowrap; color: var(--ink-2); }
+  td:first-child { color: var(--ink); font-weight: 700; width: 132px; }
+  td .f { font-size: 12px; color: var(--ink-2); }
+  td .f b { color: var(--amber); font-weight: 800; background: var(--amber-50); padding: 1px 5px; border-radius: 4px; }
+  td.r { font-weight: 800; color: var(--ink); width: 96px; }
+  td.plus { color: var(--green); }
+  td.minus { color: var(--red); }
+
+  .sum { width: 300px; flex: none; display: flex; flex-direction: column; padding: 14px; border-radius: 12px; background: #fff; border: 1px solid var(--line); }
+  .sum .line { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--ink-2); height: 25px; align-items: center; font-variant-numeric: tabular-nums; }
+  .sum .line b { color: var(--ink); font-weight: 800; }
+  .sum .line .pl { color: var(--green); }
+  .sum .line .mi { color: var(--red); }
+  .total { margin-top: 6px; padding-top: 10px; border-top: 2px solid var(--ink); }
+  .total p { font-size: 12px; font-weight: 700; color: var(--ink-2); }
+  .total strong { display: block; margin-top: 2px; font-size: 30px; font-weight: 800; letter-spacing: -0.03em; color: var(--amber); font-variant-numeric: tabular-nums; line-height: 1.15; }
+  .total strong small { font-size: 15px; margin-left: 2px; }
+  .sbtn { margin-top: auto; display: flex; gap: 6px; }
+  .sbtn span { flex: 1; height: 34px; display: flex; align-items: center; justify-content: center; gap: 5px; border-radius: 8px; border: 1px solid var(--line); font-size: 12.5px; font-weight: 700; color: var(--ink-2); white-space: nowrap; }
+  .sbtn span.pri { background: var(--amber); border-color: var(--amber); color: #fff; }
+
+  .status { flex: none; height: 26px; display: flex; align-items: center; gap: 18px; padding: 0 16px; background: #f4eee5; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--ink-3); }
+  .status b { color: var(--green); font-weight: 800; }
+  .status .r { margin-left: auto; }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar">
+    <span class="win-icon"><svg viewBox="0 0 16 16" width="16" height="16"><rect x="1" y="1" width="14" height="14" rx="3.5" fill="#b45309"/><path d="M4 12V6.5L8 4l4 2.5V12" fill="none" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.5 12V9h3v3" fill="none" stroke="#fff" stroke-width="1.2"/></svg></span>
+    <span class="win-title">건물주노트 1.4.3 — 소담빌 (다가구 1동 · 18세대)</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <aside class="side">
+      <div class="bld">
+        <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2M10 21v-3h4v3"/></svg></span>
+        <b>소담빌</b><small>다가구 1동 · 4층 18세대</small><small>서울 마포구 ○○동</small>
+      </div>
+      <nav class="menu">
+        <a><svg class="i" viewBox="0 0 24 24"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>오늘의 브리핑</a>
+        <a class="on"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>호실 현황</a>
+        <a><svg class="i" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>퇴실 정산<em class="n">2</em></a>
+        <a><svg class="i" viewBox="0 0 24 24"><path d="M12 3s-6 6.5-6 11a6 6 0 0 0 12 0c0-4.5-6-11-6-11z"/></svg>공과금 · 지침</a>
+        <a><svg class="i" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h3"/></svg>입금 · 미납<em>3</em></a>
+        <a><svg class="i" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>청구 문구</a>
+        <a><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>계약 · 만기<em class="n">1</em></a>
+        <span class="cap">설정</span>
+        <a><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>단가 · 납부 설정</a>
+      </nav>
+      <div class="safe"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><div><b>PC 안에 암호화 저장</b>자동 백업 오늘 09:00</div></div>
+    </aside>
+
+    <section class="main">
+      <div class="head">
+        <h1>호실 현황</h1><span class="date">2026년 10월 26일 (월)</span>
+        <span class="tb pri"><svg class="i" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>퇴실 정산</span>
+        <span class="tb"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 13l3-3M12 3v2"/></svg>지침 입력</span>
+        <span class="tb"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="m8 12 3 3 5-6"/></svg>입금 체크</span>
+        <span class="tb"><svg class="i" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>문구 복사</span>
+        <span class="tb"><svg class="i" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/></svg>인쇄</span>
+      </div>
+
+      <div class="content">
+        <div class="row1">
+          <section class="card bldg">
+            <div class="ch">
+              <h2>층별 호실</h2>
+              <div class="legend"><span><i style="background:#fff;box-shadow:inset 0 0 0 1px #d9c9b2"></i>입주<b>12</b></span><span><i style="background:#b42318"></i>미납<b>3</b></span><span><i style="background:#b45309"></i>퇴실 예정<b>2</b></span><span><i style="background:repeating-linear-gradient(135deg,#e7dccb 0 3px,#fff 3px 6px);box-shadow:inset 0 0 0 1px #d6c6ae"></i>공실<b>1</b></span></div>
+            </div>
+            <div class="roof"></div>
+            <div class="floors">
+              <div class="fl"><b>4F</b>
+                <div class="u"><div class="t"><b>401</b></div><p>김○○ · 월세 60만</p></div>
+                <div class="u"><div class="t"><b>402</b></div><p>이○○ · 월세 60만</p></div>
+                <div class="u vac"><div class="t"><b>403</b><i style="background:#efe6d8;color:#8a7a68">공실</i></div><p>23일째 · 60만</p></div>
+                <div class="u"><div class="t"><b>405</b></div><p>박○○ · 월세 62만</p></div>
+                <div class="u com"><p>옥상 · 창고</p></div>
+              </div>
+              <div class="fl"><b>3F</b>
+                <div class="u"><div class="t"><b>301</b></div><p>최○○ · 월세 65만</p></div>
+                <div class="u out sel"><div class="t"><b>302</b><i>퇴실 10/31</i></div><p>정○○ · 월세 65만</p></div>
+                <div class="u"><div class="t"><b>303</b></div><p>강○○ · 월세 65만</p></div>
+                <div class="u"><div class="t"><b>305</b></div><p>조○○ · 월세 65만</p></div>
+                <div class="u due"><div class="t"><b>306</b><i>미납 65만</i></div><p>윤○○ · 월세 65만</p></div>
+              </div>
+              <div class="fl"><b>2F</b>
+                <div class="u due"><div class="t"><b>201</b><i>미납 15만</i></div><p>장○○ · 월세 63만</p></div>
+                <div class="u"><div class="t"><b>202</b></div><p>임○○ · 월세 63만</p></div>
+                <div class="u"><div class="t"><b>203</b></div><p>한○○ · 월세 63만</p></div>
+                <div class="u out"><div class="t"><b>205</b><i>퇴실 11/3</i></div><p>오○○ · 월세 63만</p></div>
+                <div class="u"><div class="t"><b>206</b></div><p>서○○ · 월세 65만</p></div>
+              </div>
+              <div class="fl"><b>1F</b>
+                <div class="u"><div class="t"><b>101</b></div><p>신○○ · 월세 55만</p></div>
+                <div class="u due"><div class="t"><b>102</b><i>미납 7만</i></div><p>권○○ · 관리비분</p></div>
+                <div class="u"><div class="t"><b>103</b></div><p>황○○ · 월세 55만</p></div>
+                <div class="u exp"><div class="t"><b>105</b><i>만기 D-21</i></div><p>안○○ · 월세 58만</p></div>
+                <div class="u com"><p>현관 · 계량기실</p></div>
+              </div>
+            </div>
+            <div class="ground"></div>
+          </section>
+
+          <section class="card brief">
+            <div class="bh"><h2>오늘의 브리핑</h2><span>10월 26일 월요일 09:00</span></div>
+            <div class="bi out"><span class="ic"><svg class="i" style="width:20px;height:20px" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></span><div><p>퇴실 정산</p><strong>302호 10/31 · 205호 11/3</strong></div><span class="n">2<small>건</small></span></div>
+            <div class="bi bill"><span class="ic"><svg class="i" style="width:20px;height:20px" viewBox="0 0 24 24"><path d="M12 3s-6 6.5-6 11a6 6 0 0 0 12 0c0-4.5-6-11-6-11z"/></svg></span><div><p>공과금 고지</p><strong>10월분 가스·전기 · 문구 복사 대기</strong></div><span class="n">15<small>건</small></span></div>
+            <div class="bi due"><span class="ic"><svg class="i" style="width:20px;height:20px" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg></span><div><p>미납</p><strong>870,000원 · 201 · 306 · 102호</strong></div><span class="n">3<small>건</small></span></div>
+            <div class="collect">
+              <p>10월 월세 수납 <b>9,670,000 / 10,470,000원</b></p>
+              <div class="bar"><i style="width:92.4%;background:linear-gradient(90deg,#d97706,#b45309)"></i><i style="width:7.6%;background:#e8a29b"></i></div>
+              <small>15세대 완납 · 미납 월세 800,000원 다음 달 자동 이월</small>
+            </div>
+          </section>
+        </div>
+
+        <section class="card settle">
+          <div class="sh">
+            <h2>302호 퇴실 정산</h2>
+            <span class="pill">정○○ · 010-****-2741</span>
+            <span class="pill a">퇴실 10월 31일 (토)</span>
+            <span class="pill">매월 20일 선불</span>
+            <span class="pill">일할 기준 · 해당 월 실제 일수 (10월 31일)</span>
+            <span class="sp"></span>
+            <span class="pill" style="background:#eef4ea;color:#3f7d4e">정산서 준비 완료</span>
+          </div>
+          <div class="sbody">
+            <div class="calc">
+              <div class="tl">
+                <span class="mk" style="left:0;translate:0 0">10/20 선납 시작</span>
+                <span class="mk" style="left:100%;translate:-100% 0">11/19</span>
+                <div class="track"><span class="used">거주 12일 · 10/20~10/31</span><span class="left">미사용 19일 · 반환</span></div>
+                <span class="out"></span>
+              </div>
+              <table>
+                <thead><tr><th>항목</th><th>계산 근거</th><th class="r">금액</th></tr></thead>
+                <tbody>
+                  <tr><td>월세 선납분 반환</td><td><span class="f">650,000 − 650,000 × <b>12/31</b> (251,613)</span></td><td class="r plus">+398,387</td></tr>
+                  <tr><td>관리비 선납분 반환</td><td><span class="f">50,000 − 50,000 × <b>12/31</b> (19,355)</span></td><td class="r plus">+30,645</td></tr>
+                  <tr><td>가스 사용료</td><td><span class="f">지침 1,284 → 1,302 · 18㎥ × 1,100원</span></td><td class="r minus">−19,800</td></tr>
+                  <tr><td>공용 전기 배분</td><td><span class="f">10월 고지 221,400원 × 사용 비율 5.6%</span></td><td class="r minus">−12,398</td></tr>
+                  <tr><td>수리비</td><td><span class="f">방충망 교체 · 영수증 첨부</span></td><td class="r minus">−35,000</td></tr>
+                  <tr><td>미납 이월</td><td><span class="f">없음 · 10월분까지 완납</span></td><td class="r">0</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="sum">
+              <div class="line">보증금 <b>5,000,000원</b></div>
+              <div class="line">선납분 반환 <b class="pl">+429,032원</b></div>
+              <div class="line">공과금 · 수리비 공제 <b class="mi">−67,198원</b></div>
+              <div class="total"><p>세입자에게 돌려줄 금액</p><strong>5,361,834<small>원</small></strong></div>
+              <div class="sbtn"><span><svg class="i" style="width:14px;height:14px" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>엑셀</span><span><svg class="i" style="width:14px;height:14px" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>문구</span><span class="pri"><svg class="i" style="width:14px;height:14px" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M6 14h12v7H6z"/></svg>정산서 인쇄</span></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <footer class="status">
+        <b>● 저장 완료</b><span>전체 18세대 · 입주 17</span><span>미납 3건 · 870,000원</span><span>만기 임박 1건 (105호 11/16)</span>
+        <span class="r">09:38:12 302호 정산서 계산 · 반환 5,361,834원</span>
+      </footer>
+    </section>
+  </main>
+</div>
+</body>
+</html>

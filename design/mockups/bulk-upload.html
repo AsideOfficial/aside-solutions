@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>착착등록</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 착착등록: Windows 11 밝은 테마의 업무용 그리드. 명령 바 + 진행 요약 + 데이터 그리드 + 오른쪽 가공 규칙 서랍. */
+  :root {
+    --mica: #f3f4f6; --surface: #fff; --line: #e6e8ec; --line-2: #d9dce2; --row: #f0f2f5;
+    --text: #17191c; --text-2: #5b616b; --text-3: #8b919b;
+    --accent: #2563eb; --accent-2: #1d4ed8; --accent-bg: #eaf1ff; --cp: #7aa7f7;
+    --ok: #15803d; --ok-bg: #e8f6ed; --warn: #b45309; --warn-bg: #fdf3e2;
+  }
+  body { font: 400 13px/1.4 'Pretendard Variable', 'Segoe UI', sans-serif; color: var(--text); background: var(--mica); letter-spacing: -0.01em; }
+  .win { --bar: #eef0f3; --bar-fg: #1f2329; background: var(--mica); }
+  .tnum, td, .num { font-variant-numeric: tabular-nums; }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  .app { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+  /* 명령 바 */
+  .cmd { height: 48px; flex: none; display: flex; align-items: center; gap: 2px; padding: 0 10px; background: var(--bar); border-bottom: 1px solid var(--line); }
+  .cb { height: 34px; display: flex; align-items: center; gap: 7px; padding: 0 11px; border-radius: 6px; font-size: 13px; color: #262a30; font-weight: 500; }
+  .cb.run { background: var(--accent); color: #fff; font-weight: 600; box-shadow: 0 1px 0 rgb(0 0 0 / .12); }
+  .cb.run .pulse { width: 7px; height: 7px; border-radius: 50%; background: #bfe0ff; box-shadow: 0 0 0 3px rgb(191 224 255 / .3); }
+  .cb.on { background: #e1e5ec; }
+  .cb.dim { color: var(--text-3); }
+  .cmd .sep { width: 1px; height: 22px; background: var(--line-2); margin: 0 6px; }
+  .cmd .sp { flex: 1; }
+  .file { height: 30px; display: flex; align-items: center; gap: 8px; padding: 0 11px; border-radius: 6px; background: #fff; border: 1px solid var(--line); font-size: 12px; color: var(--text-2); }
+  .file b { color: var(--text); font-weight: 600; }
+  .file .xl { width: 18px; height: 18px; border-radius: 4px; background: #1f8b4c; display: grid; place-items: center; color: #fff; font: 700 11px/1 'Segoe UI', sans-serif; }
+  .conn { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); padding: 0 10px; }
+  .conn i { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; }
+  .search { width: 200px; height: 30px; border-radius: 6px; background: #fff; border: 1px solid var(--line); border-bottom-color: #c7cbd2; display: flex; align-items: center; gap: 7px; padding: 0 10px; color: var(--text-3); font-size: 12px; margin-left: 6px; }
+
+  .body { flex: 1; min-height: 0; display: flex; }
+  .left { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 14px 16px 12px; gap: 12px; }
+
+  /* 진행 요약 */
+  .sum { flex: none; display: flex; gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 1px 2px rgb(16 24 40 / .04); }
+  .big { flex: 1; padding: 14px 18px 14px; border-right: 1px solid var(--line); }
+  .big .lab { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-2); font-weight: 500; }
+  .big .lab em { font-style: normal; font-size: 11px; font-weight: 600; color: var(--accent); background: var(--accent-bg); padding: 2px 7px; border-radius: 5px; }
+  .big .lab .eta { margin-left: auto; color: var(--text-3); font-weight: 400; }
+  .big .lab .eta b { color: var(--text); font-weight: 600; }
+  .big .n { display: flex; align-items: baseline; gap: 8px; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .big .n strong { font-size: 34px; font-weight: 800; letter-spacing: -0.035em; line-height: 1.1; }
+  .big .n span { font-size: 20px; font-weight: 600; color: var(--text-3); letter-spacing: -0.02em; }
+  .big .n small { font-size: 14px; font-weight: 600; color: var(--text-2); }
+  .big .n .pct { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--accent); }
+  .bar { position: relative; display: flex; height: 12px; margin-top: 9px; border-radius: 6px; overflow: hidden; background: #edf0f4; gap: 2px; }
+  .bar .ss { width: 50%; background: var(--accent); }
+  .bar .cp { width: 33.2%; background: repeating-linear-gradient(-45deg, #5b8ff5 0 5px, #6c9cf7 5px 10px); }
+  .bar .cpq { width: 16.8%; background: transparent; }
+  .bar .tick { position: absolute; top: -2px; bottom: -2px; left: 50%; width: 2px; background: #fff; }
+  .leg { display: flex; gap: 18px; margin-top: 8px; font-size: 12px; color: var(--text-2); }
+  .leg i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: -0.5px; }
+  .leg b { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .leg .st { color: var(--ok); font-weight: 600; margin-left: 4px; }
+  .leg .run { color: var(--accent); font-weight: 600; margin-left: 4px; }
+
+  .steps { width: 352px; flex: none; display: flex; flex-direction: column; justify-content: center; gap: 0; padding: 12px 16px; }
+  .steps h4 { font-size: 11.5px; font-weight: 600; color: var(--text-3); margin-bottom: 8px; display: flex; justify-content: space-between; }
+  .steps h4 span { color: var(--warn); }
+  .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .flow div { position: relative; padding: 8px 8px 7px; border-radius: 8px; background: #f6f7f9; border: 1px solid var(--line); }
+  .flow div.on { background: var(--accent-bg); border-color: #c9dafc; }
+  .flow p { font-size: 11px; color: var(--text-2); white-space: nowrap; }
+  .flow b { display: flex; align-items: center; gap: 4px; margin-top: 2px; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .flow b svg { width: 12px; height: 12px; stroke: var(--ok); stroke-width: 2.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .flow .on b { color: var(--accent-2); }
+
+  /* 그리드 */
+  .grid { flex: 1; min-height: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 1px 2px rgb(16 24 40 / .04); }
+  .gtop { height: 44px; flex: none; display: flex; align-items: center; gap: 4px; padding: 0 12px; border-bottom: 1px solid var(--line); }
+  .tab { height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 10px; border-radius: 6px; font-size: 12.5px; color: var(--text-2); font-weight: 500; }
+  .tab span { font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .tab.on { color: var(--text); font-weight: 600; background: #f0f2f5; }
+  .tab.on span { color: var(--text-2); }
+  .tab.w span { color: var(--warn); font-weight: 700; }
+  .gtop .sp { flex: 1; }
+  .gtop .hint { font-size: 12px; color: var(--text-3); display: flex; align-items: center; gap: 6px; }
+  .gtop .hint b { color: var(--text-2); font-weight: 600; }
+
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  th { height: 34px; text-align: left; font-size: 11.5px; font-weight: 600; color: var(--text-2); padding: 0 10px; background: #f8f9fb; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th.r, td.r { text-align: right; }
+  th .mk { display: inline-flex; align-items: center; gap: 6px; }
+  th .mk i { width: 8px; height: 8px; border-radius: 2px; background: var(--accent); }
+  th .mk i.c { background: var(--cp); }
+  td { height: 54.5px; padding: 0 10px; border-bottom: 1px solid #eef0f3; white-space: nowrap; overflow: hidden; }
+  tr.sel td { background: #f3f7ff; }
+  tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+  .ck { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid #9aa0a9; display: grid; place-items: center; }
+  .ck.on { background: var(--accent); border-color: var(--accent); }
+  .ck svg { width: 11px; height: 11px; fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+  .th { display: block; width: 40px; height: 40px; border-radius: 8px; overflow: hidden; border: 1px solid #eceef2; }
+  .th svg { width: 40px; height: 40px; }
+  .nm { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .nm .o { font-size: 11.5px; color: var(--text-3); display: flex; align-items: center; gap: 5px; overflow: hidden; text-overflow: ellipsis; }
+  .nm .o s { color: #c0563f; text-decoration-color: #e08b78; }
+  .nm .o svg { width: 12px; height: 12px; stroke: var(--text-3); fill: none; stroke-width: 2; flex: none; }
+  .nm .n { font-size: 13px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; }
+  .nm .n u { text-decoration: none; background: linear-gradient(transparent 60%, #dbe7ff 60%); }
+  .pr b { display: block; font-size: 13.5px; font-weight: 700; }
+  .pr small { display: block; font-size: 11px; color: var(--text-3); margin-top: 2px; }
+  .pr small em { font-style: normal; color: var(--accent); font-weight: 600; }
+  .cat { font-size: 12px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; }
+  .cat b { display: block; color: var(--text); font-weight: 600; font-size: 12.5px; }
+  .ms { display: flex; flex-direction: column; gap: 3px; }
+  .pill { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 11px; font-size: 11.5px; font-weight: 600; width: fit-content; }
+  .pill svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .pill.ok { color: var(--ok); background: var(--ok-bg); }
+  .pill.run { color: var(--accent-2); background: var(--accent-bg); }
+  .pill.wait { color: var(--text-3); background: #f1f2f4; }
+  .pill.warn { color: var(--warn); background: var(--warn-bg); }
+  .ms small { font-size: 11px; color: var(--text-3); padding-left: 2px; }
+  .mini { width: 92px; height: 4px; border-radius: 2px; background: #e3e9f6; overflow: hidden; margin: 2px 0 0 2px; }
+  .mini i { display: block; height: 100%; width: 62%; background: var(--accent); }
+  .spin { width: 10px; height: 10px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; }
+
+  /* 서랍 */
+  .drawer { width: 324px; flex: none; background: #fbfbfc; border-left: 1px solid var(--line-2); box-shadow: -10px 0 24px -14px rgb(16 24 40 / .18); display: flex; flex-direction: column; }
+  .dh { height: 56px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--line); }
+  .dh .ic { width: 30px; height: 30px; border-radius: 8px; background: var(--accent-bg); color: var(--accent); display: grid; place-items: center; }
+  .dh h2 { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+  .dh p { font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
+  .dh .x { margin-left: auto; color: var(--text-3); }
+  .ds { padding: 12px 16px 2px; }
+  .ds h3 .addl { display: flex; align-items: center; gap: 4px; color: var(--accent); font-weight: 600; }
+  .ds h3 .addl svg { width: 13px; height: 13px; }
+  .ds h3 { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; font-weight: 700; margin-bottom: 9px; }
+  .ds h3 span { font-size: 11.5px; font-weight: 500; color: var(--text-3); }
+  .rule { display: grid; grid-template-columns: 1.5fr 14px .8fr 44px; align-items: center; gap: 6px; height: 30px; padding: 0 8px 0 10px; border-radius: 7px; background: #fff; border: 1px solid var(--line); margin-bottom: 4px; font-size: 12px; }
+  .rule .w { font-weight: 600; color: #b42318; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rule .to { color: var(--text); font-weight: 600; white-space: nowrap; }
+  .rule .to.del { color: var(--text-3); font-weight: 500; }
+  .rule svg { width: 14px; height: 14px; stroke: var(--text-3); fill: none; stroke-width: 2; }
+  .rule small { text-align: right; font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .add { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--accent); font-weight: 600; padding: 3px 2px 0; }
+  .add svg { width: 14px; height: 14px; }
+  .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .fld { padding: 7px 10px; border-radius: 7px; background: #fff; border: 1px solid var(--line); border-bottom: 1.5px solid #c3c8d0; }
+  .fld p { font-size: 11px; color: var(--text-3); }
+  .fld b { display: block; margin-top: 1px; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .seg { display: flex; padding: 3px; gap: 2px; border-radius: 7px; background: #eceef1; margin-top: 6px; }
+  .seg b { flex: 1; height: 26px; display: grid; place-items: center; font-size: 11.5px; font-weight: 600; color: var(--text-2); border-radius: 5px; }
+  .seg b.on { background: #fff; color: var(--accent-2); box-shadow: 0 1px 2px rgb(0 0 0 / .1); }
+  .seglab { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-2); margin-top: 9px; }
+  .calc { margin-top: 8px; padding: 9px 11px; border-radius: 8px; background: #f2f6ff; border: 1px dashed #b8cdf8; font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; line-height: 1.6; }
+  .calc b { color: var(--text); font-weight: 700; }
+  .calc .hl { color: var(--accent-2); font-weight: 800; }
+  .opt { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid #eef0f3; }
+  .opt:last-child { border-bottom: 0; }
+  .opt div { flex: 1; }
+  .opt p { font-size: 12.5px; font-weight: 600; }
+  .opt small { display: block; font-size: 11px; color: var(--text-3); margin-top: 1px; }
+  .tg { width: 36px; height: 20px; border-radius: 10px; border: 1.5px solid #8b919b; position: relative; flex: none; }
+  .tg::after { content: ""; position: absolute; left: 3px; top: 3px; width: 11px; height: 11px; border-radius: 50%; background: #5b616b; }
+  .tg.on { background: var(--accent); border-color: var(--accent); }
+  .tg.on::after { left: 19px; background: #fff; }
+  .df { margin-top: auto; display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--line); }
+  .btn { flex: 1; height: 32px; display: grid; place-items: center; border-radius: 6px; font-size: 12.5px; font-weight: 600; background: #fff; border: 1px solid var(--line-2); }
+  .btn.pri { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .status { height: 28px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 14px; background: #eceef1; border-top: 1px solid var(--line-2); font-size: 11.5px; color: var(--text-2); }
+  .status b { color: var(--accent-2); font-weight: 600; }
+  .status .g { color: var(--ok); }
+  .status .r { margin-left: auto; color: var(--text-3); }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar">
+    <span class="win-icon"><svg viewBox="0 0 16 16" width="16" height="16"><rect x="1.5" y="2.5" width="13" height="11" rx="2.5" fill="#2563eb"/><path d="M4.5 6h4M4.5 8.5h3" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/><path d="m9 9.2 1.4 1.4L13 8" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <span class="win-title">착착등록 3.2.0 — 도매처 A 상품대장 · 스마트스토어·쿠팡</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <div class="app">
+      <div class="cmd">
+        <span class="cb run"><span class="pulse"></span>등록 중</span>
+        <span class="cb"><svg class="i" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>중지</span>
+        <span class="sep"></span>
+        <span class="cb"><svg class="i" viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M12 10v6M9 13l3 3 3-3"/></svg>불러오기</span>
+        <span class="cb"><svg class="i" viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"/><path d="M8 15v-4M12 15V8M16 15v-6"/></svg>결과 보기</span>
+        <span class="sep"></span>
+        <span class="cb on"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h10M4 12h6M4 18h12"/><circle cx="17" cy="6" r="2.5"/><circle cx="13" cy="12" r="2.5"/><circle cx="19" cy="18" r="2.5"/></svg>가공 규칙</span>
+        <span class="cb"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.8 12h2.4M18.8 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/></svg>설정</span>
+        <span class="sp"></span>
+        <span class="file"><span class="xl">X</span><b>도매처A_상품대장_1026.xlsx</b>750개</span>
+        <span class="conn"><i></i>마켓 연동 2곳</span>
+        <span class="search"><svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>상품명·도매 코드 검색</span>
+      </div>
+
+      <div class="body">
+        <section class="left">
+          <div class="sum">
+            <div class="big">
+              <div class="lab">오늘 마켓 등록 <em>750개 × 2개 마켓</em><span class="eta">남은 시간 약 <b>21분</b> · 시작 08:52</span></div>
+              <div class="n"><strong>1,248</strong><span>/ 1,500</span><small>등록</small><span class="pct">83.2%</span></div>
+              <div class="bar"><i class="ss"></i><i class="cp"></i><i class="cpq"></i></div>
+              <div class="leg">
+                <span><i style="background:#2563eb"></i>스마트스토어 <b>750 / 750</b><span class="st">완료</span></span>
+                <span><i style="background:#6c9cf7"></i>쿠팡 <b>498 / 750</b><span class="run">진행 중</span></span>
+                <span><i style="background:#e3e7ed"></i>남음 <b>252</b></span>
+              </div>
+            </div>
+            <div class="steps">
+              <h4>가공 · 등록 단계 <span>확인 필요 3건</span></h4>
+              <div class="flow">
+                <div><p>상품대장</p><b><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>750</b></div>
+                <div><p>AI 가공</p><b><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>750</b></div>
+                <div><p>속성·고시</p><b><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>750</b></div>
+                <div class="on"><p>마켓 등록</p><b>1,248</b></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid">
+            <div class="gtop">
+              <span class="tab on">전체<span>750</span></span>
+              <span class="tab">쿠팡 진행 중<span>1</span></span>
+              <span class="tab">쿠팡 대기<span>248</span></span>
+              <span class="tab w">확인 필요<span>3</span></span>
+              <span class="sp"></span>
+              <span class="hint">정렬 <b>등록 순서</b> · 496–503번째</span>
+            </div>
+            <table>
+              <colgroup><col style="width:38px"><col style="width:58px"><col><col style="width:116px"><col style="width:132px"><col style="width:112px"><col style="width:128px"></colgroup>
+              <thead><tr><th><span class="ck on"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg></span></th><th>사진</th><th>원본 상품명 → 가공 상품명</th><th class="r">판매가 · 마진 25%</th><th>카테고리</th><th><span class="mk"><i></i>스마트스토어</span></th><th><span class="mk"><i class="c"></i>쿠팡</span></th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><span class="ck on"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span></td>
+                  <td><span class="th"><svg viewBox="0 0 40 40"><defs><linearGradient id="b1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3f6f2"/><stop offset="1" stop-color="#e3e9e1"/></linearGradient></defs><rect width="40" height="40" fill="url(#b1)"/><ellipse cx="20" cy="34" rx="12" ry="2" fill="#000" opacity=".08"/><path d="M11 33 27 17M29 33 13 17" stroke="#3a3f45" stroke-width="1.6" stroke-linecap="round"/><path d="M12 14c3 2 13 2 16 0l-1 9c-4 2-10 2-14 0z" fill="#5f8a55"/><path d="M12 14c3 2 13 2 16 0" stroke="#4a6f42" stroke-width="1.2" fill="none"/><path d="M13 9.5c3 1.6 11 1.6 14 0l1 4.5c-3 2-13 2-16 0z" fill="#6f9a64"/></svg></span></td>
+                  <td><div class="nm"><span class="o">캠핑 의자 B형 <s>(A-2207) 최저가</s></span><span class="n"><u>초경량 접이식 캠핑의자</u> 백패킹 릴렉스체어 수납가방</span></div></td>
+                  <td class="r"><div class="pr"><b>23,900</b><small>도매 18,900 <em>+26%</em></small></div></td>
+                  <td><div class="cat"><b>캠핑의자</b>캠핑 › 캠핑가구</div></td>
+                  <td><div class="ms"><span class="pill ok"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>완료</span><small>09:07 등록</small></div></td>
+                  <td><div class="ms"><span class="pill ok"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>완료</span><small>09:38 등록</small></div></td>
+                </tr>
+                <tr>
+                  <td><span class="ck on"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span></td>
+                  <td><span class="th"><svg viewBox="0 0 40 40"><defs><linearGradient id="b2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6f4f1"/><stop offset="1" stop-color="#e9e5df"/></linearGradient></defs><rect width="40" height="40" fill="url(#b2)"/><path d="M10 10v22M30 10v22" stroke="#9aa3ad" stroke-width="1.8" stroke-linecap="round"/><rect x="9" y="14" width="22" height="2.4" rx="1" fill="#b8c0c8"/><rect x="9" y="25" width="22" height="2.4" rx="1" fill="#b8c0c8"/><rect x="12" y="9" width="5" height="5" rx="1" fill="#e7a86c"/><rect x="19" y="10" width="4" height="4" rx="2" fill="#7fb3a3"/><rect x="13" y="19" width="6" height="6" rx="1.5" fill="#f1d2a4"/><rect x="22" y="20" width="5" height="5" rx="1" fill="#d58080"/></svg></span></td>
+                  <td><div class="nm"><span class="o">주방수납 선반 <s>무료배송 특가</s></span><span class="n"><u>싱크대 2단 선반</u> 스텐 주방 수납 정리대</span></div></td>
+                  <td class="r"><div class="pr"><b>15,900</b><small>도매 12,400 <em>+28%</em></small></div></td>
+                  <td><div class="cat"><b>주방수납</b>주방용품 › 정리용품</div></td>
+                  <td><div class="ms"><span class="pill ok"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>완료</span><small>09:07 등록</small></div></td>
+                  <td><div class="ms"><span class="pill ok"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>완료</span><small>09:39 등록</small></div></td>
+                </tr>
+                <tr>
+                  <td><span class="ck on"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span></td>
+                  <td><span class="th"><svg viewBox="0 0 40 40"><defs><linearGradient id="b3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef6fb"/><stop offset="1" stop-color="#dcebf4"/></linearGradient></defs><rect width="40" height="40" fill="url(#b3)"/><rect x="18" y="23" width="4" height="12" rx="2" fill="#f2f4f6" stroke="#c9d1d8"/><circle cx="20" cy="15" r="9.5" fill="#fff" stroke="#c9d1d8"/><circle cx="20" cy="15" r="7.5" fill="#bfe3f2"/><path d="M20 15c-1-4 1-6 3-6-1 2-1 4-3 6zm0 0c4-1 6 1 6 3-2-1-4-1-6-3zm0 0c1 4-1 6-3 6 1-2 1-4 3-6zm0 0c-4 1-6-1-6-3 2 1 4 1 6 3z" fill="#4fa6cf"/><circle cx="20" cy="15" r="1.4" fill="#2e7ea3"/></svg></span></td>
+                  <td><div class="nm"><span class="o">미니선풍기02 <s>정품 초특가</s></span><span class="n"><u>휴대용 손선풍기</u> 무선 USB 충전 저소음 미니</span></div></td>
+                  <td class="r"><div class="pr"><b>8,900</b><small>도매 6,800 <em>+31%</em></small></div></td>
+                  <td><div class="cat"><b>휴대용 선풍기</b>계절가전 › 선풍기</div></td>
+                  <td><div class="ms"><span class="pill ok"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>완료</span><small>09:08 등록</small></div></td>
+                  <td><div class="ms"><span class="pill ok"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>완료</span><small>09:40 등록</small></div></td>
+                </tr>
+                <tr class="sel">
+                  <td><span class="ck on"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span></td>
+                  <td><span class="th"><svg viewBox="0 0 40 40"><defs><linearGradient id="b4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2f3f5"/><stop offset="1" stop-color="#e2e5ea"/></linearGradient><linearGradient id="t4" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d96a1"/><stop offset=".45" stop-color="#e9edf1"/><stop offset="1" stop-color="#9aa3ad"/></linearGradient></defs><rect width="40" height="40" fill="url(#b4)"/><ellipse cx="20" cy="35" rx="8" ry="1.6" fill="#000" opacity=".1"/><path d="M13.5 10h13l-1.2 23.5a1.6 1.6 0 0 1-1.6 1.5h-7.4a1.6 1.6 0 0 1-1.6-1.5z" fill="url(#t4)"/><rect x="13" y="5.5" width="14" height="5" rx="1.5" fill="#3b4a5c"/><rect x="13.5" y="17" width="13" height="7" fill="#2563eb" opacity=".85"/></svg></span></td>
+                  <td><div class="nm"><span class="o">텀블러 500 <s>(A-1120) 최저가</s></span><span class="n"><u>보온보냉 스텐 텀블러</u> 500ml 대용량 사무실</span></div></td>
+                  <td class="r"><div class="pr"><b>9,900</b><small>도매 7,600 <em>+30%</em></small></div></td>
+                  <td><div class="cat"><b>텀블러</b>주방용품 › 컵·텀블러</div></td>
+                  <td><div class="ms"><span class="pill ok"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>완료</span><small>09:08 등록</small></div></td>
+                  <td><div class="ms"><span class="pill run"><span class="spin"></span>등록 중</span><span class="mini"><i></i></span></div></td>
+                </tr>
+                <tr>
+                  <td><span class="ck on"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span></td>
+                  <td><span class="th"><svg viewBox="0 0 40 40"><defs><linearGradient id="b5" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7f2ee"/><stop offset="1" stop-color="#ece2da"/></linearGradient></defs><rect width="40" height="40" fill="url(#b5)"/><path d="M14 8h12l7 6-3 5-3-2v16H13V17l-3 2-3-5z" fill="#d9c3a5"/><path d="M17 8c0 3 6 3 6 0" fill="none" stroke="#b89c78" stroke-width="1.2"/><path d="M17.5 13v19M22.5 13v19" stroke="#c4a986" stroke-width="2.4" stroke-dasharray="2 1.6"/></svg></span></td>
+                  <td><div class="nm"><span class="o">여성니트 <s>7713</s></span><span class="n"><u>오버핏 꽈배기니트</u> 여성 루즈핏 라운드 가을</span></div></td>
+                  <td class="r"><div class="pr"><b>19,900</b><small>도매 15,200 <em>+31%</em></small></div></td>
+                  <td><div class="cat"><b>니트·스웨터</b>여성의류 › 니트</div></td>
+                  <td><div class="ms"><span class="pill ok"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>완료</span><small>09:09 등록</small></div></td>
+                  <td><div class="ms"><span class="pill wait">대기</span><small>다음 순서</small></div></td>
+                </tr>
+                <tr>
+                  <td><span class="ck on"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span></td>
+                  <td><span class="th"><svg viewBox="0 0 40 40"><defs><linearGradient id="b6" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef5f3"/><stop offset="1" stop-color="#dcebe6"/></linearGradient></defs><rect width="40" height="40" fill="url(#b6)"/><path d="M9 24c0-7 5-13 12-13s11 3 11 8-2 9-11 12c-6 2-12 1-12-7z" fill="#7cc3b0"/><path d="M12 22c2-5 6-8 12-8" stroke="#5aa894" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M11 28c5 1 12-1 17-5" stroke="#4e9583" stroke-width="1.2" fill="none"/></svg></span></td>
+                  <td><div class="nm"><span class="o">욕실화 <s>A-03</s> <s>무료배송</s></span><span class="n"><u>미끄럼방지 욕실화</u> EVA 쿠션 화장실 슬리퍼</span></div></td>
+                  <td class="r"><div class="pr"><b>4,900</b><small>도매 3,900 <em>+26%</em></small></div></td>
+                  <td><div class="cat"><b>욕실화</b>생활용품 › 욕실용품</div></td>
+                  <td><div class="ms"><span class="pill ok"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>완료</span><small>09:09 등록</small></div></td>
+                  <td><div class="ms"><span class="pill wait">대기</span><small>2번째</small></div></td>
+                </tr>
+                <tr>
+                  <td><span class="ck on"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span></td>
+                  <td><span class="th"><svg viewBox="0 0 40 40"><defs><linearGradient id="b7" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f2f5"/><stop offset="1" stop-color="#e0e3e9"/></linearGradient></defs><rect width="40" height="40" fill="url(#b7)"/><rect x="11" y="27" width="18" height="6" rx="2" fill="#4b5563"/><path d="M14 27h12" stroke="#9ca3af" stroke-width="1"/><rect x="18.5" y="22" width="3" height="5" fill="#374151"/><rect x="12" y="6" width="16" height="17" rx="3" fill="#1f2937"/><rect x="13.5" y="7.5" width="13" height="14" rx="2" fill="#7fa8e6"/><path d="M13.5 17c4-3 8-1 13-4v7a1.5 1.5 0 0 1-1.5 1.5h-10a1.5 1.5 0 0 1-1.5-1.5z" fill="#5c8bd6"/></svg></span></td>
+                  <td><div class="nm"><span class="o">차량용 거치대X <s>핸드폰</s></span><span class="n"><u>송풍구 차량용 휴대폰거치대</u> 원터치 자석</span></div></td>
+                  <td class="r"><div class="pr"><b>6,900</b><small>도매 5,200 <em>+33%</em></small></div></td>
+                  <td><div class="cat"><b>휴대폰 거치대</b>자동차용품 › 실내용품</div></td>
+                  <td><div class="ms"><span class="pill ok"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>완료</span><small>09:10 등록</small></div></td>
+                  <td><div class="ms"><span class="pill warn"><svg viewBox="0 0 24 24"><path d="M12 8v5M12 16.5v.5"/><circle cx="12" cy="12" r="9"/></svg>확인 필요</span><small>카테고리 재매칭</small></div></td>
+                </tr>
+                <tr>
+                  <td><span class="ck on"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span></td>
+                  <td><span class="th"><svg viewBox="0 0 40 40"><defs><radialGradient id="b8" cx=".5" cy=".42" r=".7"><stop offset="0" stop-color="#fff5dc"/><stop offset="1" stop-color="#ece6da"/></radialGradient></defs><rect width="40" height="40" fill="url(#b8)"/><circle cx="20" cy="19" r="13" fill="#ffe7a8" opacity=".45"/><path d="M10 26a10 10 0 0 1 20 0z" fill="#fff8e6" stroke="#e8d3a2"/><rect x="9" y="26" width="22" height="5" rx="2" fill="#c9a77b"/><path d="M14 23a6 6 0 0 1 4-5" stroke="#fff" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg></span></td>
+                  <td><div class="nm"><span class="o">LED 무드등 <s>KD-09 최저가</s></span><span class="n"><u>LED 무드등 수유등</u> 터치 밝기조절 수면등</span></div></td>
+                  <td class="r"><div class="pr"><b>12,900</b><small>도매 9,900 <em>+30%</em></small></div></td>
+                  <td><div class="cat"><b>무드등</b>인테리어 › 조명</div></td>
+                  <td><div class="ms"><span class="pill ok"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>완료</span><small>09:10 등록</small></div></td>
+                  <td><div class="ms"><span class="pill wait">대기</span><small>3번째</small></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <aside class="drawer">
+          <div class="dh">
+            <span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h10M4 12h6M4 18h12"/><circle cx="17" cy="6" r="2.5"/><circle cx="13" cy="12" r="2.5"/><circle cx="19" cy="18" r="2.5"/></svg></span>
+            <div><h2>가공 규칙</h2><p>규칙 세트 · 위탁 기본 (수정 10/24)</p></div>
+            <svg class="i x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>
+          </div>
+
+          <div class="ds">
+            <h3>금지어 치환 <span class="addl"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>규칙 추가</span></h3>
+            <div class="rule"><span class="w">최저가</span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span class="to del">삭제</span><small>148회</small></div>
+            <div class="rule"><span class="w">무료배송 · 특가 · 1+1</span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span class="to del">삭제</span><small>112회</small></div>
+            <div class="rule"><span class="w">도매 코드 (A-0000)</span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span class="to del">삭제</span><small>121회</small></div>
+            <div class="rule"><span class="w">핸드폰</span><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span class="to">휴대폰</span><small>31회</small></div>
+                      </div>
+
+          <div class="ds">
+            <h3>가격 계산 <span>마켓 공통</span></h3>
+            <div class="fields">
+              <div class="fld"><p>마진율</p><b>25%</b></div>
+              <div class="fld"><p>할인</p><b>10% · 10원 단위</b></div>
+            </div>
+            <div class="seglab"><span>가격 끝자리 정리</span><span>올림 기준</span></div>
+            <div class="seg"><b>그대로</b><b>100원</b><b class="on">끝자리 900</b></div>
+            <div class="calc">도매 <b>12,400</b> × 1.25 = 15,500 → 판매가 <span class="hl">15,900원</span><br>할인 10% 적용 → 할인가 <b>14,310원</b></div>
+          </div>
+
+          <div class="ds">
+            <h3>등록 옵션</h3>
+            <div class="opt"><div><p>태그사전 태그만 등록</p><small>사전에 없는 태그는 건너뜀</small></div><span class="tg on"></span></div>
+            <div class="opt"><div><p>고시·인증정보 자동 입력</p><small>카테고리별 항목 채움</small></div><span class="tg on"></span></div>
+            <div class="opt"><div><p>미판매 상품 자동 삭제</p><small>90일 주문 없음 기준</small></div><span class="tg"></span></div>
+          </div>
+
+          <div class="df"><span class="btn">미리보기</span><span class="btn pri">규칙 저장</span></div>
+        </aside>
+      </div>
+
+      <footer class="status"><span><b>● 실행 중</b></span><span>쿠팡 499번째 상품 등록 중 · 이미지 업로드</span><span class="g">스마트스토어 750개 등록 완료</span><span>태그사전 기준 태그 3,912개</span><span class="r">마지막 저장 09:41 · 착착등록 3.2.0</span></footer>
+    </div>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>매물콕</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 매물콕: 데스크톱 위에 떠 있는 밝은 Windows 창 + 휴대폰으로 도착하는 봇 알림. 코럴 강조. */
+  :root {
+    --c: #FF6B4A; --c-2: #E8532F; --c-soft: #FFF0EB; --c-line: #FFD3C6;
+    --bg: #F8FAFC; --card: #fff; --line: #E6EAF0; --line-2: #EFF2F6;
+    --t1: #1B2230; --t2: #4E586A; --t3: #8A93A3; --ok: #12A16B;
+  }
+  body { font: 400 13px/1.4 'Pretendard Variable', sans-serif; color: var(--t1); letter-spacing: -0.01em; font-variant-numeric: tabular-nums;
+    background: radial-gradient(520px 380px at 1180px 90px, #FFD9CC 0%, transparent 70%), radial-gradient(600px 420px at 1240px 760px, #DCE6F5 0%, transparent 70%), linear-gradient(160deg, #F6EEEA, #EEF1F6); }
+  .win { inset: 22px auto 22px 22px; width: 990px; border-radius: 9px; background: var(--bg); box-shadow: 0 0 0 1px rgb(15 23 42 / .1), 0 30px 60px -20px rgb(15 23 42 / .35), 0 8px 20px -8px rgb(15 23 42 / .18); --bar: #fff; --bar-fg: #2A3140; }
+  .win-bar { border-bottom: 1px solid var(--line-2); }
+  .win-body { flex-direction: column; }
+
+  .tool { height: 54px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 18px; background: #fff; border-bottom: 1px solid var(--line); }
+  .brand { display: flex; align-items: center; gap: 9px; margin-right: 10px; }
+  .brand i { width: 30px; height: 30px; border-radius: 9px; background: var(--c); display: grid; place-items: center; }
+  .brand i svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .brand b { font-size: 16px; font-weight: 800; letter-spacing: -0.03em; }
+  .live { display: flex; align-items: center; gap: 7px; height: 30px; padding: 0 11px; border-radius: 8px; background: #EAF7F1; color: var(--ok); font-size: 12px; font-weight: 700; }
+  .live i { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px rgb(18 161 107 / .18); }
+  .live span { color: var(--t2); font-weight: 500; }
+  .tool .sp { flex: 1; }
+  .b { height: 32px; display: flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line); background: #fff; font-weight: 600; font-size: 12.5px; color: var(--t2); }
+  .b svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .b.ic { width: 32px; padding: 0; justify-content: center; }
+
+  .body { flex: 1; min-height: 0; display: flex; }
+  .cond { width: 292px; flex: none; background: #fff; border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 14px 16px; gap: 12px; }
+  .h { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--t2); }
+  .h a { font-weight: 600; color: var(--c-2); font-size: 12px; }
+  .watch { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+  .watch li { display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 10px; border-radius: 10px; border: 1px solid var(--line); }
+  .watch li.on { border-color: var(--c-line); background: var(--c-soft); box-shadow: inset 3px 0 0 var(--c); }
+  .watch .ico { width: 28px; height: 28px; border-radius: 8px; background: #F1F4F8; display: grid; place-items: center; color: var(--t2); flex: none; }
+  .watch li.on .ico { background: #fff; color: var(--c-2); }
+  .watch .ico svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .watch b { display: block; font-size: 13px; font-weight: 700; }
+  .watch small { display: block; font-size: 11.5px; color: var(--t3); }
+  .watch em { margin-left: auto; font-style: normal; font-size: 11px; font-weight: 700; color: #fff; background: var(--c); border-radius: 9px; padding: 1px 7px; }
+  .watch em.z { background: #EEF1F5; color: var(--t3); }
+
+  .sec { border-top: 1px solid var(--line-2); padding-top: 12px; }
+  .field { margin-top: 9px; }
+  .field > p { font-size: 11.5px; color: var(--t3); font-weight: 600; margin-bottom: 5px; display: flex; justify-content: space-between; }
+  .field > p b { color: var(--t1); font-weight: 700; }
+  .inp { height: 34px; display: flex; align-items: center; gap: 8px; padding: 0 11px; border: 1px solid var(--line); border-radius: 8px; font-weight: 600; background: #FBFCFD; }
+  .inp svg { width: 15px; height: 15px; fill: none; stroke: var(--t3); stroke-width: 2; }
+  .hist { position: relative; height: 62px; }
+  .hist svg { position: absolute; left: 0; bottom: 14px; }
+  .range { position: absolute; left: 0; right: 0; bottom: 6px; height: 4px; border-radius: 2px; background: #E9EDF2; }
+  .range i { position: absolute; left: 20%; right: 30%; top: 0; bottom: 0; background: var(--c); border-radius: 2px; }
+  .range b { position: absolute; top: 50%; width: 15px; height: 15px; margin: -7.5px 0 0 -7.5px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px var(--c), 0 2px 4px rgb(0 0 0 / .15); }
+  .ticks { display: flex; justify-content: space-between; font-size: 11px; color: var(--t3); margin-top: 2px; }
+  .field > p.avg { margin: 6px 0 0; font-size: 11.5px; color: var(--t2); font-weight: 500; display: flex; justify-content: flex-start; align-items: center; gap: 6px; }
+  .avg i { width: 10px; height: 0; border-top: 1.5px dashed #1B2230; }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .chip { height: 26px; display: inline-flex; align-items: center; gap: 5px; padding: 0 9px; border-radius: 13px; background: #F1F4F8; font-size: 12px; font-weight: 600; color: var(--t2); }
+  .chip.x { background: #fff; border: 1px solid var(--line); }
+  .chip.x svg { width: 10px; height: 10px; fill: none; stroke: var(--t3); stroke-width: 2.6; stroke-linecap: round; }
+  .chip.add { background: transparent; border: 1px dashed #C9D0DA; color: var(--t3); }
+  .opt { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; color: var(--t2); height: 26px; }
+  .sw { width: 30px; height: 17px; border-radius: 9px; background: var(--c); position: relative; }
+  .sw::after { content: ""; position: absolute; top: 2px; right: 2px; width: 13px; height: 13px; border-radius: 50%; background: #fff; }
+
+  .feed { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 14px 80px 0 18px; }
+  .fhead { display: flex; align-items: flex-end; justify-content: space-between; }
+  .fhead h2 { font-size: 17px; font-weight: 800; letter-spacing: -0.03em; }
+  .fhead h2 small { display: block; font-size: 12px; color: var(--t3); font-weight: 500; letter-spacing: -0.01em; margin-top: 2px; }
+  .tabs { display: flex; gap: 2px; padding: 3px; border-radius: 8px; background: #EDF1F5; }
+  .tabs b { height: 26px; display: flex; align-items: center; gap: 4px; padding: 0 10px; border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--t2); }
+  .tabs b.on { background: #fff; color: var(--t1); box-shadow: 0 1px 2px rgb(0 0 0 / .08); }
+  .tabs b span { color: var(--c-2); font-weight: 700; }
+  .list { margin-top: 12px; display: flex; flex-direction: column; gap: 9px; }
+  .item { display: flex; gap: 14px; padding: 10px; border-radius: 12px; background: #fff; border: 1px solid var(--line); position: relative; }
+  .item.new { border-color: var(--c-line); box-shadow: 0 6px 18px -10px rgb(255 107 74 / .5); }
+  .ph { width: 92px; height: 92px; border-radius: 9px; flex: none; overflow: hidden; position: relative; }
+  .ph svg { width: 100%; height: 100%; }
+  .info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .tags { display: flex; gap: 5px; }
+  .tag { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 5px; background: #EEF1F5; color: var(--t2); }
+  .tag.n { background: var(--c); color: #fff; }
+  .tag.s { background: #EAF7F1; color: var(--ok); }
+  .item h3 { margin-top: 6px; font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .meta { margin-top: 3px; font-size: 12px; color: var(--t3); display: flex; gap: 6px; align-items: center; }
+  .meta i { width: 2px; height: 2px; border-radius: 50%; background: #B6BDC8; }
+  .pr { margin-top: auto; display: flex; align-items: center; gap: 10px; }
+  .pr strong { font-size: 21px; font-weight: 800; letter-spacing: -0.03em; }
+  .pr strong small { font-size: 13px; font-weight: 600; margin-left: 1px; }
+  .deal { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 9px; border-radius: 6px; background: var(--c-soft); color: var(--c-2); font-size: 12px; font-weight: 800; }
+  .deal svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .deal.m { background: #F1F4F8; color: var(--t2); font-weight: 700; }
+  .mk { font-size: 11.5px; color: var(--t3); }
+  .mk s { text-decoration: none; }
+  .side { position: absolute; right: 12px; top: 11px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; font-size: 11.5px; color: var(--t3); }
+  .sent { display: flex; align-items: center; gap: 4px; color: var(--ok); font-weight: 600; }
+  .sent svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .excl { margin-top: 2px; height: 34px; display: flex; align-items: center; gap: 8px; padding: 0 12px; border-radius: 10px; border: 1px dashed #D3D9E2; color: var(--t3); font-size: 12px; }
+  .excl svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+  .excl b { color: var(--t2); font-weight: 600; }
+
+  .status { height: 28px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 16px; background: #fff; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--t3); }
+  .status b { color: var(--ok); font-weight: 700; }
+  .status .r { margin-left: auto; }
+
+  /* 휴대폰 잠금화면: 특정 메신저 화면을 흉내 내지 않고, 봇 알림만 겹쳐 보여 준다 */
+  .phone { right: 26px; top: 100px; }
+  .ph-screen { --screen: #2B2230; --status-fg: #fff; background: radial-gradient(260px 300px at 20% 10%, #FF9E7F 0%, transparent 70%), radial-gradient(300px 320px at 100% 60%, #7A5CC8 0%, transparent 70%), linear-gradient(170deg, #F58A6B 0%, #B5577A 45%, #3B2C55 100%); }
+  .lock { text-align: center; color: #fff; padding-top: 14px; }
+  .lock svg { margin: 0 auto; width: 14px; height: 14px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; opacity: .9; }
+  .lock p { font-size: 14px; font-weight: 600; margin-top: 6px; opacity: .92; }
+  .lock strong { display: block; font-size: 62px; font-weight: 700; line-height: 1; letter-spacing: -0.03em; margin-top: 2px; }
+  .notes { margin-top: 16px; padding: 0 9px; display: flex; flex-direction: column; gap: 7px; }
+  .nt { border-radius: 18px; background: rgb(255 255 255 / .86); backdrop-filter: blur(14px); padding: 10px 12px 11px; box-shadow: 0 8px 22px -10px rgb(0 0 0 / .4); }
+  .nt .top { display: flex; align-items: center; gap: 8px; }
+  .bot { width: 30px; height: 30px; border-radius: 9px; background: var(--c); display: grid; place-items: center; flex: none; }
+  .bot svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .nt .top b { flex: 1; font-size: 12.5px; font-weight: 700; }
+  .nt .top time { font-size: 11px; color: #6B7280; }
+  .nt h4 { margin-top: 7px; font-size: 13px; font-weight: 700; line-height: 1.35; }
+  .nt p.tx { font-size: 12.5px; line-height: 1.4; color: #2A2F3A; margin-top: 1px; }
+  .nt p.tx em { font-style: normal; font-weight: 800; color: var(--c-2); }
+  .nt .pv { margin-top: 8px; height: 80px; border-radius: 10px; overflow: hidden; position: relative; }
+  .nt .pv svg { width: 100%; height: 100%; }
+  .nt .acts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+  .nt .acts span { height: 28px; border-radius: 8px; background: rgb(15 23 42 / .06); display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #1B2230; }
+  .nt.sm { padding: 9px 12px; }
+  .nt.sm .bot { width: 26px; height: 26px; border-radius: 8px; }
+  .nt.sm .bot svg { width: 14px; height: 14px; }
+  .nt.sm p.tx { margin-top: 5px; }
+  .qk { position: absolute; left: 30px; right: 30px; bottom: 24px; display: flex; justify-content: space-between; }
+  .qk i { width: 42px; height: 42px; border-radius: 50%; background: rgb(255 255 255 / .18); backdrop-filter: blur(10px); display: grid; place-items: center; }
+  .qk svg { width: 20px; height: 20px; fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .homebar { position: absolute; left: 50%; bottom: 9px; translate: -50% 0; width: 110px; height: 4px; border-radius: 2px; background: rgb(255 255 255 / .85); }
+  .stack { height: 10px; margin: -9px 18px 0; border-radius: 0 0 14px 14px; background: rgb(255 255 255 / .5); }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar"><span class="win-icon"><svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="4" fill="#FF6B4A"/><path d="M5 8.2 7 10.2l4-4.4" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="win-title">매물콕 1.4.2 — 새 매물 감시</span><span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span></header>
+  <main class="win-body">
+    <div class="tool">
+      <div class="brand"><i><svg viewBox="0 0 24 24"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="8" cy="8" r="1.6"/></svg></i><b>매물콕</b></div>
+      <span class="live"><i></i>감시 중<span>· 마지막 확인 09:40 · 다음 09:50</span></span>
+      <span class="sp"></span>
+      <span class="b"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>중지</span>
+      <span class="b"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>지금 확인</span>
+      <span class="b"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>시세 차트</span>
+      <span class="b ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></span>
+    </div>
+
+    <div class="body">
+      <aside class="cond">
+        <div>
+          <p class="h">감시 중인 상품 3 <a>+ 추가</a></p>
+          <ul class="watch">
+            <li class="on"><span class="ico"><svg viewBox="0 0 24 24"><rect x="4" y="2.5" width="16" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg></span><div><b>태블릿 11인치</b><small>60만 ~ 85만 원 · 10분마다</small></div><em>새 2</em></li>
+            <li><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2.5h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg></span><div><b>미러리스 카메라 바디</b><small>40만 ~ 70만 원 · 10분마다</small></div><em class="z">0</em></li>
+            <li><span class="ico"><svg viewBox="0 0 24 24"><path d="M6 10V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4"/><path d="M4 10h16v4H4zM6 14l-2 6M18 14l2 6"/></svg></span><div><b>캠핑 의자 2개 세트</b><small>5만 ~ 12만 원 · 30분마다</small></div><em class="z">0</em></li>
+          </ul>
+        </div>
+
+        <div class="sec">
+          <p class="h">조건 · 태블릿 11인치 <a>저장됨</a></p>
+          <div class="field"><p>상품 검색어</p><div class="inp"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>태블릿 11인치</div></div>
+          <div class="field">
+            <p>가격대 <b>60만 ~ 85만 원</b></p>
+            <div class="hist">
+              <svg width="260" height="46" viewBox="0 0 260 46"><rect x="0" y="40" width="11" height="6" rx="2" fill="#E3E8EF"/><rect x="13" y="36" width="11" height="10" rx="2" fill="#E3E8EF"/><rect x="26" y="32" width="11" height="14" rx="2" fill="#E3E8EF"/><rect x="39" y="28" width="11" height="18" rx="2" fill="#E3E8EF"/><rect x="52" y="26" width="11" height="20" rx="2" fill="#FFB7A5"/><rect x="65" y="20" width="11" height="26" rx="2" fill="#FFB7A5"/><rect x="78" y="14" width="11" height="32" rx="2" fill="#FFB7A5"/><rect x="91" y="8" width="11" height="38" rx="2" fill="#FF6B4A"/><rect x="104" y="4" width="11" height="42" rx="2" fill="#FFB7A5"/><rect x="117" y="2" width="11" height="44" rx="2" fill="#FFB7A5"/><rect x="130" y="6" width="11" height="40" rx="2" fill="#FFB7A5"/><rect x="143" y="12" width="11" height="34" rx="2" fill="#FFB7A5"/><rect x="156" y="16" width="11" height="30" rx="2" fill="#FFB7A5"/><rect x="169" y="22" width="11" height="24" rx="2" fill="#FFB7A5"/><rect x="182" y="26" width="11" height="20" rx="2" fill="#E3E8EF"/><rect x="195" y="30" width="11" height="16" rx="2" fill="#E3E8EF"/><rect x="208" y="33" width="11" height="13" rx="2" fill="#E3E8EF"/><rect x="221" y="36" width="11" height="10" rx="2" fill="#E3E8EF"/><rect x="234" y="39" width="11" height="7" rx="2" fill="#E3E8EF"/><rect x="247" y="41" width="11" height="5" rx="2" fill="#E3E8EF"/><line x1="140.4" y1="0" x2="140.4" y2="46" stroke="#1B2230" stroke-width="1.2" stroke-dasharray="3 2"/></svg>
+              <div class="range"><i></i><b style="left:20%"></b><b style="left:70%"></b></div>
+            </div>
+            <div class="ticks"><span>50만</span><span>60만</span><span>70만</span><span>80만</span><span>90만</span><span>100만</span></div>
+            <p class="avg"><svg width="12" height="2"><line x1="0" y1="1" x2="12" y2="1" stroke="#1B2230" stroke-width="1.5" stroke-dasharray="3 2"/></svg>평균 시세 77만 원 · 최근 30일 거래 212건</p>
+          </div>
+          <div class="field"><p>지역</p><div class="chips"><span class="chip">서울 전체</span><span class="chip">경기 고양시</span><span class="chip add">+ 지역</span></div></div>
+          <div class="field"><p>제외 단어</p><div class="chips"><span class="chip x">삽니다<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></span><span class="chip x">고장<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></span><span class="chip x">부품용<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></span><span class="chip x">액정 파손<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></span></div></div>
+        </div>
+        <div class="sec" style="padding-top:8px">
+          <div class="opt">이미 알린 매물은 다시 안 보내기<span class="sw"></span></div>
+          <div class="opt">예약중·판매완료 제외<span class="sw"></span></div>
+        </div>
+      </aside>
+
+      <section class="feed">
+        <div class="fhead">
+          <h2>조건에 맞은 매물<small>태블릿 11인치 · 60만~85만 원 · 오늘 9건 찾음</small></h2>
+          <div class="tabs"><b class="on">새 매물 <span>2</span></b><b>오늘 9</b><b>알림 보냄 7</b></div>
+        </div>
+        <div class="list">
+          <article class="item new">
+            <div class="ph"><svg viewBox="0 0 104 104"><defs><linearGradient id="p1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F3F1EE"/><stop offset="1" stop-color="#DCD8D2"/></linearGradient><linearGradient id="s1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C5CFF"/><stop offset=".55" stop-color="#3E7BFA"/><stop offset="1" stop-color="#20C2D9"/></linearGradient></defs><rect width="104" height="104" fill="url(#p1)"/><ellipse cx="52" cy="90" rx="34" ry="5" fill="#000" opacity=".08"/><rect x="22" y="14" width="60" height="78" rx="7" fill="#C9CDD3"/><rect x="24" y="16" width="56" height="74" rx="5.5" fill="#15171C"/><rect x="27" y="19" width="50" height="68" rx="3" fill="url(#s1)"/><circle cx="40" cy="38" r="12" fill="#fff" opacity=".18"/><path d="M27 70c12-10 24-4 50-14v31H27z" fill="#fff" opacity=".14"/><rect x="72" y="22" width="5" height="76" rx="2.5" transform="rotate(18 74 60)" fill="#F7F7F7" stroke="#D5D7DB"/></svg></div>
+            <div class="info">
+              <div class="tags"><span class="tag n">새 매물</span><span class="tag">풀박스</span></div>
+              <h3>11인치 태블릿 프로 4세대 128GB 실버 · 펜 포함</h3>
+              <p class="meta">서울 마포구<i></i>3분 전<i></i>찜 4</p>
+              <div class="pr"><strong>68<small>만 원</small></strong><span class="deal"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>시세보다 12% 저렴</span><span class="mk">시세 77만</span></div>
+            </div>
+            <div class="side"><span class="sent"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg>09:40 알림 보냄</span></div>
+          </article>
+
+          <article class="item new">
+            <div class="ph"><svg viewBox="0 0 104 104"><defs><linearGradient id="p2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FCEFE3"/><stop offset="1" stop-color="#F2D9C2"/></linearGradient></defs><rect width="104" height="104" fill="url(#p2)"/><ellipse cx="52" cy="88" rx="38" ry="5" fill="#000" opacity=".08"/><path d="M16 36 52 24l36 12v42L52 90 16 78z" fill="#fff"/><path d="M16 36 52 48l36-12" fill="none" stroke="#E5DED6" stroke-width="1.2"/><path d="M52 48v42" stroke="#E5DED6" stroke-width="1.2"/><path d="M16 36 52 48v42L16 78z" fill="#F6F3EF"/><path d="M58 52 80 44.5v26L58 78z" fill="#2B2F38"/><path d="M60 54.5 78 48.4v20.8L60 75.3z" fill="#F4A3B8"/><path d="M60 66c6-4 11-2 18-6v9.2L60 75.3z" fill="#E36A8C" opacity=".7"/><path d="M24 50l20 6.6M24 56l14 4.6" stroke="#CFC7BE" stroke-width="2" stroke-linecap="round"/></svg></div>
+            <div class="info">
+              <div class="tags"><span class="tag n">새 매물</span><span class="tag">미개봉급</span></div>
+              <h3>11인치 태블릿 에어 M2 256GB 핑크 박스 그대로</h3>
+              <p class="meta">경기 고양시<i></i>9분 전<i></i>찜 2</p>
+              <div class="pr"><strong>72<small>만 원</small></strong><span class="deal"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>시세보다 8% 저렴</span><span class="mk">시세 78만</span></div>
+            </div>
+            <div class="side"><span class="sent"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg>09:40 알림 보냄</span></div>
+          </article>
+
+          <article class="item">
+            <div class="ph"><svg viewBox="0 0 104 104"><defs><linearGradient id="p3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E4F4EE"/><stop offset="1" stop-color="#C5E6DA"/></linearGradient><linearGradient id="s3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1E293B"/><stop offset="1" stop-color="#3B4A63"/></linearGradient></defs><rect width="104" height="104" fill="url(#p3)"/><ellipse cx="52" cy="84" rx="40" ry="5" fill="#000" opacity=".09"/><path d="M14 80h76l-6-12H22z" fill="#3F4654"/><path d="M24 70h56l3 6H21z" fill="#596173"/><g fill="#7B8496"><rect x="26" y="71.5" width="6" height="1.6" rx=".5"/><rect x="34" y="71.5" width="6" height="1.6" rx=".5"/><rect x="42" y="71.5" width="6" height="1.6" rx=".5"/><rect x="50" y="71.5" width="6" height="1.6" rx=".5"/><rect x="58" y="71.5" width="6" height="1.6" rx=".5"/><rect x="66" y="71.5" width="6" height="1.6" rx=".5"/><rect x="38" y="74" width="28" height="1.6" rx=".5"/></g><path d="M24 68 30 20h52l-6 48z" fill="#2A2F3A"/><path d="M27 66 32.4 23h46.4L73.4 66z" fill="url(#s3)"/><g fill="#fff" opacity=".85"><rect x="38" y="30" width="10" height="10" rx="2.5"/><rect x="51" y="30" width="10" height="10" rx="2.5" opacity=".6"/><rect x="64" y="30" width="10" height="10" rx="2.5" opacity=".4"/><rect x="37" y="44" width="10" height="10" rx="2.5" opacity=".5"/></g></svg></div>
+            <div class="info">
+              <div class="tags"><span class="tag">키보드 케이스</span><span class="tag">펜슬 2세대</span></div>
+              <h3>11인치 태블릿 프로 3세대 256GB 키보드·펜슬 일괄</h3>
+              <p class="meta">서울 은평구<i></i>22분 전<i></i>찜 9</p>
+              <div class="pr"><strong>79<small>만 원</small></strong><span class="deal m">시세 수준</span><span class="mk">시세 80만</span></div>
+            </div>
+            <div class="side"><span class="sent"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg>09:20 알림 보냄</span></div>
+          </article>
+
+          <article class="item">
+            <div class="ph"><svg viewBox="0 0 104 104"><defs><linearGradient id="p4" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ECEBFA"/><stop offset="1" stop-color="#D3D1F0"/></linearGradient><linearGradient id="b4" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6E7480"/><stop offset="1" stop-color="#4A4F59"/></linearGradient></defs><rect width="104" height="104" fill="url(#p4)"/><ellipse cx="54" cy="91" rx="32" ry="4.5" fill="#000" opacity=".08"/><rect x="26" y="12" width="58" height="78" rx="7" transform="rotate(-8 55 51)" fill="url(#b4)"/><g transform="rotate(-8 55 51)"><rect x="32" y="18" width="17" height="17" rx="5" fill="#3B4048"/><circle cx="37.5" cy="23.5" r="3.2" fill="#15171B" stroke="#7D838E"/><circle cx="43.5" cy="29.5" r="3.2" fill="#15171B" stroke="#7D838E"/><circle cx="44" cy="22.5" r="1.3" fill="#C9CDD4"/><rect x="48" y="58" width="14" height="2" rx="1" fill="#8A909B"/></g></svg></div>
+            <div class="info">
+              <div class="tags"><span class="tag">셀룰러</span><span class="tag s">배터리 92%</span></div>
+              <h3>11인치 태블릿 프로 4세대 256GB 셀룰러 스페이스그레이</h3>
+              <p class="meta">서울 서대문구<i></i>47분 전<i></i>찜 6</p>
+              <div class="pr"><strong>84<small>만 원</small></strong><span class="deal"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>시세보다 5% 저렴</span><span class="mk">시세 88만</span></div>
+            </div>
+            <div class="side"><span class="sent"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg>09:00 알림 보냄</span></div>
+          </article>
+
+          <div class="excl"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>제외 단어 <b>'부품용'</b> 포함 1건, 예약중 1건을 목록에서 뺐습니다</div>
+        </div>
+      </section>
+    </div>
+
+    <div class="status"><b>● 실행 중</b><span>텔레그램 봇 연결됨</span><span>감시 상품 3개</span><span>오늘 알림 7건</span><span class="r">매물콕 1.4.2</span></div>
+  </main>
+</div>
+
+<div class="phone">
+  <div class="ph-screen">
+    <div class="ph-status"><span>9:40</span><i class="ph-island"></i><span class="ph-icons"></span></div>
+    <div class="lock"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><p>10월 26일 월요일</p><strong>9:40</strong></div>
+    <div class="notes">
+      <div class="nt">
+        <div class="top"><span class="bot"><svg viewBox="0 0 24 24"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="8" cy="8" r="1.6"/></svg></span><b>매물콕 알림봇</b><time>지금</time></div>
+        <div class="pv"><svg viewBox="0 0 258 92" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="q1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F3F1EE"/><stop offset="1" stop-color="#DCD8D2"/></linearGradient><linearGradient id="q2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C5CFF"/><stop offset=".55" stop-color="#3E7BFA"/><stop offset="1" stop-color="#20C2D9"/></linearGradient></defs><rect width="258" height="92" fill="url(#q1)"/><ellipse cx="129" cy="86" rx="40" ry="3.5" fill="#000" opacity=".08"/><rect x="97" y="8" width="62" height="78" rx="7" fill="#C9CDD3"/><rect x="99" y="10" width="58" height="74" rx="5.5" fill="#15171C"/><rect x="102" y="13" width="52" height="68" rx="3" fill="url(#q2)"/><circle cx="116" cy="31" r="12" fill="#fff" opacity=".18"/><rect x="160" y="14" width="5" height="76" rx="2.5" transform="rotate(18 162 52)" fill="#F7F7F7" stroke="#D5D7DB"/><rect x="10" y="10" width="46" height="20" rx="6" fill="#FF6B4A"/><text x="33" y="24" text-anchor="middle" font-family="Pretendard Variable" font-size="11.5" font-weight="800" fill="#fff">-12%</text></svg></div>
+        <h4>[새 매물] 11인치 태블릿 프로 4세대 128GB · 68만 원</h4>
+        <p class="tx"><em>시세 77만보다 12% 저렴</em> · 서울 마포구 · 3분 전</p>
+        <div class="acts"><span>매물 열기</span><span>이 조건 일시정지</span></div>
+      </div>
+      <div class="nt sm">
+        <div class="top"><span class="bot"><svg viewBox="0 0 24 24"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="8" cy="8" r="1.6"/></svg></span><b>매물콕 알림봇</b><time>지금</time></div>
+        <p class="tx">[새 매물] 태블릿 에어 M2 256GB · <b style="white-space:nowrap">72만 원</b> · <em>8% 저렴</em></p>
+      </div>
+      <div class="stack"></div>
+    </div>
+    <div class="qk"><i><svg viewBox="0 0 24 24"><path d="M8 2h8v4l-2 3v13h-4V9L8 6z"/><path d="M12 13v2"/></svg></i><i><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2.5h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg></i></div>
+    <i class="homebar"></i>
+  </div>
+</div>
+</body>
+</html>

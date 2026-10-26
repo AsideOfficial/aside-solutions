@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>네임핏</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2.0.5/fonts/variable/woff2/SUIT-Variable.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 네임핏: 깔끔한 흰 바탕 + 다크 시안. 위에 키워드·검색량 패널과 점수 도넛, 가운데 원본 → 추천 상품명 비교 목록. */
+  :root {
+    --bg: #f6f8f9; --surface: #fff; --line: #e5eaed; --line-2: #d7dee2;
+    --text: #0f1b22; --text-2: #4d5d66; --text-3: #8695a0;
+    --accent: #0e7490; --accent-2: #155e75; --accent-bg: #e6f4f7; --accent-soft: #cfeaf0;
+    --hi: #67c2d6; --mid: #a9dbe6; --low: #f0b45a; --bad: #e0715e;
+  }
+  body { font: 400 13px/1.4 'SUIT Variable', 'Segoe UI', sans-serif; color: var(--text); background: var(--bg); letter-spacing: -0.01em; }
+  .win { --bar: #ffffff; --bar-fg: #2a3a43; background: var(--bg); }
+  .tnum, .num { font-variant-numeric: tabular-nums; }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .app { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+  .bar { height: 52px; flex: none; display: flex; align-items: center; gap: 6px; padding: 0 20px; background: #fff; border-bottom: 1px solid var(--line); }
+  .logo { display: flex; align-items: center; gap: 9px; margin-right: 14px; }
+  .logo i { width: 28px; height: 28px; border-radius: 8px; background: var(--accent); display: grid; place-items: center; }
+  .logo b { font-size: 15px; font-weight: 800; letter-spacing: -0.03em; }
+  .logo small { font-size: 11px; color: var(--text-3); font-weight: 500; margin-left: 2px; }
+  .b { height: 32px; display: flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: 8px; font-size: 12.5px; font-weight: 600; color: var(--text-2); }
+  .b.pri { background: var(--accent); color: #fff; }
+  .b.line { border: 1px solid var(--line-2); color: var(--text); background: #fff; }
+  .bar .sp { flex: 1; }
+  .file { display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 8px; background: var(--bg); border: 1px solid var(--line); font-size: 12px; color: var(--text-2); }
+  .file b { color: var(--text); font-weight: 700; }
+  .file .xl { width: 18px; height: 18px; border-radius: 4px; background: #1f8b4c; color: #fff; display: grid; place-items: center; font: 800 11px/1 'Segoe UI', sans-serif; }
+  .done { display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 8px; background: var(--accent-bg); color: var(--accent-2); font-size: 12px; font-weight: 700; }
+  .done span { color: var(--text-2); font-weight: 500; }
+
+  .wrap { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; padding: 16px 20px 14px; }
+  .band { height: 166px; flex: none; display: flex; gap: 14px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 1px 2px rgb(15 27 34 / .04); }
+
+  .kw { flex: 1; min-width: 0; padding: 14px 18px; display: flex; flex-direction: column; }
+  .kh { display: flex; align-items: center; gap: 10px; }
+  .kh h3 { font-size: 13.5px; font-weight: 800; letter-spacing: -0.02em; }
+  .kh .for { font-size: 12px; color: var(--text-2); }
+  .kh .for b { color: var(--text); font-weight: 700; background: var(--bg); border: 1px solid var(--line); padding: 2px 7px; border-radius: 6px; margin-left: 2px; }
+  .kh .src { margin-left: auto; font-size: 11.5px; color: var(--text-3); }
+  .klist { display: grid; grid-template-columns: 1fr 1fr; column-gap: 26px; row-gap: 5px; margin-top: 10px; }
+  .k { display: grid; grid-template-columns: 16px 86px 1fr 52px 40px; align-items: center; gap: 9px; height: 22px; font-size: 12.5px; }
+  .k .cb { width: 15px; height: 15px; border-radius: 4px; background: var(--accent); display: grid; place-items: center; }
+  .k .cb svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+  .k b { font-weight: 700; white-space: nowrap; }
+  .k .tr { height: 8px; border-radius: 4px; background: #eef2f4; overflow: hidden; }
+  .k .tr i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, #4fa9bf, var(--accent)); }
+  .k .v { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .k .c { font-size: 11px; font-weight: 700; text-align: center; padding: 2px 0; border-radius: 5px; }
+  .c.lo { color: #0f766e; background: #e3f5f1; }
+  .c.md { color: #8a5a10; background: #fbf0dc; }
+  .c.hi { color: #b4422e; background: #fbe8e4; }
+  .k.off { opacity: .45; }
+  .k.off .cb { background: #fff; border: 1.5px solid var(--text-3); }
+  .k.off .tr i { background: #9aa7b0; }
+  .rule { margin-top: auto; display: flex; align-items: center; gap: 8px; padding-top: 9px; border-top: 1px dashed var(--line-2); font-size: 12px; color: var(--text-2); }
+  .rule .step { display: flex; align-items: center; gap: 6px; }
+  .rule .step b { height: 22px; display: grid; place-items: center; padding: 0 9px; border-radius: 11px; font-size: 11.5px; font-weight: 700; }
+  .rule .s1 { background: var(--accent); color: #fff; }
+  .rule .s2 { background: var(--accent-soft); color: var(--accent-2); }
+  .rule .s3 { background: #fff; color: var(--accent-2); border: 1px solid var(--hi); }
+  .rule svg { width: 12px; height: 12px; stroke: var(--text-3); fill: none; stroke-width: 2.2; }
+  .rule .meta { margin-left: auto; color: var(--text-3); }
+  .rule .meta b { color: var(--text); font-weight: 700; }
+
+  .score { width: 384px; flex: none; padding: 14px 18px; display: flex; gap: 16px; align-items: center; }
+  .score .dn { position: relative; width: 128px; height: 128px; flex: none; }
+  .score .dn .ctr { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .ctr small { font-size: 11px; color: var(--text-3); font-weight: 600; }
+  .ctr strong { font-size: 30px; font-weight: 800; letter-spacing: -0.04em; color: var(--accent-2); line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .ctr strong span { font-size: 13px; font-weight: 700; margin-left: 1px; }
+  .ctr em { font-style: normal; font-size: 11px; font-weight: 700; color: var(--text-3); }
+  .score .rt { flex: 1; min-width: 0; }
+  .score h3 { font-size: 13.5px; font-weight: 800; letter-spacing: -0.02em; }
+  .score .ba { display: flex; align-items: baseline; gap: 7px; margin-top: 3px; font-variant-numeric: tabular-nums; }
+  .score .ba s { font-size: 15px; color: var(--text-3); font-weight: 700; text-decoration: none; }
+  .score .ba svg { width: 14px; height: 14px; stroke: var(--accent); fill: none; stroke-width: 2.4; align-self: center; }
+  .score .ba b { font-size: 15px; font-weight: 800; color: var(--accent-2); }
+  .score .ba em { font-style: normal; font-size: 11px; font-weight: 800; color: #0f766e; background: #e3f5f1; padding: 2px 6px; border-radius: 5px; }
+  .lg { margin-top: 9px; display: flex; flex-direction: column; gap: 5px; }
+  .lg div { display: grid; grid-template-columns: 10px 1fr auto; align-items: center; gap: 7px; font-size: 12px; color: var(--text-2); }
+  .lg i { width: 10px; height: 10px; border-radius: 3px; }
+  .lg b { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  .list { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+  .lt { height: 44px; flex: none; display: flex; align-items: center; gap: 4px; padding: 0 14px; border-bottom: 1px solid var(--line); }
+  .tab { height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 11px; border-radius: 7px; font-size: 12.5px; font-weight: 600; color: var(--text-3); }
+  .tab span { font-size: 11.5px; font-variant-numeric: tabular-nums; }
+  .tab.on { background: var(--accent-bg); color: var(--accent-2); }
+  .lt .sp { flex: 1; }
+  .lt .lgd { display: flex; align-items: center; gap: 14px; font-size: 11.5px; color: var(--text-3); }
+  .lt .lgd span { display: flex; align-items: center; gap: 6px; }
+  .lt .lgd .x1 { height: 16px; padding: 0 5px; border-radius: 4px; background: var(--accent-soft); color: var(--accent-2); font-weight: 700; font-size: 11px; display: grid; place-items: center; }
+  .lt .lgd .x2 { height: 16px; padding: 0 5px; border-radius: 4px; border: 1px solid var(--hi); color: var(--accent-2); font-weight: 700; font-size: 11px; display: grid; place-items: center; }
+  .lt .lgd s { color: #c0563f; }
+
+  .hd, .r { display: grid; grid-template-columns: 34px 236px 30px 1fr 58px 176px 150px; align-items: center; column-gap: 10px; padding: 0 16px; }
+  .hd { height: 32px; flex: none; background: #fafbfc; border-bottom: 1px solid var(--line); font-size: 11.5px; font-weight: 700; color: var(--text-3); }
+  .hd .rr { text-align: right; }
+  .r { height: 51px; border-bottom: 1px solid #eef2f4; }
+  .r.sel { background: #f2fafc; box-shadow: inset 3px 0 0 var(--accent); }
+  .r .no { font-size: 11.5px; color: var(--text-3); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .orig { height: 34px; display: flex; align-items: center; padding: 0 11px; border-radius: 8px; background: #f3f5f7; color: var(--text-3); font-size: 12.5px; white-space: nowrap; overflow: hidden; }
+  .orig s { color: #c0563f; text-decoration-thickness: 1.5px; margin-left: 4px; }
+  .arw { width: 26px; height: 26px; border-radius: 50%; background: #fff; border: 1px solid var(--line-2); display: grid; place-items: center; }
+  .arw svg { width: 13px; height: 13px; stroke: var(--accent); fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .r.sel .arw { background: var(--accent); border-color: var(--accent); }
+  .r.sel .arw svg { stroke: #fff; }
+  .nw { display: flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; font-size: 13px; font-weight: 600; }
+  .nw .k1 { height: 24px; display: inline-flex; align-items: center; padding: 0 7px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-2); font-weight: 800; }
+  .nw .k2 { height: 24px; display: inline-flex; align-items: center; padding: 0 6px; border-radius: 6px; border: 1px solid var(--hi); color: var(--accent-2); font-weight: 700; }
+  .nw .t { color: var(--text); padding: 0 2px; }
+  .len { text-align: right; font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .len b { color: var(--text); font-weight: 700; }
+  .cat { font-size: 12px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cat b { display: block; color: var(--text); font-weight: 700; font-size: 12.5px; }
+  .gs { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
+  .gs .ring { position: relative; width: 36px; height: 36px; flex: none; }
+  .gs .ring b { position: absolute; inset: 0; display: grid; place-items: center; font-size: 12px; font-weight: 800; color: var(--accent-2); font-variant-numeric: tabular-nums; }
+  .gs .gl { display: block; width: 86px; }
+  .gs .gl .tr { display: block; position: relative; height: 6px; border-radius: 3px; background: #eef2f4; }
+  .gs .gl .tr i { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 3px; background: #c4ccd2; }
+  .gs .gl .tr u { position: absolute; top: 0; bottom: 0; border-radius: 0 3px 3px 0; background: var(--accent); }
+  .gs .gl p { display: flex; justify-content: space-between; margin-top: 4px; font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .gs .gl p em { font-style: normal; color: #0f766e; font-weight: 800; }
+
+  .status { height: 26px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 16px; background: #fff; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--text-2); }
+  .status b { color: var(--accent); font-weight: 700; }
+  .status .r2 { margin-left: auto; color: var(--text-3); }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar">
+    <span class="win-icon"><svg viewBox="0 0 16 16" width="16" height="16"><rect x="1.5" y="1.5" width="13" height="13" rx="3.5" fill="#0e7490"/><path d="M4.5 11V5l7 6V5" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <span class="win-title">네임핏 2.1.3 — 상품명 일괄 작명</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <div class="app">
+      <div class="bar">
+        <span class="logo"><i><svg viewBox="0 0 16 16" width="15" height="15"><path d="M4.5 11.5v-7l7 7v-7" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></i><b>네임핏</b><small>2.1.3</small></span>
+        <span class="b pri"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15v4M17 17h4"/></svg>작명 시작</span>
+        <span class="b"><svg class="i" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>중지</span>
+        <span class="b"><svg class="i" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 18v-6M9 15l3 3 3-3"/></svg>불러오기</span>
+        <span class="b"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>엑셀 저장</span>
+        <span class="b"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h10M4 12h6M4 18h12"/><circle cx="17" cy="6" r="2.5"/><circle cx="13" cy="12" r="2.5"/><circle cx="19" cy="18" r="2.5"/></svg>규칙 설정</span>
+        <span class="sp"></span>
+        <span class="file"><span class="xl">X</span><b>도매몰_1026.xlsx</b>상품 312개</span>
+        <span class="done"><svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px;stroke-width:2.4"><path d="m5 12 5 5 9-10"/></svg>작명 완료 <span>10:44 · 2분 58초</span></span>
+      </div>
+
+      <div class="wrap">
+        <div class="band">
+          <div class="card kw">
+            <div class="kh">
+              <h3>선택된 키워드</h3>
+              <span class="for">상품 <b>여성니트 7713</b></span>
+              <span class="src">네이버 쇼핑 인기상품 기준 · 월간 검색량</span>
+            </div>
+            <div class="klist">
+              <div class="k"><span class="cb"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span><b>가을니트</b><span class="tr"><i style="width:77%"></i></span><span class="v">40,500</span><span class="c hi">높음</span></div>
+              <div class="k"><span class="cb"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span><b>루즈핏니트</b><span class="tr"><i style="width:23%"></i></span><span class="v">12,300</span><span class="c lo">낮음</span></div>
+              <div class="k"><span class="cb"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span><b>꽈배기니트</b><span class="tr"><i style="width:63%"></i></span><span class="v">33,100</span><span class="c md">보통</span></div>
+              <div class="k"><span class="cb"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span><b>라운드니트</b><span class="tr"><i style="width:17%"></i></span><span class="v">8,900</span><span class="c lo">낮음</span></div>
+              <div class="k"><span class="cb"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span><b>오버핏니트</b><span class="tr"><i style="width:42%"></i></span><span class="v">21,800</span><span class="c lo">낮음</span></div>
+              <div class="k off"><span class="cb"></span><b>니트조끼</b><span class="tr"><i style="width:100%"></i></span><span class="v">52,400</span><span class="c" style="color:#8695a0;background:#f1f4f6">제외</span></div>
+            </div>
+            <div class="rule">
+              <span>배치 순서</span>
+              <span class="step"><b class="s1">핵심어</b><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg><b class="s2">속성</b><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg><b class="s3">용도</b></span>
+              <span class="meta">최대 <b>40자</b> · 키워드 <b>5~7개</b> · 모델번호·중복 단어 제거</span>
+            </div>
+          </div>
+
+          <div class="card score">
+            <div class="dn">
+              <svg width="128" height="128" viewBox="0 0 128 128">
+                <g transform="rotate(-90 64 64)" fill="none" stroke-width="16">
+                  <circle cx="64" cy="64" r="54" stroke="#eef2f4"/>
+                  <circle cx="64" cy="64" r="54" stroke="#0e7490" stroke-dasharray="126.8 212.5" stroke-dashoffset="0"/>
+                  <circle cx="64" cy="64" r="54" stroke="#67c2d6" stroke-dasharray="151.3 188" stroke-dashoffset="-128.8"/>
+                  <circle cx="64" cy="64" r="54" stroke="#f0b45a" stroke-dasharray="42.4 297" stroke-dashoffset="-282.1"/>
+                  <circle cx="64" cy="64" r="54" stroke="#e0715e" stroke-dasharray="10.8 328.5" stroke-dashoffset="-326.5"/>
+                </g>
+              </svg>
+              <div class="ctr"><small>평균 점수</small><strong>86<span>점</span></strong><em>312개</em></div>
+            </div>
+            <div class="rt">
+              <h3>SEO 점수 분포</h3>
+              <div class="ba"><s>41</s><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg><b>86점</b><em>+45</em></div>
+              <div class="lg">
+                <div><i style="background:#0e7490"></i>90점 이상<b>118</b></div>
+                <div><i style="background:#67c2d6"></i>80~89점<b>141</b></div>
+                <div><i style="background:#f0b45a"></i>70~79점<b>41</b></div>
+                <div><i style="background:#e0715e"></i>70점 미만<b>12</b></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card list">
+          <div class="lt">
+            <span class="tab on">전체<span>312</span></span>
+            <span class="tab">점수 상승 큰 순</span>
+            <span class="tab">카테고리 바뀜<span>27</span></span>
+            <span class="tab">70점 미만<span>12</span></span>
+            <span class="sp"></span>
+            <span class="lgd"><span><s>취소선</s> 빠진 부분</span><span><b class="x1">핵심어</b>검색 키워드</span><span><b class="x2">속성</b>속성·용도</span></span>
+          </div>
+          <div class="hd"><span>#</span><span>원본 상품명</span><span></span><span>추천 상품명</span><span class="rr">글자 수</span><span>추천 카테고리</span><span class="rr">SEO 점수</span></div>
+
+          <div class="r">
+            <span class="no">001</span>
+            <span class="orig">미니선풍기<s>02</s></span>
+            <span class="arw"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            <span class="nw"><b class="k1">휴대용</b><b class="k1">손선풍기</b><b class="k2">무선</b><span class="t">USB</span><b class="k2">충전식</b><b class="k2">저소음</b></span>
+            <span class="len"><b>23</b>/40</span>
+            <span class="cat"><b>휴대용 선풍기</b>디지털/가전 › 계절가전</span>
+            <span class="gs"><span class="gl"><span class="tr"><i style="width:34%"></i><u style="left:34%;width:54%"></u></span><p>원본 34<em>+54</em></p></span><span class="ring"><svg width="36" height="36" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#e6eef1" stroke-width="3.5"/><circle cx="18" cy="18" r="15" fill="none" stroke="#0e7490" stroke-width="3.5" stroke-dasharray="82.9 94.2" stroke-linecap="round" transform="rotate(-90 18 18)"/></svg><b>88</b></span></span>
+          </div>
+          <div class="r">
+            <span class="no">002</span>
+            <span class="orig">주방수납 선반<s>SL-200</s></span>
+            <span class="arw"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            <span class="nw"><b class="k1">싱크대선반</b><b class="k2">2단</b><b class="k2">스텐</b><b class="k1">주방수납</b><b class="k2">정리대</b></span>
+            <span class="len"><b>20</b>/40</span>
+            <span class="cat"><b>주방수납</b>생활/건강 › 주방용품</span>
+            <span class="gs"><span class="gl"><span class="tr"><i style="width:41%"></i><u style="left:41%;width:44%"></u></span><p>원본 41<em>+44</em></p></span><span class="ring"><svg width="36" height="36" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#e6eef1" stroke-width="3.5"/><circle cx="18" cy="18" r="15" fill="none" stroke="#67c2d6" stroke-width="3.5" stroke-dasharray="80.1 94.2" stroke-linecap="round" transform="rotate(-90 18 18)"/></svg><b>85</b></span></span>
+          </div>
+          <div class="r">
+            <span class="no">003</span>
+            <span class="orig">캠핑 의자<s>B형</s></span>
+            <span class="arw"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            <span class="nw"><b class="k2">경량</b><b class="k1">접이식의자</b><b class="k1">캠핑의자</b><b class="k2">백패킹</b><b class="k1">릴렉스체어</b></span>
+            <span class="len"><b>23</b>/40</span>
+            <span class="cat"><b>캠핑의자</b>스포츠/레저 › 캠핑가구</span>
+            <span class="gs"><span class="gl"><span class="tr"><i style="width:39%"></i><u style="left:39%;width:51%"></u></span><p>원본 39<em>+51</em></p></span><span class="ring"><svg width="36" height="36" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#e6eef1" stroke-width="3.5"/><circle cx="18" cy="18" r="15" fill="none" stroke="#0e7490" stroke-width="3.5" stroke-dasharray="84.8 94.2" stroke-linecap="round" transform="rotate(-90 18 18)"/></svg><b>90</b></span></span>
+          </div>
+          <div class="r sel">
+            <span class="no">004</span>
+            <span class="orig">여성니트<s>7713</s></span>
+            <span class="arw"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            <span class="nw"><b class="k1">오버핏</b><b class="k1">꽈배기니트</b><span class="t">여성</span><b class="k2">루즈핏</b><b class="k2">라운드</b><b class="k1">가을니트</b></span>
+            <span class="len"><b>25</b>/40</span>
+            <span class="cat"><b>니트·스웨터</b>패션의류 › 여성의류</span>
+            <span class="gs"><span class="gl"><span class="tr"><i style="width:28%"></i><u style="left:28%;width:64%"></u></span><p>원본 28<em>+64</em></p></span><span class="ring"><svg width="36" height="36" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#e6eef1" stroke-width="3.5"/><circle cx="18" cy="18" r="15" fill="none" stroke="#0e7490" stroke-width="3.5" stroke-dasharray="86.7 94.2" stroke-linecap="round" transform="rotate(-90 18 18)"/></svg><b>92</b></span></span>
+          </div>
+          <div class="r">
+            <span class="no">005</span>
+            <span class="orig">욕실화<s>A-03</s></span>
+            <span class="arw"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            <span class="nw"><b class="k1">미끄럼방지</b><b class="k1">욕실화</b><b class="k2">EVA</b><b class="k2">쿠션</b><b class="k1">화장실슬리퍼</b></span>
+            <span class="len"><b>23</b>/40</span>
+            <span class="cat"><b>욕실화</b>생활/건강 › 욕실용품</span>
+            <span class="gs"><span class="gl"><span class="tr"><i style="width:45%"></i><u style="left:45%;width:42%"></u></span><p>원본 45<em>+42</em></p></span><span class="ring"><svg width="36" height="36" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#e6eef1" stroke-width="3.5"/><circle cx="18" cy="18" r="15" fill="none" stroke="#67c2d6" stroke-width="3.5" stroke-dasharray="82 94.2" stroke-linecap="round" transform="rotate(-90 18 18)"/></svg><b>87</b></span></span>
+          </div>
+          <div class="r">
+            <span class="no">006</span>
+            <span class="orig">텀블러 500<s>텀블러</s></span>
+            <span class="arw"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            <span class="nw"><b class="k2">보온</b><b class="k1">스텐텀블러</b><span class="t">500ml</span><b class="k2">대용량</b><b class="k1">보냉컵</b><b class="k2">사무실</b></span>
+            <span class="len"><b>26</b>/40</span>
+            <span class="cat"><b>텀블러</b>생활/건강 › 주방용품</span>
+            <span class="gs"><span class="gl"><span class="tr"><i style="width:37%"></i><u style="left:37%;width:47%"></u></span><p>원본 37<em>+47</em></p></span><span class="ring"><svg width="36" height="36" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#e6eef1" stroke-width="3.5"/><circle cx="18" cy="18" r="15" fill="none" stroke="#67c2d6" stroke-width="3.5" stroke-dasharray="79.1 94.2" stroke-linecap="round" transform="rotate(-90 18 18)"/></svg><b>84</b></span></span>
+          </div>
+          <div class="r">
+            <span class="no">007</span>
+            <span class="orig">차량용 거치대<s>X</s></span>
+            <span class="arw"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            <span class="nw"><b class="k1">송풍구</b><b class="k1">폰거치대</b><b class="k2">차량용</b><b class="k2">원터치</b><b class="k2">자석형</b></span>
+            <span class="len"><b>20</b>/40</span>
+            <span class="cat"><b>휴대폰 거치대</b>생활/건강 › 자동차용품</span>
+            <span class="gs"><span class="gl"><span class="tr"><i style="width:42%"></i><u style="left:42%;width:41%"></u></span><p>원본 42<em>+41</em></p></span><span class="ring"><svg width="36" height="36" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#e6eef1" stroke-width="3.5"/><circle cx="18" cy="18" r="15" fill="none" stroke="#67c2d6" stroke-width="3.5" stroke-dasharray="78.2 94.2" stroke-linecap="round" transform="rotate(-90 18 18)"/></svg><b>83</b></span></span>
+          </div>
+          <div class="r">
+            <span class="no">008</span>
+            <span class="orig">니트 가디건<s>KD22</s><s>니트</s></span>
+            <span class="arw"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            <span class="nw"><span class="t">여성</span><b class="k2">루즈핏</b><b class="k1">니트가디건</b><b class="k2">브이넥</b><b class="k1">데일리룩</b><b class="k2">아우터</b></span>
+            <span class="len"><b>25</b>/40</span>
+            <span class="cat"><b>가디건</b>패션의류 › 여성의류</span>
+            <span class="gs"><span class="gl"><span class="tr"><i style="width:33%"></i><u style="left:33%;width:56%"></u></span><p>원본 33<em>+56</em></p></span><span class="ring"><svg width="36" height="36" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#e6eef1" stroke-width="3.5"/><circle cx="18" cy="18" r="15" fill="none" stroke="#67c2d6" stroke-width="3.5" stroke-dasharray="83.8 94.2" stroke-linecap="round" transform="rotate(-90 18 18)"/></svg><b>89</b></span></span>
+          </div>
+        </div>
+      </div>
+
+      <footer class="status"><span><b>● 완료</b></span><span>변환 312개 · 카테고리 추천 312개</span><span>원본 상품명 열 보존</span><span>저장 · 도매몰_1026_작명.xlsx</span><span class="r2">네이버 쇼핑 키워드 10:41 갱신 · 네임핏 2.1.3</span></footer>
+    </div>
+  </main>
+</div>
+</body>
+</html>

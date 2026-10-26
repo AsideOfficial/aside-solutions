@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>라이벌미터</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 라이벌미터: 밝고 여백 있는 분석 SaaS. 인디고 브랜드 + 경쟁 상품별 3색. 큰 멀티라인 차트가 중심. */
+  :root {
+    --bg: #f6f7fb; --card: #fff; --line: #e8eaf1; --line-2: #eef0f5;
+    --text: #141826; --text-2: #4a5164; --text-3: #8f95a6;
+    --in: #4f46e5; --in-50: #eef0ff; --a: #4f46e5; --b: #f97316; --c: #14b8a6;
+  }
+  body { font: 400 13px/1.45 'Pretendard Variable', sans-serif; color: var(--text); letter-spacing: -0.01em; }
+  .browser { --bar: #e7e9ef; --tool: #fff; --fav: var(--in); --page: var(--bg); }
+  .br-fav { display: grid; place-items: center; }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .n { font-variant-numeric: tabular-nums; }
+
+  .app { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .top { height: 54px; flex: none; display: flex; align-items: center; gap: 28px; padding: 0 28px; background: #fff; border-bottom: 1px solid var(--line); }
+  .logo { display: flex; align-items: center; gap: 9px; font-size: 15px; font-weight: 800; letter-spacing: -0.02em; }
+  .logo span { width: 26px; height: 26px; border-radius: 7px; background: var(--in); display: grid; place-items: center; }
+  .menu { display: flex; gap: 4px; align-self: stretch; }
+  .menu a { display: flex; align-items: center; padding: 0 12px; font-size: 13.5px; font-weight: 600; color: var(--text-3); position: relative; }
+  .menu a.on { color: var(--text); }
+  .menu a.on::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 2px; border-radius: 2px; background: var(--in); }
+  .top .sp { flex: 1; }
+  .quota { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text-3); }
+  .quota .bar { width: 72px; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
+  .quota .bar i { display: block; height: 100%; width: 95%; background: var(--in); border-radius: 3px; }
+  .quota b { color: var(--text-2); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .btn { height: 32px; display: flex; align-items: center; gap: 6px; padding: 0 13px; border-radius: 8px; border: 1px solid var(--line); background: #fff; font-size: 12.5px; font-weight: 700; color: var(--text-2); }
+  .btn.pri { background: var(--in); border-color: var(--in); color: #fff; box-shadow: 0 4px 10px -4px rgb(79 70 229 / .6); }
+  .btn svg.i { width: 14px; height: 14px; }
+  .av { width: 30px; height: 30px; border-radius: 50%; background: #e0e3ff; color: var(--in); display: grid; place-items: center; font-size: 12px; font-weight: 800; }
+
+  .page { flex: 1; min-height: 0; padding: 20px 28px 18px; display: flex; flex-direction: column; gap: 16px; }
+  .ttl { display: flex; align-items: flex-end; gap: 14px; flex: none; }
+  .ttl h1 { font-size: 21px; font-weight: 800; letter-spacing: -0.03em; }
+  .ttl h1 span { color: var(--text-3); font-weight: 600; }
+  .ttl p { margin-top: 4px; font-size: 12.5px; color: var(--text-3); }
+  .ttl p b { color: var(--text-2); font-weight: 600; }
+  .ttl .sp { flex: 1; }
+  .seg { display: flex; padding: 3px; border-radius: 9px; background: #eceef4; }
+  .seg b { height: 26px; display: grid; place-items: center; padding: 0 12px; border-radius: 7px; font-size: 12px; font-weight: 700; color: var(--text-3); }
+  .seg b.on { background: #fff; color: var(--text); box-shadow: 0 1px 2px rgb(20 24 38 / .12); }
+
+  .grid { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 344px; grid-template-rows: 1fr auto; gap: 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 1px 2px rgb(20 24 38 / .04); }
+  .chart { padding: 16px 18px 10px; display: flex; flex-direction: column; min-height: 0; }
+  .ch-h { display: flex; align-items: flex-start; justify-content: space-between; }
+  .ch-h h2 { font-size: 14px; font-weight: 700; }
+  .ch-h p { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+  .legend { display: flex; gap: 16px; font-size: 12px; color: var(--text-2); font-weight: 600; }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .legend i { width: 14px; height: 3px; border-radius: 2px; }
+  #chart { flex: 1; min-height: 0; width: 100%; margin-top: 6px; }
+  #chart text { font-family: 'Pretendard Variable', sans-serif; font-size: 11px; fill: var(--text-3); font-variant-numeric: tabular-nums; }
+
+  .rank { display: flex; flex-direction: column; gap: 9px; min-height: 0; grid-row: 1 / 3; grid-column: 2; }
+  .rk-h { display: flex; justify-content: space-between; align-items: baseline; padding: 0 2px; }
+  .rk-h h2 { font-size: 14px; font-weight: 700; }
+  .rk-h span { font-size: 11.5px; color: var(--text-3); }
+  .rc { padding: 12px 15px 11px; position: relative; }
+  .rc:last-child { flex: 1; }
+  .rc.on { border-color: rgb(79 70 229 / .45); box-shadow: 0 0 0 3px rgb(79 70 229 / .08), 0 6px 16px -10px rgb(79 70 229 / .5); }
+  .rc .hd { display: flex; align-items: center; gap: 11px; }
+  .rc .no { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 12px; font-weight: 800; color: #fff; flex: none; }
+  .rc .ph { width: 40px; height: 40px; border-radius: 9px; flex: none; display: grid; place-items: center; }
+  .rc .ph svg { width: 30px; height: 30px; }
+  .rc .nm { min-width: 0; flex: 1; }
+  .rc .nm b { display: block; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rc .nm small { display: block; font-size: 11px; color: var(--text-3); margin-top: 1px; }
+  .rc .rev { display: flex; align-items: baseline; justify-content: space-between; margin-top: 9px; font-variant-numeric: tabular-nums; }
+  .rc .rev strong { font-size: 22px; font-weight: 800; letter-spacing: -0.03em; }
+  .rc .rev strong small { font-size: 12px; font-weight: 600; color: var(--text-3); margin-left: 3px; letter-spacing: 0; }
+  .rc .rev em { font-style: normal; font-size: 11.5px; font-weight: 700; padding: 3px 7px; border-radius: 6px; }
+  .up { color: #0f9f6e; background: #e6f7f0; }
+  .dn { color: #d9443a; background: #fdeceb; }
+  .rc dl { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 9px; padding-top: 9px; border-top: 1px dashed var(--line); }
+  .rc dt { font-size: 11px; color: var(--text-3); }
+  .rc dd { font-size: 13px; font-weight: 700; margin-top: 1px; font-variant-numeric: tabular-nums; }
+  .rc .line { display: flex; align-items: center; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .rc .line b { color: var(--text); font-weight: 700; margin-left: -3px; }
+  .rc .line i { width: 3px; height: 3px; border-radius: 50%; background: #c8ccd6; }
+  .opt { margin-top: 10px; }
+  .opt .bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; gap: 2px; }
+  .opt .lg { display: flex; gap: 12px; margin-top: 6px; font-size: 11px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .opt .lg i { display: inline-block; width: 7px; height: 7px; border-radius: 2px; margin-right: 4px; }
+  .opt p { font-size: 11px; color: var(--text-3); margin-bottom: 5px; }
+  .foot { font-size: 11px; color: var(--text-3); padding: 0 2px; line-height: 1.5; }
+
+  .tbl { padding: 12px 18px 6px; grid-column: 1; grid-row: 2; }
+  .chart { grid-column: 1; grid-row: 1; }
+  .tbl-h { display: flex; align-items: baseline; justify-content: space-between; }
+  .tbl-h h2 { font-size: 14px; font-weight: 700; }
+  .tbl-h span { font-size: 11.5px; color: var(--text-3); }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-variant-numeric: tabular-nums; }
+  th { font-size: 11.5px; font-weight: 600; color: var(--text-3); text-align: right; padding: 0 8px 7px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; padding-left: 0; }
+  th.we { color: #b0b5c3; }
+  td { height: 36px; text-align: right; padding: 0 8px; border-bottom: 1px solid var(--line-2); font-size: 13px; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  td.p { display: flex; align-items: center; gap: 8px; font-weight: 600; height: 36px; }
+  td.p i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  td.y { font-weight: 800; }
+  td.sum { font-weight: 800; background: #fafbfd; }
+  td .hm { display: inline-block; min-width: 34px; padding: 2px 6px; border-radius: 5px; }
+  td .ch { font-size: 12px; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="browser">
+  <header class="br-tabs"><span class="mac-lights"><i></i><i></i><i></i></span>
+    <span class="br-tab"><i class="br-fav"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M4 18 10 11l4 4 6-8"/></svg></i>라이벌미터 2.0.4 · 경쟁 상품 리포트</span>
+    <span class="br-tab off"><i class="br-fav" style="background:#b8bcc8"></i>라이벌미터 · 키워드</span>
+  </header>
+  <div class="br-tool"><span class="br-nav"><i></i><i></i><i></i></span><span class="br-url"><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px;color:#8a8f98"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>solutions.asidepartners.kr</b>/app/rivalmeter/report?range=30d</span></div>
+  <main class="br-body">
+    <div class="app">
+      <div class="top">
+        <span class="logo"><span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18 10 11l4 4 6-8"/></svg></span>라이벌미터</span>
+        <nav class="menu"><a class="on">리포트</a><a>경쟁 상품</a><a>키워드</a><a>설정</a></nav>
+        <span class="sp"></span>
+        <span class="quota">등록 링크<span class="bar"><i></i></span><b>38 / 40</b></span>
+        <span class="btn"><svg class="i" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>링크 등록</span>
+        <span class="btn pri"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>즉시 수집</span>
+        <span class="av">정</span>
+      </div>
+
+      <div class="page">
+        <div class="ttl">
+          <div>
+            <h1>경쟁 상품 리포트 <span>· 최근 30일</span></h1>
+            <p>카테고리 <b>생활용품 &gt; 장바구니·카트</b> · 9월 26일 ~ 10월 25일 · 마지막 수집 <b>오늘 04:06</b> · 다음 수집 내일 04:00</p>
+          </div>
+          <span class="sp"></span>
+          <div class="seg"><b>7일</b><b class="on">30일</b><b>90일</b></div>
+          <span class="btn"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>CSV 저장</span>
+        </div>
+
+        <div class="grid">
+          <section class="card chart">
+            <div class="ch-h">
+              <div><h2>일별 추정 판매량</h2><p>공개된 상품 정보를 시간 단위로 비교해 계산한 추정치(개)</p></div>
+              <div class="legend"><span><i style="background:var(--a)"></i>접이식 장바구니 카트</span><span><i style="background:var(--b)"></i>폴딩 핸드카트</span><span><i style="background:var(--c)"></i>4륜 알루미늄 카트</span></div>
+            </div>
+            <svg id="chart"></svg>
+          </section>
+
+          <aside class="rank">
+            <div class="rk-h"><h2>월 추정 매출 순위</h2><span>판매량 × 판매가 · 10만원 단위</span></div>
+            <div class="card rc on">
+              <div class="hd"><span class="no" style="background:var(--a)">1</span>
+                <span class="ph" style="background:linear-gradient(150deg,#eef0ff,#dde1ff)"><svg viewBox="0 0 32 32" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h3l3 15h9" stroke="#3b34b8" stroke-width="1.8"/><rect x="12.5" y="9" width="12" height="10" rx="2" fill="#4f46e5"/><path d="M15 12h7M15 15h7" stroke="#c7c4ff" stroke-width="1.3"/><circle cx="15.5" cy="25" r="2" fill="#141826"/><circle cx="22.5" cy="25" r="2" fill="#141826"/></svg></span>
+                <div class="nm"><b>접이식 장바구니 카트 대용량</b><small>살림○○ · 스마트스토어 · 28,990원</small></div></div>
+              <div class="rev"><strong>3,520<small>만원</small></strong><em class="up">이전 30일 +12%</em></div>
+              <dl><div><dt>어제</dt><dd>46개</dd></div><div><dt>30일 판매</dt><dd>1,214개</dd></div><div><dt>일 평균</dt><dd>40.5개</dd></div></dl>
+              <div class="opt"><p>옵션별 30일 판매</p>
+                <div class="bar"><i style="width:51%;background:#4f46e5"></i><i style="width:31%;background:#8f88f0"></i><i style="width:18%;background:#c9c5fa"></i></div>
+                <div class="lg"><span><i style="background:#4f46e5"></i>블랙 620</span><span><i style="background:#8f88f0"></i>베이지 382</span><span><i style="background:#c9c5fa"></i>그레이 212</span></div>
+              </div>
+            </div>
+            <div class="card rc">
+              <div class="hd"><span class="no" style="background:var(--b)">2</span>
+                <span class="ph" style="background:linear-gradient(150deg,#fff3e9,#ffe2cc)"><svg viewBox="0 0 32 32" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5l4 18" stroke="#c2570c" stroke-width="2"/><path d="M8.5 6.5 13 5" stroke="#c2570c" stroke-width="2"/><path d="M14.6 21.5 25 19" stroke="#f97316" stroke-width="2.4"/><rect x="15" y="11" width="9" height="8" rx="1.5" fill="#fdba74" transform="rotate(-13 19.5 15)"/><circle cx="14" cy="25.5" r="2.2" fill="#141826"/><circle cx="24" cy="23" r="2.2" fill="#141826"/></svg></span>
+                <div class="nm"><b>폴딩 핸드카트 경량 2단</b><small>무브○○ · 브랜드스토어 · 24,900원</small></div></div>
+              <div class="rev"><strong>2,150<small>만원</small></strong><em class="dn">이전 30일 −3%</em></div>
+              <p class="line">어제 <b>31개</b><i></i>30일 <b>862개</b><i></i>일 평균 <b>28.7개</b></p>
+            </div>
+            <div class="card rc">
+              <div class="hd"><span class="no" style="background:var(--c)">3</span>
+                <span class="ph" style="background:linear-gradient(150deg,#e6faf7,#c9f2ec)"><svg viewBox="0 0 32 32" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5v18" stroke="#0f766e" stroke-width="2"/><path d="M8 5h4" stroke="#0f766e" stroke-width="2"/><path d="M10 9h13v11H10" fill="#5eead4" stroke="#0f766e" stroke-width="1.6"/><path d="M14 9v11M18 9v11" stroke="#0f766e" stroke-width="1.2"/><circle cx="11" cy="26" r="2" fill="#141826"/><circle cx="17" cy="26" r="2" fill="#141826"/><circle cx="23" cy="26" r="2" fill="#141826"/></svg></span>
+                <div class="nm"><b>4륜 알루미늄 쇼핑카트</b><small>홈앤○○ · 스마트스토어 · 39,800원</small></div></div>
+              <div class="rev"><strong>1,660<small>만원</small></strong><em class="up">이전 30일 +4%</em></div>
+              <p class="line">어제 <b>15개</b><i></i>30일 <b>418개</b><i></i>일 평균 <b>13.9개</b></p>
+            </div>
+          </aside>
+
+          <section class="card tbl">
+            <div class="tbl-h"><h2>일별 추정 판매량 · 최근 7일</h2><span>단위 개 · 전일 대비 증감 표시</span></div>
+            <table id="tbl"></table>
+          </section>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script>
+  // 9/26(토) ~ 10/25(일) 30일. 합계: A 1,214 · B 862 · C 418 (오른쪽 카드와 같은 값)
+  const S = {
+    a: [30,29,39,40,38,37,40,36,30,47,37,37,45,37,35,32,42,45,48,47,47,35,40,50,43,51,43,51,37,46],
+    b: [27,25,35,28,29,31,32,27,23,33,32,28,32,26,27,26,28,32,29,32,31,25,24,32,30,29,29,27,22,31],
+    c: [15,14,21,16,19,15,17,14,14,17,15,16,4,4,3,4,16,14,14,16,15,12,12,19,16,17,13,15,16,15],
+  };
+  const COL = { a: '#4f46e5', b: '#f97316', c: '#14b8a6' };
+  const day = (i) => { const d = new Date(2026, 8, 26 + i); return `${d.getMonth() + 1}/${d.getDate()}`; };
+
+  (function table() {
+    const names = { a: '접이식 장바구니 카트', b: '폴딩 핸드카트', c: '4륜 알루미늄 카트' };
+    const dl = ['월', '화', '수', '목', '금', '토', '일'];
+    let h = '<thead><tr><th>상품</th>';
+    for (let i = 23; i < 30; i++) h += `<th class="${i >= 28 ? 'we' : ''}">${day(i)} ${dl[i - 23]}</th>`;
+    h += '<th>7일 합계</th><th>전주 대비</th><th>어제 증감</th></tr></thead><tbody>';
+    ['a', 'b', 'c'].forEach((k) => {
+      const a = S[k], last7 = a.slice(23).reduce((p, q) => p + q, 0), prev7 = a.slice(16, 23).reduce((p, q) => p + q, 0);
+      const mx = Math.max(...a.slice(23));
+      h += `<tr><td class="p"><i style="background:${COL[k]}"></i>${names[k]}</td>`;
+      for (let i = 23; i < 30; i++) {
+        const v = a[i], t = v / 55;
+        h += `<td class="${i === 29 ? 'y' : ''}"><span class="hm" style="background:${COL[k]}${Math.round(t * 40 + 8).toString(16).padStart(2, '0')}">${v}</span></td>`;
+      }
+      const pct = ((last7 - prev7) / prev7 * 100).toFixed(1), d = a[29] - a[28];
+      h += `<td class="sum">${last7.toLocaleString()}</td><td><span class="ch" style="color:${pct >= 0 ? '#0f9f6e' : '#d9443a'}">${pct >= 0 ? '+' : ''}${pct}%</span></td><td><span class="ch" style="color:${d >= 0 ? '#0f9f6e' : '#d9443a'}">${d >= 0 ? '▲' : '▼'} ${Math.abs(d)}</span></td></tr>`;
+    });
+    document.getElementById('tbl').innerHTML = h + '</tbody>';
+  })();
+  (function chart() {
+    const el = document.getElementById('chart');
+    const rc = el.getBoundingClientRect(), W = Math.round(rc.width), H = Math.round(rc.height);
+    el.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    const L = 30, R = 34, T = 8, B = 24, max = 70;
+    const x = (i) => L + (W - L - R) * i / 29, y = (v) => T + (H - T - B) * (1 - v / max);
+    let s = '';
+    for (let v = 0; v <= 60; v += 20) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="${v ? '#eef0f5' : '#dfe2ea'}"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v}</text>`;
+    // 주말 음영
+    for (let i = 0; i < 30; i++) { const dow = new Date(2026, 8, 26 + i).getDay(); if (dow === 6) s += `<rect x="${x(i) - 4}" y="${T}" width="${x(1) - x(0) + 8}" height="${H - T - B}" fill="#f9fafc"/>`; }
+    [0, 7, 14, 21, 29].forEach((i) => s += `<text x="${x(i)}" y="${H - 6}" text-anchor="${i === 0 ? 'start' : i === 29 ? 'end' : 'middle'}">${day(i)}</text>`);
+    // C 품절 구간
+    s += `<rect x="${x(12) - 3}" y="${T}" width="${x(15) - x(12) + 6}" height="${H - T - B}" fill="#14b8a6" opacity=".07"/><text x="${(x(12) + x(15)) / 2}" y="${y(60) + 14}" text-anchor="middle" style="fill:#0f8f84;font-weight:700">주력 옵션 품절</text>`;
+    const path = (a) => a.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('');
+    s += `<path d="${path(S.a)}L${x(29)},${y(0)}L${x(0)},${y(0)}Z" fill="url(#ga)"/>`;
+    ['c', 'b', 'a'].forEach((k) => s += `<path d="${path(S[k])}" fill="none" stroke="${COL[k]}" stroke-width="${k === 'a' ? 2.6 : 2}" stroke-linejoin="round" stroke-linecap="round"/>`);
+    // 끝점 값
+    ['a', 'b', 'c'].forEach((k) => { const v = S[k][29]; s += `<circle cx="${x(29)}" cy="${y(v)}" r="4" fill="#fff" stroke="${COL[k]}" stroke-width="2.4"/><text x="${x(29) + 9}" y="${y(v) + 4}" style="fill:${COL[k]};font-weight:800">${v}</text>`; });
+    // 툴팁 (10/19 월)
+    const i = 23, tx = x(i);
+    s += `<line x1="${tx}" x2="${tx}" y1="${T + 32}" y2="${H - B}" stroke="#141826" stroke-opacity=".25" stroke-dasharray="3 3"/>`;
+    ['a', 'b', 'c'].forEach((k) => s += `<circle cx="${tx}" cy="${y(S[k][i])}" r="4" fill="${COL[k]}" stroke="#fff" stroke-width="2"/>`);
+    const tw = 336, bx = tx - tw + 44, by = T + 2;
+    s += `<g transform="translate(${bx},${by})"><rect width="${tw}" height="30" rx="8" fill="#141826" opacity=".94"/>
+      <text x="12" y="19" style="fill:#fff;font-weight:700;font-size:12px">10/19 월</text>
+      ${['a', 'b', 'c'].map((k, j) => `<rect x="${74 + j * 88}" y="11" width="8" height="8" rx="2" fill="${COL[k]}"/><text x="${87 + j * 88}" y="19"><tspan style="fill:#b9bdca">${['접이식', '폴딩', '4륜'][j]}</tspan><tspan dx="5" style="fill:#fff;font-weight:700">${S[k][i]}개</tspan></text>`).join('')}</g>`;
+    s += `<defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4f46e5" stop-opacity=".16"/><stop offset="1" stop-color="#4f46e5" stop-opacity="0"/></linearGradient></defs>`;
+    el.innerHTML = s;
+  })();
+
+</script>
+</body>
+</html>

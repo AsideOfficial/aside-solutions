@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>키워드광부</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 키워드광부: 어두운 바탕 + 골드. 검색창 → 큰 산점도(문서 수 × 검색량, 황금 구역) + 황금 키워드 순위 + 연관 키워드 표. */
+  :root {
+    --bg: #14110c; --panel: #1b1712; --panel-2: #221d16; --line: #2d271e; --line-2: #3a3226;
+    --text: #f3ecdc; --text-2: #b6ab95; --text-3: #7f7563;
+    --gold: #f5c542; --gold-2: #d9a520; --gold-bg: rgb(245 197 66 / .1);
+    --mid: #8a806d; --sat: #c4583f; --low: #4a4236;
+  }
+  body { font: 400 13px/1.4 'Pretendard Variable', sans-serif; color: var(--text); background: var(--bg); letter-spacing: -0.01em; }
+  .win { --bar: #0e0c08; --bar-fg: #b9ae98; background: var(--bg); }
+  .mono, .num { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .app { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+  .top { height: 64px; flex: none; display: flex; align-items: center; gap: 12px; padding: 0 18px; border-bottom: 1px solid var(--line); background: linear-gradient(180deg, #19150f, #14110c); }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 800; font-size: 15px; letter-spacing: -0.03em; padding-right: 6px; }
+  .brand i { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, #f5c542, #b8860b); display: grid; place-items: center; }
+  .q { width: 420px; height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 6px 0 12px; border-radius: 10px; background: #0f0d09; border: 1.5px solid rgb(245 197 66 / .55); box-shadow: 0 0 0 4px rgb(245 197 66 / .08); }
+  .q > svg { color: var(--gold); }
+  .q b { font-size: 15px; font-weight: 700; }
+  .q .caret { width: 1.5px; height: 18px; background: var(--gold); margin-left: -6px; }
+  .q .ch { height: 26px; display: flex; align-items: center; gap: 5px; padding: 0 9px; border-radius: 6px; background: var(--panel-2); border: 1px solid var(--line-2); font-size: 12px; color: var(--text-2); }
+  .q .ch svg { width: 11px; height: 11px; }
+  .q .sp { flex: 1; }
+  .go { height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 13px; border-radius: 7px; background: var(--gold); color: #1a1406; font-weight: 800; font-size: 12.5px; }
+  .go svg { width: 14px; height: 14px; stroke-width: 2.4; }
+  .flt { display: flex; gap: 6px; }
+  .flt span { height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line-2); font-size: 12px; color: var(--text-2); }
+  .flt span b { color: var(--text); font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; }
+  .flt span.on { border-color: rgb(245 197 66 / .4); background: var(--gold-bg); color: #f0d78c; }
+  .flt span.on b { color: var(--gold); }
+  .top .sp { flex: 1; }
+  .ibtn { height: 32px; display: flex; align-items: center; gap: 6px; padding: 0 11px; border-radius: 8px; color: var(--text-2); font-size: 12.5px; font-weight: 600; border: 1px solid var(--line-2); }
+
+  .body { flex: 1; min-height: 0; display: flex; gap: 14px; padding: 14px 18px; }
+  .col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+
+  .plot { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 12px 16px 8px; position: relative; overflow: hidden; }
+  .ph { display: flex; align-items: center; gap: 14px; }
+  .ph h2 { font-size: 14px; font-weight: 800; letter-spacing: -0.02em; }
+  .ph .sum { font-size: 12px; color: var(--text-3); }
+  .ph .sum b { color: var(--text); font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+  .ph .sum b.g { color: var(--gold); }
+  .ph .lg { margin-left: auto; display: flex; gap: 14px; font-size: 11.5px; color: var(--text-2); }
+  .ph .lg span { display: flex; align-items: center; gap: 6px; }
+  .ph .lg i { width: 9px; height: 9px; border-radius: 50%; }
+  .ph .lg em { font-style: normal; font-family: 'JetBrains Mono', monospace; color: var(--text-3); font-size: 11px; }
+  #sc { margin-top: 4px; }
+  .tip { position: absolute; padding: 9px 12px; border-radius: 9px; background: #2a2318; border: 1px solid rgb(245 197 66 / .45); box-shadow: 0 10px 24px -8px rgb(0 0 0 / .6); font-size: 12px; color: var(--text-2); min-width: 176px; }
+  .tip b { display: block; font-size: 13px; color: var(--gold); font-weight: 800; margin-bottom: 4px; }
+  .tip p { display: flex; justify-content: space-between; gap: 14px; line-height: 1.55; }
+  .tip p span { font-family: 'JetBrains Mono', monospace; color: var(--text); font-weight: 600; font-size: 11.5px; }
+  .tip::after { content: ""; position: absolute; left: -6px; top: 20px; width: 10px; height: 10px; background: #2a2318; border-left: 1px solid rgb(245 197 66 / .45); border-bottom: 1px solid rgb(245 197 66 / .45); rotate: 45deg; }
+
+  .tbl { flex: none; overflow: hidden; }
+  .tt { height: 40px; display: flex; align-items: center; gap: 10px; padding: 0 16px; border-bottom: 1px solid var(--line); }
+  .tt h3 { font-size: 13.5px; font-weight: 800; }
+  .tt span { font-size: 11.5px; color: var(--text-3); }
+  .tt .seg { margin-left: auto; display: flex; padding: 3px; gap: 2px; border-radius: 7px; background: #120f0b; }
+  .tt .seg b { height: 24px; display: grid; place-items: center; padding: 0 10px; border-radius: 5px; font-size: 11.5px; font-weight: 600; color: var(--text-3); }
+  .tt .seg b.on { background: var(--panel-2); color: var(--text); }
+  table { width: 100%; border-collapse: collapse; }
+  th { height: 28px; text-align: left; font-size: 11.5px; font-weight: 500; color: var(--text-3); padding: 0 12px; border-bottom: 1px solid var(--line); background: #17130e; white-space: nowrap; }
+  td { height: 32px; padding: 0 12px; border-bottom: 1px solid #241f17; font-size: 12.5px; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  th.r, td.r { text-align: right; }
+  td.n { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; font-size: 12px; color: var(--text-2); }
+  td.n.b { color: var(--text); font-weight: 600; }
+  td.kw { font-weight: 700; }
+  .jd { display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: 10px; font-size: 11px; font-weight: 800; }
+  .jd.g { background: rgb(245 197 66 / .16); color: var(--gold); }
+  .jd.m { background: rgb(138 128 109 / .18); color: #c8bea9; }
+  .jd.s { background: rgb(196 88 63 / .16); color: #e98a73; }
+  .sec { display: flex; align-items: center; gap: 4px; font-size: 11.5px; color: var(--text-2); }
+  .sec svg { width: 10px; height: 10px; stroke: var(--text-3); fill: none; stroke-width: 2.4; }
+  .sec b { font-weight: 600; color: var(--text); }
+  tr.hl td { background: rgb(245 197 66 / .05); }
+
+  .rank { width: 344px; flex: none; display: flex; flex-direction: column; overflow: hidden; }
+  .rh { padding: 14px 16px 10px; border-bottom: 1px solid var(--line); }
+  .rh div { display: flex; align-items: center; justify-content: space-between; }
+  .rh h3 { font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+  .rh h3 span { height: 22px; padding: 0 8px; border-radius: 11px; background: var(--gold); color: #1a1406; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; display: grid; place-items: center; }
+  .rh small { font-size: 11.5px; color: var(--text-3); }
+  .rh p { margin-top: 6px; font-size: 11.5px; color: var(--text-3); }
+  .rh p b { color: var(--text-2); font-weight: 600; }
+  .rl { flex: 1; min-height: 0; padding: 4px 0; }
+  .rl li { display: grid; grid-template-columns: 26px 1fr 96px; align-items: center; gap: 10px; height: 49px; padding: 0 16px; border-bottom: 1px solid #241f17; }
+  .rl li.on { background: rgb(245 197 66 / .07); box-shadow: inset 3px 0 0 var(--gold); }
+  .rl .no { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: var(--text-3); text-align: center; }
+  .rl li:nth-child(-n+3) .no { color: var(--gold); }
+  .rl .k b { display: block; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rl .k small { display: block; margin-top: 1px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-3); white-space: nowrap; }
+  .rl .k small em { font-style: normal; color: var(--text-2); }
+  .cp p { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-3); }
+  .cp p span { font-family: 'JetBrains Mono', monospace; color: var(--gold); font-weight: 700; }
+  .cp .tr { height: 6px; margin-top: 4px; border-radius: 3px; background: #2a241b; overflow: hidden; }
+  .cp .tr i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #f5c542, #e0a92b); }
+  .rf { flex: none; display: flex; gap: 8px; padding: 10px 16px 12px; border-top: 1px solid var(--line); }
+  .rf span { flex: 1; height: 32px; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; border: 1px solid var(--line-2); font-size: 12px; font-weight: 600; color: var(--text-2); }
+  .rf span.p { background: var(--gold); border-color: var(--gold); color: #1a1406; font-weight: 800; }
+
+  .status { height: 26px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 16px; background: #0e0c08; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--text-3); }
+  .status b { color: var(--gold); font-weight: 600; }
+  .status .ok { color: #7ccf8a; }
+  .status .r { margin-left: auto; }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar">
+    <span class="win-icon"><svg viewBox="0 0 16 16" width="16" height="16"><rect x="1.5" y="1.5" width="13" height="13" rx="3.5" fill="#d9a520"/><path d="M4.5 6.5c2-2 5-2 7 0M8 6v6" stroke="#1a1406" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span>
+    <span class="win-title">키워드광부 2.1.0 — 황금 키워드 분석 · 캠핑 외 2개</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <div class="app">
+      <div class="top">
+        <span class="brand"><i><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1a1406" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9c4-4.5 12-4.5 16 0"/><path d="M12 6.5 6 21"/></svg></i>키워드광부</span>
+        <div class="q">
+          <svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <b>캠핑</b><i class="caret"></i>
+          <span class="ch">차박<svg viewBox="0 0 24 24" class="i"><path d="M6 6l12 12M18 6 6 18"/></svg></span>
+          <span class="ch">백패킹<svg viewBox="0 0 24 24" class="i"><path d="M6 6l12 12M18 6 6 18"/></svg></span>
+          <span class="sp"></span>
+          <span class="go"><svg class="i" viewBox="0 0 24 24"><path d="M7 5v14l11-7z"/></svg>분석 시작</span>
+        </div>
+        <div class="flt">
+          <span class="on">최소 검색량 <b>3,000</b></span>
+          <span class="on">황금 기준 포화도 <b>≤ 0.2</b></span>
+          <span>PC+모바일 합산</span>
+        </div>
+        <span class="sp"></span>
+        <span class="ibtn"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>엑셀 저장</span>
+        <span class="ibtn" style="padding:0 8px"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.8 12h2.4M18.8 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/></svg></span>
+      </div>
+
+      <div class="body">
+        <section class="col">
+          <div class="card plot">
+            <div class="ph">
+              <h2>검색량 × 문서 수</h2>
+              <span class="sum">연관 키워드 <b>312</b>개 중 황금 <b class="g">23</b>개</span>
+              <span class="lg">
+                <span><i style="background:#f5c542;box-shadow:0 0 0 3px rgb(245 197 66 / .2)"></i>황금 <em>23</em></span>
+                <span><i style="background:#8a806d"></i>보통 <em>96</em></span>
+                <span><i style="background:#c4583f"></i>포화 <em>107</em></span>
+                <span><i style="background:#4a4236"></i>검색량 미달 <em>86</em></span>
+              </span>
+            </div>
+            <svg id="sc" width="848" height="350" viewBox="0 0 848 350"></svg>
+            <div class="tip" id="tip"><b>캠핑 의자 추천</b><p>월간 검색량<span>18,400</span></p><p>블로그 문서 수<span>2,130</span></p><p>포화도<span>0.12</span></p></div>
+          </div>
+
+          <div class="card tbl">
+            <div class="tt"><h3>연관 키워드</h3><span>PC·모바일 합산 · 검색광고 API · 10월 26일 09:23</span><span class="seg"><b class="on">전체 226</b><b>황금 23</b><b>보통 96</b><b>포화 107</b></span></div>
+            <table>
+              <thead><tr><th>키워드</th><th class="r">PC</th><th class="r">모바일</th><th class="r">월 검색량</th><th class="r">클릭률</th><th class="r">블로그 문서</th><th class="r">포화도</th><th>판정</th><th>검색 화면 섹션 순서</th></tr></thead>
+              <tbody>
+                <tr><td class="kw">캠핑 테이블</td><td class="n r">7,400</td><td class="n r">33,800</td><td class="n r b">41,200</td><td class="n r">1.8%</td><td class="n r">86,500</td><td class="n r">2.10</td><td><span class="jd s">포화</span></td><td><span class="sec"><b>쇼핑</b><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>블로그<svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>카페</span></td></tr>
+                <tr><td class="kw">캠핑 요리</td><td class="n r">6,200</td><td class="n r">27,300</td><td class="n r b">33,500</td><td class="n r">0.7%</td><td class="n r">71,200</td><td class="n r">2.13</td><td><span class="jd s">포화</span></td><td><span class="sec"><b>스마트블록</b><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>블로그<svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>동영상</span></td></tr>
+                <tr><td class="kw">캠핑 랜턴</td><td class="n r">5,100</td><td class="n r">22,800</td><td class="n r b">27,900</td><td class="n r">2.1%</td><td class="n r">54,100</td><td class="n r">1.94</td><td><span class="jd m">보통</span></td><td><span class="sec"><b>쇼핑</b><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>스마트블록<svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>블로그</span></td></tr>
+                <tr><td class="kw">동계 캠핑</td><td class="n r">3,900</td><td class="n r">17,700</td><td class="n r b">21,600</td><td class="n r">0.9%</td><td class="n r">18,300</td><td class="n r">0.85</td><td><span class="jd m">보통</span></td><td><span class="sec"><b>스마트블록</b><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>블로그<svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>카페</span></td></tr>
+                <tr class="hl"><td class="kw">백패킹 텐트</td><td class="n r">2,600</td><td class="n r">10,200</td><td class="n r b">12,800</td><td class="n r">2.4%</td><td class="n r">1,950</td><td class="n r" style="color:#f5c542">0.15</td><td><span class="jd g">황금</span></td><td><span class="sec"><b>쇼핑</b><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>블로그<svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>AI 답변</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <aside class="card rank">
+          <div class="rh">
+            <div><h3>황금 키워드 <span>23</span></h3><small>검색량순</small></div>
+            <p>포화도 = 블로그 문서 수 ÷ 월간 검색량 · 경쟁 지수 = 포화도 × 100 · <b>20 이하가 황금</b></p>
+          </div>
+          <ol class="rl">
+            <li class="on"><span class="no">1</span><div class="k"><b>캠핑 의자 추천</b><small>검색 <em>18,400</em> · 문서 <em>2,130</em></small></div><div class="cp"><p>경쟁<span>12</span></p><div class="tr"><i style="width:58%"></i></div></div></li>
+            <li><span class="no">2</span><div class="k"><b>캠핑 화로대 추천</b><small>검색 <em>14,200</em> · 문서 <em>1,710</em></small></div><div class="cp"><p>경쟁<span>12</span></p><div class="tr"><i style="width:60%"></i></div></div></li>
+            <li><span class="no">3</span><div class="k"><b>백패킹 텐트</b><small>검색 <em>12,800</em> · 문서 <em>1,950</em></small></div><div class="cp"><p>경쟁<span>15</span></p><div class="tr"><i style="width:76%"></i></div></div></li>
+            <li><span class="no">4</span><div class="k"><b>원터치 그늘막</b><small>검색 <em>11,300</em> · 문서 <em>2,050</em></small></div><div class="cp"><p>경쟁<span>18</span></p><div class="tr"><i style="width:91%"></i></div></div></li>
+            <li><span class="no">5</span><div class="k"><b>감성 캠핑용품</b><small>검색 <em>9,700</em> · 문서 <em>1,480</em></small></div><div class="cp"><p>경쟁<span>15</span></p><div class="tr"><i style="width:76%"></i></div></div></li>
+            <li><span class="no">6</span><div class="k"><b>동계 차박 준비물</b><small>검색 <em>8,100</em> · 문서 <em>940</em></small></div><div class="cp"><p>경쟁<span>12</span></p><div class="tr"><i style="width:58%"></i></div></div></li>
+            <li><span class="no">7</span><div class="k"><b>캠핑 전기요</b><small>검색 <em>7,600</em> · 문서 <em>1,290</em></small></div><div class="cp"><p>경쟁<span>17</span></p><div class="tr"><i style="width:85%"></i></div></div></li>
+            <li><span class="no">8</span><div class="k"><b>차박 매트 비교</b><small>검색 <em>6,300</em> · 문서 <em>720</em></small></div><div class="cp"><p>경쟁<span>11</span></p><div class="tr"><i style="width:57%"></i></div></div></li>
+            <li><span class="no">9</span><div class="k"><b>캠핑 수납박스</b><small>검색 <em>5,400</em> · 문서 <em>860</em></small></div><div class="cp"><p>경쟁<span>16</span></p><div class="tr"><i style="width:80%"></i></div></div></li>
+            <li><span class="no">10</span><div class="k"><b>캠핑 폴딩카트</b><small>검색 <em>4,900</em> · 문서 <em>610</em></small></div><div class="cp"><p>경쟁<span>12</span></p><div class="tr"><i style="width:62%"></i></div></div></li>
+          </ol>
+          <div class="rf"><span>나머지 13개</span><span class="p"><svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>황금 키워드 엑셀</span></div>
+        </aside>
+      </div>
+
+      <footer class="status"><span><b>● 분석 완료</b></span><span>후보 312개 · 황금 키워드 23개</span><span class="ok">검색광고 API 정상</span><span class="ok">개발자센터 API 정상</span><span>09:23:12 완료 · 소요 3분 09초</span><span class="r">키워드광부 2.1.0</span></footer>
+    </div>
+  </main>
+</div>
+<script>
+  // 산점도: x = 블로그 문서 수(로그, 100 ~ 200,000), y = 월간 검색량(로그, 1,000 ~ 50,000).
+  const L = 58, T = 14, W = 770, H = 290, XD = 3.3, YD = 1.7;
+  const X = (d) => L + (Math.log10(d) - 2) / XD * W;
+  const Y = (v) => T + H - (Math.log10(v) - 3) / YD * H;
+  let seed = 11;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const named = [
+    ['캠핑 의자 추천', 18400, 2130], ['캠핑 화로대 추천', 14200, 1710], ['백패킹 텐트', 12800, 1950], ['원터치 그늘막', 11300, 2050],
+    ['감성 캠핑용품', 9700, 1480], ['동계 차박 준비물', 8100, 940], ['캠핑 전기요', 7600, 1290], ['차박 매트 비교', 6300, 720],
+    ['캠핑 수납박스', 5400, 860], ['캠핑 폴딩카트', 4900, 610],
+  ];
+  const others = [['캠핑 테이블', 41200, 86500, 's', 1], ['캠핑 요리', 33500, 71200, 's', 1], ['캠핑 랜턴', 27900, 54100, 'm', 1], ['동계 캠핑', 21600, 18300, 'm', 0]];
+  const pts = [];
+  for (let i = 0; i < 13; i++) { const v = 10 ** (3.78 + rnd() * 0.75); pts.push([v, v * (0.13 + rnd() * 0.065), 'g']); }
+  let m = 0, s = 0, low = 0;
+  while (m < 60 || s < 52 || low < 40) {
+    const v = 10 ** (3 + rnd() * 1.66); const d = 10 ** (2.25 + rnd() * 3.0); const r = d / v;
+    if (v < 3000) { if (low < 40 && r > 0.04) { pts.push([v, d, 'l']); low++; } continue; }
+    if (r <= 0.2) continue;
+    if (r <= 2) { if (m < 60) { pts.push([v, d, 'm']); m++; } } else if (s < 52) { pts.push([v, d, 's']); s++; }
+  }
+  const col = { g: '#f5c542', m: '#8a806d', s: '#c4583f', l: '#4a4236' };
+  const f = (n) => n.toFixed(1);
+  let g = '';
+  const xt = [100, 1000, 10000, 100000], xl = ['100', '1천', '1만', '10만'];
+  const yt = [1000, 3000, 10000, 30000], yl = ['1천', '3천', '1만', '3만'];
+  xt.forEach((d, i) => { g += `<line x1="${f(X(d))}" y1="${T}" x2="${f(X(d))}" y2="${T + H}" stroke="#2a241b"/><text x="${f(X(d))}" y="${T + H + 18}" fill="#7f7563" font-size="11" text-anchor="middle" font-family="JetBrains Mono">${xl[i]}</text>`; });
+  yt.forEach((v, i) => { g += `<line x1="${L}" y1="${f(Y(v))}" x2="${L + W}" y2="${f(Y(v))}" stroke="#2a241b"/><text x="${L - 8}" y="${f(Y(v) + 4)}" fill="#7f7563" font-size="11" text-anchor="end" font-family="JetBrains Mono">${yl[i]}</text>`; });
+  g += `<rect x="${L}" y="${T}" width="${W}" height="${H}" fill="none" stroke="#2a241b"/>`;
+  // 황금 구역: 검색량 3,000 이상 + 포화도 0.2 이하 (문서 수 ≤ 검색량 × 0.2)
+  const zone = [[100, 3000], [600, 3000], [10000, 50000], [100, 50000]].map(([d, v]) => `${f(X(d))},${f(Y(v))}`).join(' ');
+  g += `<defs><linearGradient id="zg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5c542" stop-opacity=".2"/><stop offset="1" stop-color="#f5c542" stop-opacity=".06"/></linearGradient><radialGradient id="glow"><stop offset="0" stop-color="#f5c542" stop-opacity=".6"/><stop offset="1" stop-color="#f5c542" stop-opacity="0"/></radialGradient></defs>`;
+  g += `<polygon points="${zone}" fill="url(#zg)" stroke="#f5c542" stroke-opacity=".55" stroke-width="1.2" stroke-dasharray="5 4"/>`;
+  g += `<line x1="${f(X(600))}" y1="${f(Y(3000))}" x2="${L + W}" y2="${f(Y(3000))}" stroke="#f5c542" stroke-opacity=".3" stroke-dasharray="2 4"/>`;
+  g += `<line x1="${f(X(2000))}" y1="${f(Y(1000))}" x2="${f(X(100000))}" y2="${f(Y(50000))}" stroke="#c4583f" stroke-opacity=".45" stroke-dasharray="2 4"/>`;
+  g += `<text x="${L + 12}" y="${T + 20}" fill="#f5c542" font-size="13" font-weight="800" font-family="Pretendard Variable">황금 구역</text><text x="${L + 12}" y="${T + 36}" fill="#c9a64a" font-size="11" font-family="Pretendard Variable">검색량 3천 이상 · 포화도 0.2 이하</text>`;
+  g += `<text x="${f(X(20000) + 12)}" y="${f(Y(10000) + 14)}" fill="#d97a63" font-size="11" font-family="Pretendard Variable">포화도 2.0</text>`;
+  g += `<text x="${L + W - 6}" y="${f(Y(3000) - 6)}" fill="#c9a64a" font-size="11" text-anchor="end" font-family="Pretendard Variable" opacity=".85">최소 검색량 3,000</text>`;
+  pts.forEach(([v, d, c]) => { g += `<circle cx="${f(X(d))}" cy="${f(Y(v))}" r="${c === 'g' ? 4 : 3.4}" fill="${col[c]}" opacity="${c === 'g' ? .85 : c === 'l' ? .85 : .7}"/>`; });
+  others.forEach(([k, v, d, c, show]) => { g += `<circle cx="${f(X(d))}" cy="${f(Y(v))}" r="4.5" fill="${col[c]}" stroke="#14110c" stroke-width="1.5"/>`; if (show) g += `<text x="${f(X(d) + 8)}" y="${f(Y(v) + 4)}" fill="#a39883" font-size="11" font-family="Pretendard Variable">${k}</text>`; });
+  // 황금 키워드 라벨: 왼쪽 빈 구역에 한 줄씩 정렬하고 지시선으로 잇는다.
+  const lx = 214;
+  named.forEach(([k, v, d], i) => {
+    const x = X(d), y = Y(v), ly = 64 + i * 15.6;
+    g += `<polyline points="${lx + 5},${f(ly - 4)} ${lx + 18},${f(ly - 4)} ${f(x - 5)},${f(y)}" fill="none" stroke="#f5c542" stroke-opacity="${i === 0 ? .9 : .35}" stroke-width="1"/>`;
+    g += `<text x="${lx}" y="${f(ly)}" fill="${i === 0 ? '#ffe08a' : '#e3c97f'}" font-size="11.5" font-weight="${i === 0 ? 800 : 600}" font-family="Pretendard Variable" text-anchor="end"><tspan fill="#8f7d4a" font-family="JetBrains Mono" font-size="11">${String(i + 1).padStart(2, '0')}  </tspan>${k}</text>`;
+  });
+  named.forEach(([k, v, d], i) => {
+    const x = X(d), y = Y(v);
+    if (i === 0) g += `<circle cx="${f(x)}" cy="${f(y)}" r="18" fill="url(#glow)"/>`;
+    g += `<circle cx="${f(x)}" cy="${f(y)}" r="${i === 0 ? 6.5 : 5}" fill="#f5c542" stroke="#14110c" stroke-width="2"/>`;
+  });
+  g += `<text x="${L + W}" y="${T + H + 36}" fill="#b6ab95" font-size="11.5" text-anchor="end" font-family="Pretendard Variable">블로그 문서 수 →</text>`;
+  g += `<text x="16" y="${T + H}" fill="#b6ab95" font-size="11.5" font-family="Pretendard Variable" transform="rotate(-90 16 ${T + H})">월간 검색량 →</text>`;
+  document.getElementById('sc').innerHTML = g;
+  // 말풍선: 1위 점 오른쪽
+  const svgBox = document.getElementById('sc').getBoundingClientRect(), card = document.querySelector('.plot').getBoundingClientRect();
+  const tx = X(2130), ty = Y(18400);
+  Object.assign(document.getElementById('tip').style, { left: (svgBox.left - card.left + tx + 20) + 'px', top: (svgBox.top - card.top + ty - 26) + 'px' });
+</script>
+</body>
+</html>

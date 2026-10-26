@@ -1,0 +1,26 @@
+{
+  "name": "Aside Solutions",
+  "company": "에이사이드파트너스",
+  "url": "https://solutions.asidepartners.kr",
+  "email": "solutions@asidepartners.kr",
+  "description": "스마트스토어 가격 방어부터 KREAM 입찰 관리, 카카오톡 예약 발송, 나라장터 공고 알림까지. 검증된 업무 자동화 프로그램 50종을 시장가보다 합리적인 가격에 메일 한 통으로 주문하세요.",
+  "business": {
+    "name": "에이사이드",
+    "ceo": "",
+    "registrationNumber": "789-78-00397",
+    "mailOrderNumber": "",
+    "address": "",
+    "phone": "010-3304-1935"
+  },
+  "hero": {
+    "window": "price-guard",
+    "kpi": "store-sales-scope",
+    "toasts": [
+      "kream-autobid",
+      "auto-delivery",
+      "golden-keyword",
+      "biz-db-collector"
+    ]
+  },
+  "nameKo": "에이사이드 솔루션즈"
+}

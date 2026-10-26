@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>등록팩토리</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 등록팩토리: 수집한 상품을 AI로 가공해 판매처에 내보내는 생산 라인. 어두운 프로 도구 + 마젠타·시안. */
+  :root {
+    --bg: #16131D; --panel: #1D1926; --panel-2: #241F30; --panel-3: #2C2639;
+    --line: rgb(214 196 255 / .08); --line-2: rgb(214 196 255 / .15);
+    --text: #F0EBF8; --text-2: #B7ADC9; --text-3: #7F7594;
+    --m: #E040FB; --m-2: #C026D3; --m-soft: rgb(224 64 251 / .13);
+    --c: #22D3EE; --c-soft: rgb(34 211 238 / .12);
+    --ok: #3DDC97; --warn: #FFB547;
+  }
+  body { font: 400 13px/1.4 'Pretendard Variable', 'Segoe UI', sans-serif; color: var(--text); background: var(--bg); letter-spacing: -0.01em; word-break: keep-all; }
+  .win { --bar: #0F0C15; --bar-fg: #A79DBA; background: var(--bg); }
+  .win-body { flex-direction: column; }
+  .ico { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* 앱 상단 */
+  .appbar { height: 54px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 16px; border-bottom: 1px solid var(--line); background: #131019; }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 800; font-size: 15px; letter-spacing: -0.02em; }
+  .brand .mk { width: 28px; height: 28px; border-radius: 8px; background: conic-gradient(from 200deg, #E040FB, #22D3EE, #E040FB); display: grid; place-items: center; }
+  .brand .mk svg { width: 16px; height: 16px; stroke: #16131D; stroke-width: 2.4; }
+  .modes { display: flex; gap: 2px; padding: 3px; border-radius: 10px; background: #0E0B13; border: 1px solid var(--line); }
+  .modes span { height: 30px; display: flex; align-items: center; gap: 7px; padding: 0 13px; border-radius: 8px; color: var(--text-3); font-size: 12.5px; font-weight: 600; }
+  .modes span svg { width: 15px; height: 15px; }
+  .modes span.on { background: var(--panel-3); color: var(--text); box-shadow: inset 0 0 0 1px rgb(224 64 251 / .35); }
+  .modes span.on svg { color: var(--m); }
+  .appbar .sp { flex: 1; }
+  .quota { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .quota .qb { width: 90px; height: 5px; border-radius: 3px; background: #2B2536; overflow: hidden; }
+  .quota .qb i { display: block; width: 37%; height: 100%; background: linear-gradient(90deg, var(--c), var(--m)); }
+  .quota b { color: var(--text); font-weight: 700; }
+  .btn { height: 34px; display: flex; align-items: center; gap: 7px; padding: 0 14px; border-radius: 9px; border: 1px solid var(--line-2); color: var(--text-2); font-weight: 600; font-size: 12.5px; }
+  .btn svg { width: 15px; height: 15px; }
+  .btn.pri { border: 0; color: #fff; background: linear-gradient(135deg, #E040FB, #A21CAF); box-shadow: 0 8px 18px -8px rgb(224 64 251 / .7); }
+
+  .work { flex: 1; min-height: 0; display: flex; gap: 14px; padding: 14px; }
+
+  /* 파이프라인 보드 */
+  .board { width: 474px; flex: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .col { min-height: 0; display: flex; flex-direction: column; gap: 8px; border-radius: 12px; background: #19151F; border: 1px solid var(--line); padding: 8px; overflow: hidden; }
+  .col-h { display: flex; align-items: center; gap: 7px; padding: 4px 4px 6px; font-size: 12.5px; font-weight: 700; }
+  .col-h i { width: 8px; height: 8px; border-radius: 2px; }
+  .col-h em { font-style: normal; font-size: 11px; font-weight: 700; color: var(--text-3); background: #262031; padding: 1px 7px; border-radius: 9px; font-variant-numeric: tabular-nums; }
+  .col-h .ar { margin-left: auto; color: var(--text-3); width: 14px; height: 14px; }
+  .kc { border-radius: 10px; background: var(--panel-2); border: 1px solid var(--line); overflow: hidden; flex: none; }
+  .kc .ph { height: 74px; position: relative; display: grid; place-items: center; }
+  .kc .ph svg { width: 62px; height: 62px; }
+  .kc .ph .badge { position: absolute; left: 6px; top: 6px; font-size: 10.5px; font-weight: 700; padding: 2px 6px; border-radius: 5px; background: rgb(15 12 21 / .7); color: var(--text-2); }
+  .kc .tx { padding: 7px 9px 8px; }
+  .kc b { display: block; font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kc small { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-3); margin-top: 2px; white-space: nowrap; }
+  .kc small i { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+  .kc .pb { height: 3px; border-radius: 2px; background: #33293F; margin-top: 6px; overflow: hidden; }
+  .kc .pb i { display: block; height: 100%; background: var(--c); }
+  .kc.sel { border-color: var(--m); box-shadow: 0 0 0 3px rgb(224 64 251 / .18); }
+  .kc.sel small { color: #F2A8FF; }
+  .more { height: 30px; flex: none; display: grid; place-items: center; border-radius: 9px; border: 1px dashed var(--line-2); font-size: 11.5px; color: var(--text-3); }
+  .drop { flex: 1; min-height: 60px; border-radius: 10px; border: 1px dashed rgb(61 220 151 / .3); display: grid; place-items: center; text-align: center; font-size: 11.5px; color: var(--text-3); line-height: 1.5; }
+  .drop svg { width: 18px; height: 18px; margin: 0 auto 4px; color: var(--ok); }
+
+  /* 검수 패널 */
+  .inspect { flex: 1; min-width: 0; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); display: flex; flex-direction: column; overflow: hidden; }
+  .in-head { height: 52px; flex: none; display: flex; align-items: center; gap: 12px; padding: 0 16px; border-bottom: 1px solid var(--line); }
+  .in-head h2 { font-size: 15px; font-weight: 800; letter-spacing: -0.02em; }
+  .src { display: flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px; border-radius: 6px; background: #14111A; color: var(--text-3); font-size: 11.5px; }
+  .src svg { width: 13px; height: 13px; }
+  .pipes { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+  .pipes span { display: flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; color: var(--ok); }
+  .pipes span svg { width: 13px; height: 13px; stroke-width: 2.6; }
+  .pipes i { width: 12px; height: 1px; background: var(--line-2); }
+  .pipes span.now { color: var(--m); background: var(--m-soft); padding: 3px 8px; border-radius: 6px; }
+
+  .in-body { flex: 1; min-height: 0; padding: 14px 16px; display: flex; flex-direction: column; gap: 14px; }
+  .compare { display: grid; grid-template-columns: 1fr 36px 1fr 134px; gap: 0; align-items: center; }
+  .pane { position: relative; }
+  .pane .lab { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; font-size: 12px; font-weight: 700; }
+  .pane .lab small { font-size: 11px; font-weight: 500; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .img { position: relative; height: 262px; border-radius: 12px; overflow: hidden; }
+  .img > svg.bag { position: absolute; left: 50%; top: 52%; width: 200px; height: 200px; translate: -50% -50%; }
+  .before { background: radial-gradient(120% 90% at 50% 30%, #EDE2D2, #CDBBA3 70%, #B9A68C); }
+  .before::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 34%; background: linear-gradient(#D9C9B2, #C8B497); }
+  .before > * { z-index: 1; }
+  .after { background: repeating-conic-gradient(#2E2839 0 25%, #252030 0 50%) 0 0 / 18px 18px; box-shadow: inset 0 0 0 1px rgb(224 64 251 / .25); }
+  .cn-ribbon { position: absolute; left: 10px; top: 12px; padding: 5px 10px; background: #D62828; color: #fff; font: 800 13px/1 'Microsoft YaHei', 'Malgun Gothic', sans-serif; border-radius: 3px; rotate: -4deg; box-shadow: 0 2px 0 #9B1C1C; }
+  .cn-burst { position: absolute; right: 14px; top: 14px; width: 56px; height: 56px; display: grid; place-items: center; color: #8A1B00; font: 900 15px/1 'Microsoft YaHei', 'Malgun Gothic', sans-serif; background: #FFD43B; clip-path: polygon(50% 0, 61% 14%, 79% 7%, 82% 25%, 100% 29%, 92% 46%, 100% 63%, 83% 70%, 80% 89%, 62% 84%, 50% 100%, 38% 84%, 20% 89%, 17% 70%, 0 63%, 8% 46%, 0 29%, 18% 25%, 21% 7%, 39% 14%); }
+  .cn-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 28px; background: rgb(30 20 10 / .78); color: #FFE8A3; font: 600 12px/28px 'Microsoft YaHei', 'Malgun Gothic', sans-serif; text-align: center; letter-spacing: .04em; }
+  .ko-chip { position: absolute; display: flex; align-items: center; gap: 5px; padding: 4px 9px 4px 6px; border-radius: 7px; background: rgb(22 19 29 / .88); border: 1px solid rgb(34 211 238 / .5); color: #E7FBFF; font-size: 12px; font-weight: 700; }
+  .ko-chip em { font-style: normal; font-size: 10px; font-weight: 800; color: #0B2E35; background: var(--c); padding: 1px 4px; border-radius: 3px; }
+  .mask { position: absolute; left: 50%; top: 52%; width: 168px; height: 182px; translate: -50% -50%; border: 1.5px dashed rgb(224 64 251 / .8); border-radius: 4px; }
+  .mask i { position: absolute; width: 7px; height: 7px; background: #fff; border: 1.5px solid var(--m); }
+  .mask i:nth-child(1) { left: -4px; top: -4px; } .mask i:nth-child(2) { right: -4px; top: -4px; } .mask i:nth-child(3) { left: -4px; bottom: -4px; } .mask i:nth-child(4) { right: -4px; bottom: -4px; }
+  .seg { position: absolute; left: 10px; bottom: 10px; display: flex; padding: 2px; border-radius: 7px; background: rgb(14 11 19 / .85); border: 1px solid var(--line-2); }
+  .seg b { font-size: 11px; font-weight: 600; color: var(--text-3); padding: 3px 8px; border-radius: 5px; }
+  .seg b.on { background: var(--m-soft); color: #F5B5FF; }
+  .arrow { display: grid; place-items: center; padding-top: 20px; }
+  .arrow span { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #E040FB, #22D3EE); box-shadow: 0 0 0 5px rgb(224 64 251 / .12); }
+  .arrow svg { width: 15px; height: 15px; stroke: #16131D; stroke-width: 2.6; }
+
+  .shots { padding-left: 14px; }
+  .shots .lab { font-size: 12px; font-weight: 700; margin-bottom: 7px; display: flex; justify-content: space-between; }
+  .shots .lab small { color: var(--ok); font-weight: 700; font-size: 11px; }
+  .sg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .sh { text-align: center; }
+  .sh .tile { height: 58px; border-radius: 8px; display: grid; place-items: center; position: relative; overflow: hidden; border: 1px solid var(--line); }
+  .sh .tile svg { width: 46px; height: 46px; }
+  .sh small { display: block; font-size: 11px; color: var(--text-3); margin-top: 3px; }
+  .sh.on .tile { border-color: var(--m); }
+  .sh.on small { color: #F2A8FF; font-weight: 600; }
+
+  .lower { display: grid; grid-template-columns: 1.15fr 1fr; gap: 14px; flex: 1; min-height: 0; }
+  .blk { border-radius: 12px; background: var(--panel-2); border: 1px solid var(--line); padding: 12px 14px; overflow: hidden; }
+  .blk h4 { font-size: 12.5px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
+  .blk h4 span { font-size: 11px; color: var(--text-3); font-weight: 500; }
+  .blk h4 .ai { display: inline-flex; align-items: center; gap: 4px; color: var(--m); font-weight: 700; font-size: 11px; }
+  .blk h4 .ai svg { width: 12px; height: 12px; }
+  .names li { display: grid; grid-template-columns: 16px 1fr auto; gap: 9px; align-items: start; padding: 7px 9px; border-radius: 8px; font-size: 12.5px; line-height: 1.45; color: var(--text-2); }
+  .names li + li { margin-top: 3px; }
+  .names li.on { background: var(--m-soft); color: var(--text); box-shadow: inset 0 0 0 1px rgb(224 64 251 / .35); }
+  .rd { width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid #5D5370; margin-top: 2px; }
+  .on .rd { border: 4.5px solid var(--m); }
+  .names em { font-style: normal; font-size: 11px; font-weight: 700; color: var(--text-3); font-variant-numeric: tabular-nums; padding-top: 1px; }
+  .on em { color: #F5B5FF; }
+  .attrs { display: grid; grid-template-columns: 1fr 1fr; column-gap: 12px; }
+  .attrs div { display: flex; justify-content: space-between; height: 23px; align-items: center; font-size: 12px; border-bottom: 1px solid var(--line); }
+  .attrs span { color: var(--text-3); }
+  .attrs b { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
+  .tags span { font-size: 11.5px; padding: 3px 8px; border-radius: 6px; background: var(--c-soft); color: #9DEBF7; }
+  .tags span.n { background: transparent; color: var(--text-3); border: 1px dashed var(--line-2); }
+
+  .markets { flex: none; display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: #14111A; border: 1px solid var(--line); }
+  .markets .t { font-size: 12px; font-weight: 700; color: var(--text-2); margin-right: 4px; }
+  .mk { display: flex; align-items: center; gap: 7px; height: 32px; padding: 0 11px; border-radius: 8px; background: var(--panel-2); border: 1px solid var(--line); font-size: 12px; font-weight: 700; }
+  .mk small { font-weight: 500; font-size: 11.5px; }
+  .mk i { width: 7px; height: 7px; border-radius: 50%; }
+  .mk.ok small { color: var(--ok); } .mk.ok i { background: var(--ok); }
+  .mk.wa { border-color: rgb(255 181 71 / .35); } .mk.wa small { color: var(--warn); } .mk.wa i { background: var(--warn); }
+  .markets .sp { flex: 1; }
+  .markets .note { font-size: 11.5px; color: var(--text-3); }
+
+  .status { height: 28px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 16px; background: #0F0C15; border-top: 1px solid var(--line); color: var(--text-3); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+  .status b { color: var(--warn); font-weight: 700; }
+  .status .r { margin-left: auto; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="tote" viewBox="0 0 120 120"><path d="M38 47C38 17 82 17 82 47" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="5" stroke-linecap="round"/><path d="M22 46h76l7 57a7 7 0 0 1-7 8H22a7 7 0 0 1-7-8z" fill="currentColor"/><path d="M22 46h76l1.2 10H20.8z" fill="#000" opacity=".2"/><path d="M44 47C44 21 76 21 76 47" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M44 47C44 21 76 21 76 47" fill="none" stroke="#000" stroke-opacity=".25" stroke-width="5" stroke-linecap="round"/><rect x="54" y="60" width="12" height="9" rx="2" fill="#E8C468"/><path d="M24 64l-3 38" stroke="#fff" stroke-opacity=".2" stroke-width="4" stroke-linecap="round"/></symbol>
+    <symbol id="shoe" viewBox="0 0 120 120"><path d="M14 80c0-15 7-26 19-29l18-3c8-1 12-8 19-8 6 0 9 10 19 16 10 6 20 8 20 20v6H14z" fill="currentColor"/><path d="M12 82h98v6a5 5 0 0 1-5 5H17a5 5 0 0 1-5-5z" fill="#F4F1EA"/><path d="M12 87h98" stroke="#000" stroke-opacity=".15"/><path d="M57 50l6 7M63 46l6 7M69 44l6 7" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><path d="M14 68h10v12H14z" fill="#000" opacity=".18"/></symbol>
+    <symbol id="cross" viewBox="0 0 120 120"><path d="M32 18l28 38 28-38" fill="none" stroke="#000" stroke-opacity=".45" stroke-width="3"/><rect x="28" y="52" width="64" height="46" rx="11" fill="currentColor"/><path d="M28 63a11 11 0 0 1 11-11h42a11 11 0 0 1 11 11v14H28z" fill="#000" opacity=".18"/><circle cx="60" cy="77" r="4" fill="#E8C468"/></symbol>
+    <symbol id="hat" viewBox="0 0 120 120"><path d="M35 66c0-24 10-35 25-35s25 11 25 35z" fill="currentColor"/><path d="M16 72c0-8 20-11 44-11s44 3 44 11-20 11-44 11-44-3-44-11z" fill="currentColor"/><path d="M16 72c0-8 20-11 44-11s44 3 44 11-20 11-44 11-44-3-44-11z" fill="#000" opacity=".14"/><path d="M35 58h50v7H35z" fill="#000" opacity=".22"/></symbol>
+    <symbol id="pack" viewBox="0 0 120 120"><path d="M48 30v-5a12 12 0 0 1 24 0v5" fill="none" stroke="#000" stroke-opacity=".45" stroke-width="4"/><rect x="31" y="29" width="58" height="72" rx="17" fill="currentColor"/><rect x="40" y="63" width="40" height="28" rx="7" fill="#000" opacity=".16"/><path d="M41 64h38" stroke="#fff" stroke-opacity=".45" stroke-dasharray="3 2"/></symbol>
+    <symbol id="wallet" viewBox="0 0 120 120"><rect x="20" y="38" width="80" height="50" rx="9" fill="currentColor"/><path d="M20 55h80" stroke="#000" stroke-opacity=".22"/><rect x="72" y="60" width="28" height="17" rx="5" fill="#000" opacity=".2"/><circle cx="85" cy="68.5" r="3.2" fill="#E8C468"/></symbol>
+    <symbol id="basket" viewBox="0 0 120 120"><path d="M44 50c0-24 32-24 32 0" fill="none" stroke="#7A5530" stroke-width="4"/><path d="M25 50h70l-6 49a6 6 0 0 1-6 5H37a6 6 0 0 1-6-5z" fill="currentColor"/><path d="M27 62h66M28 74h64M29.5 86h61M40 50l3 54M55 50l1 54M70 50l-1 54M84 50l-3 54" stroke="#7A5530" stroke-opacity=".45" stroke-width="1.6"/></symbol>
+    <symbol id="beanie" viewBox="0 0 120 120"><circle cx="60" cy="28" r="9" fill="currentColor"/><path d="M30 78c0-30 12-44 30-44s30 14 30 44z" fill="currentColor"/><rect x="26" y="72" width="68" height="20" rx="7" fill="currentColor"/><rect x="26" y="72" width="68" height="20" rx="7" fill="#000" opacity=".16"/><path d="M36 74v16M46 74v16M56 74v16M66 74v16M76 74v16M86 74v16" stroke="#000" stroke-opacity=".2" stroke-width="1.6"/></symbol>
+    <!-- 큰 토트백 -->
+    <linearGradient id="leather" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D99A5B"/><stop offset=".55" stop-color="#B9773D"/><stop offset="1" stop-color="#8E5427"/></linearGradient>
+    <linearGradient id="band" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7A4520"/><stop offset="1" stop-color="#94592B"/></linearGradient>
+    <symbol id="bigtote" viewBox="0 0 200 200">
+      <path d="M62 74C62 26 138 26 138 74" fill="none" stroke="#5E3416" stroke-width="8" stroke-linecap="round"/>
+      <path d="M36 72h128l11 98a10 10 0 0 1-10 11H35a10 10 0 0 1-10-11z" fill="url(#leather)"/>
+      <path d="M36 72h128l1.8 16H34.2z" fill="url(#band)"/>
+      <path d="M36.5 94h127" stroke="#F6D7B0" stroke-opacity=".55" stroke-width="1.4" stroke-dasharray="4 3.5"/>
+      <path d="M30 172h140" stroke="#F6D7B0" stroke-opacity=".4" stroke-width="1.4" stroke-dasharray="4 3.5"/>
+      <path d="M74 75C74 36 126 36 126 75" fill="none" stroke="#7A4520" stroke-width="8" stroke-linecap="round"/>
+      <path d="M74 75C74 36 126 36 126 75" fill="none" stroke="#C88A50" stroke-width="2.4" stroke-linecap="round" opacity=".6" transform="translate(-1.5 -1.5)"/>
+      <rect x="68" y="72" width="11" height="22" rx="2.5" fill="#7A4520"/><rect x="121" y="72" width="11" height="22" rx="2.5" fill="#7A4520"/>
+      <circle cx="73.5" cy="88" r="2.4" fill="#E8C468"/><circle cx="126.5" cy="88" r="2.4" fill="#E8C468"/>
+      <rect x="86" y="104" width="28" height="18" rx="3" fill="#7A4520"/><rect x="92" y="108" width="16" height="10" rx="2" fill="none" stroke="#E8C468" stroke-width="2.4"/>
+      <path d="M44 100l-8 66" stroke="#fff" stroke-opacity=".16" stroke-width="7" stroke-linecap="round"/>
+      <path d="M156 100l7 64" stroke="#000" stroke-opacity=".1" stroke-width="9" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="win">
+  <header class="win-bar">
+    <span class="win-icon"><svg viewBox="0 0 16 16" width="16" height="16"><rect x="1" y="1" width="14" height="14" rx="4" fill="#E040FB"/><path d="M4.5 8h7M8.5 5l3 3-3 3" fill="none" stroke="#16131D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <span class="win-title">등록팩토리 2.1.5 — AI 가공 · 검수</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <div class="appbar">
+      <div class="brand"><span class="mk"><svg viewBox="0 0 24 24" class="ico"><path d="M4 20V9l5 3V9l5 3V5h6v15z"/></svg></span>등록팩토리</div>
+      <nav class="modes">
+        <span><svg viewBox="0 0 24 24" class="ico"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>상품 수집</span>
+        <span class="on"><svg viewBox="0 0 24 24" class="ico"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg>AI 가공</span>
+        <span><svg viewBox="0 0 24 24" class="ico"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5L5 20"/></svg>이미지 편집</span>
+        <span><svg viewBox="0 0 24 24" class="ico"><path d="M4 9.5 5.5 4h13L20 9.5"/><path d="M4 9.5a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0 2.7 2.7 0 0 0 5.3 0"/><path d="M5.5 12v8h13v-8"/></svg>마켓 등록</span>
+        <span><svg viewBox="0 0 24 24" class="ico"><path d="M4 6h10M4 12h6M4 18h12"/><circle cx="17" cy="6" r="2.5"/><circle cx="13" cy="12" r="2.5"/><circle cx="19" cy="18" r="2.5"/></svg>설정</span>
+      </nav>
+      <span class="sp"></span>
+      <div class="quota">이번 달 AI <b>186</b> / 500건<span class="qb"><i></i></span></div>
+      <span class="btn"><svg viewBox="0 0 24 24" class="ico"><path d="M12 5v14M5 12h14"/></svg>URL 추가</span>
+    </div>
+
+    <div class="work">
+      <section class="board">
+        <div class="col">
+          <div class="col-h"><i style="background:#8B80A3"></i>수집<em>4</em><svg class="ar ico" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+          <div class="kc"><div class="ph" style="background:linear-gradient(150deg,#3A3446,#2A2533);color:#EDE8DE"><svg><use href="#shoe"/></svg></div><div class="tx"><b>캔버스 스니커즈 화이트</b><small><i style="background:#8B80A3"></i>도매처 A · 09:31</small></div></div>
+          <div class="kc"><div class="ph" style="background:linear-gradient(150deg,#3E3528,#2B2520);color:#C9A06A"><svg><use href="#basket"/></svg></div><div class="tx"><b>라탄 바스켓 백</b><small><i style="background:#8B80A3"></i>도매처 B · 09:31</small></div></div>
+          <div class="kc"><div class="ph" style="background:linear-gradient(150deg,#4B4658,#332F3C);color:#1E1D22"><svg><use href="#cross"/></svg></div><div class="tx"><b>미니 크로스백 블랙</b><small><i style="background:#8B80A3"></i>도매처 A · 09:31</small></div></div>
+          <div class="kc"><div class="ph" style="background:linear-gradient(150deg,#3B372E,#2A2722);color:#D8C7A4"><svg><use href="#hat"/></svg></div><div class="tx"><b>코튼 버킷햇 베이지</b><small><i style="background:#8B80A3"></i>도매처 C · 09:31</small></div></div>
+          <div class="drop" style="border-color:var(--line-2)"><div><svg viewBox="0 0 24 24" class="ico" style="color:var(--text-2)"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>도매처 URL 붙여넣어<br>여러 개 한 번에 수집</div></div>
+        </div>
+        <div class="col">
+          <div class="col-h"><i style="background:var(--m)"></i>AI 가공<em>5</em><svg class="ar ico" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+          <div class="kc sel"><div class="ph" style="background:linear-gradient(150deg,#4A2F52,#2C2133);color:#C2834A"><svg><use href="#tote"/></svg><span class="badge" style="color:#F5B5FF">검수 대기</span></div><div class="tx"><b>소가죽 토트백 카멜</b><small><i style="background:var(--m)"></i>가공 완료 · 확인 필요</small></div></div>
+          <div class="kc"><div class="ph" style="background:linear-gradient(150deg,#2B3A44,#20272F);color:#9AA6B2"><svg><use href="#shoe"/></svg></div><div class="tx"><b>메쉬 러닝화 그레이</b><small><i style="background:var(--c)"></i>상품명 생성 중</small><div class="pb"><i style="width:40%"></i></div></div></div>
+          <div class="kc"><div class="ph" style="background:linear-gradient(150deg,#2E3A33,#212A25);color:#5E7F68"><svg><use href="#pack"/></svg></div><div class="tx"><b>캔버스 백팩 올리브</b><small><i style="background:var(--c)"></i>배경 제거 중 · 4/6장</small><div class="pb"><i style="width:67%"></i></div></div></div>
+          <div class="kc"><div class="ph" style="background:linear-gradient(150deg,#43303A,#2D2229);color:#C9677F"><svg><use href="#beanie"/></svg></div><div class="tx"><b>울 니트 비니 로즈</b><small><i style="background:var(--c)"></i>속성 8개 입력 완료</small></div></div>
+          <div class="more">+ 1개 더 · 대기 중</div>
+        </div>
+        <div class="col">
+          <div class="col-h"><i style="background:var(--ok)"></i>등록<em>3</em></div>
+          <div class="kc"><div class="ph" style="background:linear-gradient(150deg,#3A2E28,#29211D);color:#6B3F24"><svg><use href="#wallet"/></svg></div><div class="tx"><b>가죽 카드지갑 브라운</b><small><i style="background:var(--ok)"></i>3곳 등록 완료</small></div></div>
+          <div class="kc"><div class="ph" style="background:linear-gradient(150deg,#3C3833,#2A2724);color:#E9DFCF"><svg><use href="#cross"/></svg></div><div class="tx"><b>숄더백 아이보리</b><small><i style="background:var(--warn)"></i>2곳 완료 · 11번가 대기</small></div></div>
+          <div class="kc"><div class="ph" style="background:linear-gradient(150deg,#4B4658,#332F3C);color:#1E1D22"><svg><use href="#shoe"/></svg></div><div class="tx"><b>슬립온 스니커즈 블랙</b><small><i style="background:var(--ok)"></i>3곳 등록 완료</small></div></div>
+          <div class="drop"><div><svg viewBox="0 0 24 24" class="ico"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg>검수 끝난 상품을<br>여기로 끌어 등록</div></div>
+        </div>
+      </section>
+
+      <section class="inspect">
+        <div class="in-head">
+          <h2>소가죽 토트백 카멜</h2>
+          <span class="src"><svg viewBox="0 0 24 24" class="ico"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>도매처 A · 09:31 수집</span>
+          <div class="pipes">
+            <span><svg viewBox="0 0 24 24" class="ico"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>상품명</span><i></i>
+            <span><svg viewBox="0 0 24 24" class="ico"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>속성·태그</span><i></i>
+            <span><svg viewBox="0 0 24 24" class="ico"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>이미지</span><i></i>
+            <span class="now">검수 대기</span>
+          </div>
+        </div>
+        <div class="in-body">
+          <div class="compare">
+            <div class="pane">
+              <div class="lab">원본 <small>도매처 이미지 · 800×800</small></div>
+              <div class="img before">
+                <svg class="bag" viewBox="0 0 200 200"><ellipse cx="100" cy="184" rx="78" ry="9" fill="#5A4630" opacity=".35"/><use href="#bigtote"/></svg>
+                <span class="cn-ribbon">韩版 大容量托特包</span>
+                <span class="cn-burst">真皮</span>
+                <span class="cn-bar">新款上市 · 一件代发</span>
+              </div>
+            </div>
+            <div class="arrow"><span><svg viewBox="0 0 24 24" class="ico"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
+            <div class="pane">
+              <div class="lab">가공 후 <small>배경 제거 · 라벨 번역</small></div>
+              <div class="img after">
+                <svg class="bag" viewBox="0 0 200 200"><use href="#bigtote"/></svg>
+                <span class="mask"><i></i><i></i><i></i><i></i></span>
+                <span class="ko-chip" style="left:10px; top:12px"><em>번역</em>대용량 토트백</span>
+                <span class="ko-chip" style="right:10px; top:50px"><em>번역</em>소가죽</span>
+                <span class="seg"><b class="on">투명</b><b>흰 배경</b><b>썸네일</b></span>
+              </div>
+            </div>
+            <div class="shots">
+              <div class="lab">결과 이미지 <small>6장</small></div>
+              <div class="sg">
+                <div class="sh"><div class="tile" style="background:radial-gradient(#E6D8C4,#C5B196)"><svg><use href="#bigtote"/></svg></div><small>원본 사진</small></div>
+                <div class="sh on"><div class="tile" style="background:repeating-conic-gradient(#2E2839 0 25%, #252030 0 50%) 0 0 / 10px 10px"><svg><use href="#bigtote"/></svg></div><small>배경 제거</small></div>
+                <div class="sh"><div class="tile" style="background:#fff"><svg><use href="#bigtote"/></svg></div><small>흰 배경</small></div>
+                <div class="sh"><div class="tile" style="background:linear-gradient(160deg,#FBF3EA,#EBDCCB)"><svg style="width:40px;height:40px"><use href="#bigtote"/></svg></div><small>썸네일</small></div>
+                <div class="sh"><div class="tile" style="background:#F7F2EC"><svg viewBox="0 0 46 46" style="width:46px;height:46px"><rect x="7" y="6" width="32" height="5" rx="1" fill="#3A2A1C"/><rect x="7" y="14" width="22" height="3" rx="1" fill="#A08870"/><rect x="7" y="21" width="32" height="19" rx="2" fill="#D9A46C"/></svg></div><small>상세 1</small></div>
+                <div class="sh"><div class="tile" style="background:#F7F2EC"><svg viewBox="0 0 46 46" style="width:46px;height:46px"><rect x="7" y="6" width="15" height="15" rx="2" fill="#C68A4E"/><rect x="24" y="6" width="15" height="15" rx="2" fill="#8E5427"/><rect x="7" y="25" width="32" height="3" rx="1" fill="#3A2A1C"/><rect x="7" y="31" width="26" height="3" rx="1" fill="#A08870"/><rect x="7" y="37" width="20" height="3" rx="1" fill="#A08870"/></svg></div><small>상세 2</small></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="lower">
+            <div class="blk">
+              <h4>AI 상품명 3안 <span class="ai"><svg viewBox="0 0 24 24" class="ico"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/></svg>50자 이내</span></h4>
+              <ul class="names">
+                <li class="on"><i class="rd"></i><span>여성 소가죽 토트백 대용량 데일리 숄더백 A4 노트북 수납 직장인 출근용 가방 카멜색</span><em>47자</em></li>
+                <li><i class="rd"></i><span>소가죽 빅 토트백 여성 숄더 겸용 13인치 노트북 수납 직장인 가방</span><em>37자</em></li>
+                <li><i class="rd"></i><span>데일리 가죽 토트백 여성 대용량 출근룩 카멜 숄더백 A4 가방</span><em>34자</em></li>
+              </ul>
+            </div>
+            <div class="blk">
+              <h4>필수 속성 8 · 태그 10 <span>이미지 글자 추출 반영</span></h4>
+              <div class="attrs">
+                <div><span>소재</span><b>소가죽</b></div><div><span>색상</span><b>카멜</b></div>
+                <div><span>크기</span><b>38×29×14cm</b></div><div><span>손잡이</span><b>22cm</b></div>
+                <div><span>잠금</span><b>지퍼</b></div><div><span>수납</span><b>A4 · 13인치</b></div>
+                <div><span>성별</span><b>여성</b></div><div><span>원산지</span><b>중국</b></div>
+              </div>
+              <div class="tags"><span>토트백</span><span>가죽가방</span><span>출근가방</span><span>대용량가방</span><span>숄더백</span><span>여성가방</span><span class="n">+4</span></div>
+            </div>
+          </div>
+
+          <div class="markets">
+            <span class="t">판매처</span>
+            <span class="mk ok"><i></i>스마트스토어 <small>카테고리 매칭 · 준비됨</small></span>
+            <span class="mk ok"><i></i>쿠팡 <small>준비됨</small></span>
+            <span class="mk wa"><i></i>11번가 <small>원산지 표기 확인</small></span>
+            <span class="sp"></span>
+            <span class="btn pri"><svg viewBox="0 0 24 24" class="ico"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>검수 완료 · 3곳 등록</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="status"><span><b>● 대기 중</b> · 검수 1건</span><span>수집 12건</span><span>이번 달 AI 186건</span><span>판매처 3곳 연결</span><span>마지막 작업 09:32:25 썸네일 6장 배경 제거</span><span class="r">등록팩토리 2.1.5</span></footer>
+  </main>
+</div>
+</body>
+</html>

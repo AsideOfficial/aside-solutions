@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>입찰파수꾼</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 입찰파수꾼: 공공 입찰 담당자의 업무 도구. 관공서 문서처럼 단정한 밝은 테마 + 네이비. */
+  :root {
+    --bg: #F7F8FA; --panel: #fff; --line: #E3E7EE; --line-2: #D3D9E3; --head: #F3F5F9;
+    --text: #141B2D; --text-2: #4A5468; --text-3: #7B8497;
+    --navy: #1E3A8A; --navy-2: #2747A6; --navy-soft: #E8EDF8; --navy-ink: #0F2463;
+    --red: #C8312B; --red-soft: #FCEBEA; --amber: #B4610B; --amber-soft: #FDF1DF; --green: #137A4B; --green-soft: #E3F4EB;
+  }
+  body { font: 400 13px/1.45 'Noto Sans KR', 'Malgun Gothic', sans-serif; color: var(--text); background: var(--bg); letter-spacing: -0.015em; }
+  .win { --bar: #fff; --bar-fg: #2a3142; background: var(--bg); }
+  .win-bar { border-bottom: 1px solid var(--line); }
+  .win-body { flex-direction: column; }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  /* 상단 메뉴 */
+  .top { height: 48px; flex: none; display: flex; align-items: center; padding: 0 18px; background: var(--navy); color: #fff; gap: 26px; }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 800; font-size: 15px; letter-spacing: -0.03em; }
+  .brand .mk { width: 26px; height: 26px; border-radius: 6px; background: #fff; display: grid; place-items: center; }
+  .brand small { font-weight: 500; font-size: 11px; color: #A9B8E3; letter-spacing: 0; margin-left: 2px; }
+  .nav { display: flex; align-self: stretch; }
+  .nav a { display: flex; align-items: center; gap: 7px; padding: 0 15px; font-size: 13px; font-weight: 500; color: #C3CDEB; position: relative; }
+  .nav a.on { color: #fff; font-weight: 700; }
+  .nav a.on::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 3px; background: #fff; border-radius: 2px 2px 0 0; }
+  .nav a em { font-style: normal; font-size: 11px; font-weight: 700; min-width: 18px; height: 17px; padding: 0 5px; border-radius: 9px; background: #F2B33D; color: #3A2500; display: grid; place-items: center; }
+  .top .sp { flex: 1; }
+  .run { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 6px; background: rgb(255 255 255 / .1); font-size: 12px; color: #DCE3F7; }
+  .run i { width: 7px; height: 7px; border-radius: 50%; background: #5EE0A0; box-shadow: 0 0 0 3px rgb(94 224 160 / .25); }
+  .run b { color: #fff; font-weight: 700; }
+  .tbtn { display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: 6px; border: 1px solid rgb(255 255 255 / .28); font-size: 12px; font-weight: 500; color: #fff; }
+
+  /* 검색 조건 */
+  .filters { height: 60px; flex: none; display: flex; align-items: center; gap: 14px; padding: 0 18px; background: #fff; border-bottom: 1px solid var(--line); }
+  .fl { display: flex; flex-direction: column; gap: 4px; }
+  .fl > span { font-size: 11px; color: var(--text-3); font-weight: 500; }
+  .box { height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 10px; border: 1px solid var(--line-2); border-radius: 5px; background: #fff; font-size: 12.5px; color: var(--text); white-space: nowrap; }
+  .box .car { width: 6px; height: 6px; border-right: 1.5px solid var(--text-3); border-bottom: 1.5px solid var(--text-3); rotate: 45deg; margin: -3px 0 0 4px; }
+  .kw { padding: 0 5px; gap: 5px; }
+  .chip { display: flex; align-items: center; gap: 5px; height: 22px; padding: 0 6px 0 9px; border-radius: 4px; background: var(--navy-soft); color: var(--navy); font-weight: 700; font-size: 12px; }
+  .chip svg { width: 11px; height: 11px; stroke-width: 2.4; }
+  .kw .add { color: var(--text-3); font-size: 12px; padding: 0 6px 0 3px; }
+  .seg { display: flex; border: 1px solid var(--line-2); border-radius: 5px; overflow: hidden; height: 30px; }
+  .seg b { display: grid; place-items: center; padding: 0 11px; font-size: 12.5px; font-weight: 500; color: var(--text-2); border-left: 1px solid var(--line-2); }
+  .seg b:first-child { border-left: 0; }
+  .seg b.on { background: var(--navy); color: #fff; font-weight: 700; border-color: var(--navy); }
+  .filters .sp { flex: 1; }
+  .go { height: 34px; display: flex; align-items: center; gap: 7px; padding: 0 18px; border-radius: 5px; background: var(--navy); color: #fff; font-weight: 700; font-size: 13px; align-self: flex-end; margin-bottom: 4px; }
+  .reset { align-self: flex-end; margin-bottom: 4px; height: 34px; display: flex; align-items: center; gap: 6px; padding: 0 12px; color: var(--text-2); font-size: 12.5px; border: 1px solid var(--line-2); border-radius: 5px; background: #fff; }
+
+  /* 본문 */
+  .content { flex: 1; min-height: 0; display: flex; gap: 14px; padding: 14px 18px; }
+  .list { flex: 1; min-width: 0; background: #fff; border: 1px solid var(--line); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
+  .list-top { height: 44px; flex: none; display: flex; align-items: stretch; padding: 0 6px 0 4px; border-bottom: 1px solid var(--line); }
+  .tab { display: flex; align-items: center; gap: 6px; padding: 0 12px; font-size: 13px; color: var(--text-2); font-weight: 500; position: relative; }
+  .tab span { font-size: 11.5px; font-weight: 700; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .tab.on { color: var(--navy); font-weight: 700; }
+  .tab.on span { color: var(--navy); }
+  .tab.on::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2px; background: var(--navy); }
+  .list-top .sp { flex: 1; }
+  .sort { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); padding: 0 8px; }
+  .sort b { font-weight: 700; color: var(--text); }
+
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; table-layout: fixed; }
+  th { height: 32px; text-align: left; font-size: 11.5px; font-weight: 700; color: var(--text-2); padding: 0 8px; background: var(--head); border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th.r, td.r { text-align: right; }
+  th.c, td.c { text-align: center; }
+  td { height: 55px; padding: 0 8px; border-bottom: 1px solid #EDF0F5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  td.star svg { width: 15px; height: 15px; margin: 0 auto; color: #C5CBD6; }
+  td.star svg.on { color: #E9A21A; fill: #F5B935; }
+  .no { font-size: 11px; color: var(--text-2); letter-spacing: 0; }
+  .no small { display: block; font-size: 11px; color: var(--text-3); }
+  .ttl b { display: block; font-weight: 700; font-size: 13px; overflow: hidden; text-overflow: ellipsis; }
+  .ttl b i { font-style: normal; color: var(--navy); font-weight: 700; }
+  .ttl small { display: flex; gap: 6px; align-items: center; font-size: 11px; color: var(--text-3); margin-top: 2px; }
+  .ttl small mark { background: #FFF2B8; color: inherit; padding: 0 1px; }
+  .new { display: inline-block; font-size: 10.5px; font-weight: 800; color: #fff; background: var(--red); border-radius: 3px; padding: 0 4px; height: 16px; line-height: 16px; margin-right: 5px; vertical-align: 1px; letter-spacing: 0; }
+  .org { font-size: 12px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; }
+  .amt { font-weight: 500; font-size: 12.5px; }
+  .dd { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+  .dd em { font-style: normal; font-weight: 800; font-size: 11.5px; padding: 0 6px; height: 19px; line-height: 19px; border-radius: 4px; background: var(--navy-soft); color: var(--navy); letter-spacing: 0; }
+  .dd em.hot { background: var(--red); color: #fff; }
+  .dd em.warm { background: var(--red-soft); color: var(--red); }
+  .dd em.done { background: #EEF0F4; color: var(--text-3); }
+  .dd small { font-size: 11px; color: var(--text-3); }
+  .st { display: inline-flex; align-items: center; height: 22px; padding: 0 7px; border-radius: 11px; font-size: 11.5px; font-weight: 700; border: 1px solid; }
+  .st.pub { color: var(--navy); border-color: #BFCBEA; background: #fff; }
+  .st.cor { color: var(--amber); border-color: #F0CF9F; background: var(--amber-soft); }
+  .st.opn { color: var(--green); border-color: #ADDCC2; background: var(--green-soft); }
+  tr.read td { color: var(--text-3); }
+  tr.sel td { background: #EEF2FB; }
+  tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--navy); }
+  .list-foot { margin-top: auto; height: 34px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; border-top: 1px solid var(--line); background: #FBFCFD; font-size: 11.5px; color: var(--text-3); }
+  .pages { display: flex; gap: 3px; }
+  .pages b { min-width: 22px; height: 22px; display: grid; place-items: center; border-radius: 4px; font-weight: 500; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .pages b.on { background: var(--navy); color: #fff; font-weight: 700; }
+
+  /* 상세 패널 */
+  .detail { width: 414px; flex: none; background: #fff; border: 1px solid var(--line); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
+  .d-head { padding: 14px 18px 12px; border-bottom: 1px solid var(--line); }
+  .d-tags { display: flex; gap: 6px; align-items: center; }
+  .tag { font-size: 11px; font-weight: 700; padding: 0 7px; height: 20px; line-height: 20px; border-radius: 3px; background: var(--navy); color: #fff; }
+  .tag.o { background: #fff; color: var(--navy); box-shadow: inset 0 0 0 1px #BFCBEA; display: flex; align-items: center; gap: 4px; }
+  .tag.o svg { width: 12px; height: 12px; stroke-width: 2.2; }
+  .d-tags .sp { flex: 1; }
+  .d-tags .lnk { font-size: 11.5px; color: var(--navy); font-weight: 700; display: flex; align-items: center; gap: 3px; }
+  .d-head h2 { font-size: 16.5px; font-weight: 800; letter-spacing: -0.035em; margin-top: 8px; line-height: 1.35; }
+  .meta { display: grid; grid-template-columns: 62px 1fr 62px 1fr; gap: 5px 8px; margin-top: 10px; font-size: 12px; font-variant-numeric: tabular-nums; }
+  .meta dt { color: var(--text-3); }
+  .meta dd { color: var(--text); font-weight: 500; white-space: nowrap; }
+
+  .sec { padding: 12px 18px 0; }
+  .sec h3 { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; font-weight: 800; color: var(--text); }
+  .sec h3 span { font-size: 11.5px; font-weight: 500; color: var(--text-3); }
+  .sec h3 span b { color: var(--navy); font-weight: 700; }
+
+  .tl { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 12px; }
+  .tl::before { content: ""; position: absolute; left: 12.5%; right: 12.5%; top: 11px; height: 2px; background: var(--navy); }
+  .step { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .dot { width: 24px; height: 24px; border-radius: 50%; background: var(--navy); color: #fff; display: grid; place-items: center; box-shadow: 0 0 0 4px #fff; }
+  .dot svg { width: 13px; height: 13px; stroke-width: 2.6; }
+  .dot.cor { background: #fff; color: var(--amber); box-shadow: 0 0 0 4px #fff, inset 0 0 0 2px var(--amber); }
+  .dot.now { background: var(--green); box-shadow: 0 0 0 4px #fff, 0 0 0 7px rgb(19 122 75 / .18); }
+  .step b { font-size: 12.5px; font-weight: 800; margin-top: 7px; }
+  .step time { font-size: 11px; color: var(--text-2); font-variant-numeric: tabular-nums; margin-top: 1px; }
+  .step small { font-size: 11px; color: var(--amber); font-weight: 700; margin-top: 1px; }
+  .step small.g { color: var(--green); }
+  .step small.n { color: var(--text-3); font-weight: 500; }
+
+  .res { width: 100%; margin-top: 9px; border-top: 1px solid var(--text); }
+  .res th { height: 28px; font-size: 11px; background: #fff; color: var(--text-3); font-weight: 700; padding: 0 6px; border-bottom: 1px solid var(--line); }
+  .res td { height: 31px; font-size: 12.5px; padding: 0 6px; border-bottom: 1px solid #EDF0F5; }
+  .rk { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 4px; background: #EEF0F4; font-size: 11.5px; font-weight: 800; color: var(--text-2); }
+  .rk.one { background: var(--navy); color: #fff; }
+  .co { font-weight: 700; }
+  .co small { font-size: 10.5px; font-weight: 700; padding: 1px 5px; border-radius: 3px; margin-left: 5px; vertical-align: 1px; }
+  .co .wn { background: var(--green-soft); color: var(--green); }
+  .co .watch { background: var(--amber-soft); color: var(--amber); }
+  .co .me { background: var(--navy-soft); color: var(--navy); }
+  .rate { font-weight: 800; }
+  tr.first td { background: #F6F8FD; }
+  tr.mine td { color: var(--navy-ink); }
+
+  .dist { margin: auto 18px 14px; padding: 10px 12px 8px; border-radius: 6px; background: var(--head); }
+  .dist p { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-2); font-weight: 700; }
+  .dist p span { font-weight: 500; color: var(--text-3); }
+  .d-foot { margin-top: auto; display: flex; gap: 8px; padding: 12px 18px 14px; }
+  .d-foot b { flex: 1; height: 34px; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 5px; border: 1px solid var(--line-2); font-size: 12.5px; font-weight: 700; color: var(--text-2); }
+  .d-foot b.pri { background: var(--navy); border-color: var(--navy); color: #fff; }
+
+  .status { height: 26px; flex: none; display: flex; align-items: center; gap: 0; padding: 0 6px; background: #EEF1F6; border-top: 1px solid var(--line); color: var(--text-2); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+  .status span { padding: 0 12px; border-left: 1px solid var(--line-2); display: flex; align-items: center; gap: 6px; }
+  .status span:first-child { border-left: 0; }
+  .status .ok { color: var(--green); font-weight: 700; }
+  .status .ok i { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+  .status .r { margin-left: auto; border-left: 0; color: var(--text-3); }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar">
+    <span class="win-icon"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="3" fill="#1E3A8A"/><path d="M4.5 11.5V6.2L8 4l3.5 2.2v5.3M6.6 11.5V8.6h2.8v2.9" fill="none" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/></svg></span>
+    <span class="win-title">입찰파수꾼 3.2.0 — 공고 검색</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <div class="top">
+      <div class="brand"><span class="mk"><svg viewBox="0 0 24 24" width="17" height="17"><path d="M4 20V9.5L12 4l8 5.5V20" fill="none" stroke="#1E3A8A" stroke-width="2.2" stroke-linejoin="round"/><path d="M9 20v-5.5h6V20" fill="none" stroke="#1E3A8A" stroke-width="2.2" stroke-linejoin="round"/><circle cx="12" cy="10" r="1.6" fill="#1E3A8A"/></svg></span>입찰파수꾼<small>3.2.0</small></div>
+      <nav class="nav">
+        <a class="on"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>공고 검색</a>
+        <a><svg class="i" viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>관심 공고<em>12</em></a>
+        <a><svg class="i" viewBox="0 0 24 24"><path d="M9 4h6l1 3H8z"/><rect x="4" y="7" width="16" height="13" rx="2"/><path d="M8 12h8M8 16h5"/></svg>개찰 결과</a>
+        <a><svg class="i" viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M6 16V10M11 16V6M16 16v-4M21 16V8" transform="translate(-1 0)"/></svg>경쟁사 투찰</a>
+        <a><svg class="i" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>정정 비교</a>
+      </nav>
+      <span class="sp"></span>
+      <span class="run"><i></i><b>수집 중</b>30분마다 · 다음 확인 09:30</span>
+      <span class="tbtn"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>지금 확인</span>
+      <span class="tbtn"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>설정</span>
+    </div>
+
+    <div class="filters">
+      <div class="fl"><span>키워드</span>
+        <div class="box kw" style="width:262px"><span class="chip">CCTV<svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></span><span class="chip">유지보수<svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></span><span class="add">+ 키워드 추가</span></div>
+      </div>
+      <div class="fl"><span>업무 구분</span>
+        <div class="seg"><b class="on">전체</b><b>공사</b><b>용역</b><b>물품</b></div>
+      </div>
+      <div class="fl"><span>지역</span>
+        <div class="box" style="width:140px">서울 · 경기 · 인천<span style="flex:1"></span><i class="car"></i></div>
+      </div>
+      <div class="fl"><span>추정가격</span>
+        <div class="box tnum">1억 원<span style="color:var(--text-3)">~</span>10억 원<i class="car"></i></div>
+      </div>
+      <div class="fl"><span>공고일</span>
+        <div class="box tnum">최근 30일 · 09.26 ~ 10.26<i class="car"></i></div>
+      </div>
+      <span class="sp"></span>
+      <span class="reset"><svg class="i" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>초기화</span>
+      <span class="go"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>검색</span>
+    </div>
+
+    <div class="content">
+      <section class="list">
+        <div class="list-top">
+          <span class="tab on">전체<span>38</span></span>
+          <span class="tab">새 공고<span>9</span></span>
+          <span class="tab">정정<span>4</span></span>
+          <span class="tab">마감 임박<span>3</span></span>
+          <span class="tab">개찰 완료<span>5</span></span>
+          <span class="sp"></span>
+          <span class="sort">정렬 <b>마감 빠른 순</b><i class="car" style="width:6px;height:6px;border-right:1.5px solid #7B8497;border-bottom:1.5px solid #7B8497;rotate:45deg;margin:-3px 0 0 3px"></i></span>
+        </div>
+        <table>
+          <colgroup><col style="width:32px"><col style="width:102px"><col><col style="width:130px"><col style="width:92px"><col style="width:86px"><col style="width:80px"></colgroup>
+          <thead><tr><th class="c">관심</th><th>공고번호</th><th>공고명</th><th>수요기관</th><th class="r">추정가격(원)</th><th>입찰 마감</th><th>상태</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="c star"><svg class="i on" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg></td>
+              <td class="no">R26BK00921156<small>000차</small></td>
+              <td class="ttl"><b><span class="new">N</span><i>[공사]</i> 어린이보호구역 CCTV 설치공사</b><small>지역제한 · 적격심사 · 공고 10.23</small></td>
+              <td class="org">서울특별시 ○○구청</td>
+              <td class="r amt">340,000,000</td>
+              <td><div class="dd"><em class="hot">D-1</em><small>10.27(화) 10:00</small></div></td>
+              <td><span class="st pub">공고</span></td>
+            </tr>
+            <tr>
+              <td class="c star"><svg class="i on" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg></td>
+              <td class="no">R26BK00928815<small>000차</small></td>
+              <td class="ttl"><b><span class="new">N</span><i>[용역]</i> 공원 CCTV·비상벨 유지보수 용역</b><small>제한경쟁 · 적격심사 · 공고 10.24</small></td>
+              <td class="org">인천 ○○구시설공단</td>
+              <td class="r amt">184,000,000</td>
+              <td><div class="dd"><em class="warm">D-2</em><small>10.28(수) 10:00</small></div></td>
+              <td><span class="st pub">공고</span></td>
+            </tr>
+            <tr>
+              <td class="c star"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg></td>
+              <td class="no">R26BK00931742<small>000차</small></td>
+              <td class="ttl"><b><span class="new">N</span><i>[용역]</i> 방범 CCTV 통합관제센터 유지보수</b><small>협상에 의한 계약 · 공고 10.26 09:00</small></td>
+              <td class="org">경기도 ○○시청</td>
+              <td class="r amt">735,000,000</td>
+              <td><div class="dd"><em class="warm">D-3</em><small>10.29(목) 10:00</small></div></td>
+              <td><span class="st pub">공고</span></td>
+            </tr>
+            <tr>
+              <td class="c star"><svg class="i on" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg></td>
+              <td class="no">R26BK00902277<small>001차</small></td>
+              <td class="ttl"><b><i>[용역]</i> 공영주차장 CCTV 유지보수 용역</b><small>정정 10.22 · <mark>첨부파일 1곳 변경</mark></small></td>
+              <td class="org">서울 ○○구시설공단</td>
+              <td class="r amt">156,000,000</td>
+              <td><div class="dd"><em>D-4</em><small>10.30(금) 10:00</small></div></td>
+              <td><span class="st cor">정정</span></td>
+            </tr>
+            <tr>
+              <td class="c star"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg></td>
+              <td class="no">R26BK00927409<small>001차</small></td>
+              <td class="ttl"><b><i>[물품]</i> 학교 CCTV 카메라 교체 구매(2차)</b><small>정정 10.23 · <mark>규격서 수량 변경</mark></small></td>
+              <td class="org">○○교육지원청</td>
+              <td class="r amt">196,350,000</td>
+              <td><div class="dd"><em>D-7</em><small>11.02(월) 10:00</small></div></td>
+              <td><span class="st cor">정정</span></td>
+            </tr>
+            <tr class="read">
+              <td class="c star"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg></td>
+              <td class="no">R26BK00918830<small>000차</small></td>
+              <td class="ttl"><b><i>[용역]</i> 도시철도 역사 CCTV 유지보수</b><small>제한경쟁 · 적격심사 · 공고 10.21</small></td>
+              <td class="org">○○교통공사</td>
+              <td class="r amt">920,400,000</td>
+              <td><div class="dd"><em>D-9</em><small>11.04(수) 10:00</small></div></td>
+              <td><span class="st pub">공고</span></td>
+            </tr>
+            <tr class="sel">
+              <td class="c star"><svg class="i on" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg></td>
+              <td class="no">R26BK00876214<small>001차</small></td>
+              <td class="ttl"><b><i>[용역]</i> 2026 청사 CCTV 통합 유지보수 용역</b><small>개찰 10.23 · 참여 14개사</small></td>
+              <td class="org">경기도 ○○시청</td>
+              <td class="r amt">312,400,000</td>
+              <td><div class="dd"><em class="done">마감</em><small>10.23(금) 10:00</small></div></td>
+              <td><span class="st opn">개찰완료</span></td>
+            </tr>
+            <tr class="read">
+              <td class="c star"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg></td>
+              <td class="no">R26BK00869931<small>000차</small></td>
+              <td class="ttl"><b><i>[용역]</i> 하천 수위감시 CCTV 유지관리</b><small>개찰 10.22 · 참여 9개사</small></td>
+              <td class="org">한국○○공사</td>
+              <td class="r amt">128,700,000</td>
+              <td><div class="dd"><em class="done">마감</em><small>10.22(목) 10:00</small></div></td>
+              <td><span class="st opn">개찰완료</span></td>
+            </tr>
+            <tr class="read">
+              <td class="c star"><svg class="i" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg></td>
+              <td class="no">R26BK00861408<small>000차</small></td>
+              <td class="ttl"><b><i>[용역]</i> 산업단지 방범 CCTV 유지관리</b><small>개찰 10.21 · 참여 11개사</small></td>
+              <td class="org">경기도 ○○시청</td>
+              <td class="r amt">233,000,000</td>
+              <td><div class="dd"><em class="done">마감</em><small>10.21(수) 10:00</small></div></td>
+              <td><span class="st opn">개찰완료</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="list-foot"><span class="tnum">38건 중 1–9 · 오늘 09:00:04 확인</span><span class="pages"><b class="on">1</b><b>2</b><b>3</b><b>4</b><b>5</b></span></div>
+      </section>
+
+      <aside class="detail">
+        <div class="d-head">
+          <div class="d-tags"><span class="tag">용역</span><span class="tag o"><svg class="i" viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>개찰 알람</span><span class="sp"></span><span class="lnk">공고문 열기<svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M7 17 17 7M9 7h8v8"/></svg></span></div>
+          <h2>2026 청사 CCTV 통합 유지보수 용역</h2>
+          <dl class="meta">
+            <dt>공고번호</dt><dd>R26BK00876214-001</dd>
+            <dt>수요기관</dt><dd>경기도 ○○시청</dd>
+            <dt>계약방법</dt><dd>제한경쟁 · 적격심사</dd>
+            <dt>추정가격</dt><dd>312,400,000원</dd>
+            <dt>기초금액</dt><dd>343,640,000원</dd>
+            <dt>예정가격</dt><dd>341,287,630원</dd>
+          </dl>
+        </div>
+
+        <div class="sec">
+          <h3>진행 경과<span>정정 1회 · <b>첨부 2곳 변경 비교 ›</b></span></h3>
+          <div class="tl">
+            <div class="step"><span class="dot"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span><b>공고</b><time>10.13(화)</time><small class="n">입찰공고 게시</small></div>
+            <div class="step"><span class="dot cor"><svg class="i" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span><b>정정</b><time>10.16(금)</time><small>과업지시서 p.4</small></div>
+            <div class="step"><span class="dot"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span><b>마감</b><time>10.23(금) 10:00</time><small class="n">전자입찰 마감</small></div>
+            <div class="step"><span class="dot now"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span><b>개찰</b><time>10.23(금) 11:00</time><small class="g">결과 알림 보냄</small></div>
+          </div>
+        </div>
+
+        <div class="sec" style="padding-top:14px">
+          <h3>개찰 결과<span>참여 14개사 · <b>투찰 기록 ›</b></span></h3>
+          <table class="res">
+            <colgroup><col style="width:34px"><col><col style="width:108px"><col style="width:72px"></colgroup>
+            <thead><tr><th class="c">순위</th><th>업체명</th><th class="r">투찰금액(원)</th><th class="r">투찰률</th></tr></thead>
+            <tbody>
+              <tr class="first"><td class="c"><span class="rk one">1</span></td><td class="co">○○정보통신<small class="wn">심사 1순위</small></td><td class="r">299,487,000</td><td class="r rate">87.752%</td></tr>
+              <tr><td class="c"><span class="rk">2</span></td><td class="co">△△시스템</td><td class="r">299,586,000</td><td class="r rate">87.781%</td></tr>
+              <tr><td class="c"><span class="rk">3</span></td><td class="co">한빛○○<small class="watch">관심 업체</small></td><td class="r">299,866,000</td><td class="r rate">87.863%</td></tr>
+              <tr class="mine"><td class="c"><span class="rk">4</span></td><td class="co">(주)우리시스템<small class="me">자사</small></td><td class="r">300,005,000</td><td class="r rate">87.904%</td></tr>
+              <tr><td class="c"><span class="rk">5</span></td><td class="co">□□통신</td><td class="r">300,490,000</td><td class="r rate">88.046%</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="dist">
+          <p>투찰률 분포<span>하한 미달 2개사 제외 · 12개사</span></p>
+          <svg width="354" height="62" viewBox="0 0 354 62" style="margin-top:2px">
+            <!-- 87.0% = x 6, 89.0% = x 348 → 1%p = 171px -->
+            <line x1="6" y1="32" x2="348" y2="32" stroke="#C9D0DC" stroke-width="1.5"/>
+            <line x1="133.4" y1="15" x2="133.4" y2="42" stroke="#C8312B" stroke-width="1.2" stroke-dasharray="3 3"/>
+            <text x="129.4" y="11" font-size="10.5" fill="#C8312B" text-anchor="end" font-weight="700">낙찰하한 87.745%</text>
+            <g fill="#AEB6C4"><circle cx="105.2" cy="32" r="4"/><circle cx="125.7" cy="32" r="4"/></g>
+            <g fill="#8C9AC2"><circle cx="139.6" cy="32" r="4.5"/><circle cx="153.6" cy="32" r="4.5"/><circle cx="184.9" cy="32" r="4.5"/><circle cx="197.5" cy="32" r="4.5"/><circle cx="212.9" cy="32" r="4.5"/><circle cx="233.4" cy="32" r="4.5"/><circle cx="257.4" cy="32" r="4.5"/><circle cx="276.2" cy="32" r="4.5"/><circle cx="298.4" cy="32" r="4.5"/><circle cx="324.1" cy="32" r="4.5"/></g>
+            <circle cx="134.6" cy="32" r="6" fill="#1E3A8A" stroke="#fff" stroke-width="2"/>
+            <circle cx="160.6" cy="32" r="6" fill="#fff" stroke="#1E3A8A" stroke-width="2.4"/>
+            <text x="139.6" y="11" font-size="10.5" fill="#1E3A8A" font-weight="700">1순위 87.752%</text>
+            <text x="160.6" y="53" font-size="10.5" fill="#1E3A8A" text-anchor="middle" font-weight="700">자사 87.904%</text>
+            <g font-size="10" fill="#7B8497"><text x="6" y="53">87.0%</text><text x="348" y="53" text-anchor="end">89.0%</text></g>
+          </svg>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="status">
+      <span class="ok"><i></i>수집 중</span>
+      <span>공공 API 연결됨</span>
+      <span>오늘 새 공고 9건</span>
+      <span>관심 공고 12건</span>
+      <span>마지막 확인 09:00:04</span>
+      <span>알림 · PC · 텔레그램</span>
+      <span class="r">입찰파수꾼 3.2.0</span>
+    </footer>
+  </main>
+</div>
+</body>
+</html>

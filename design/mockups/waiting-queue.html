@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>차례콜</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2.0.5/fonts/variable/woff2/SUIT-Variable.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 차례콜: 점심 피크의 매장 대기 관리 화면. 큰 숫자 위주, 그린 + 따뜻한 앰버. 손님 휴대폰 화면을 겹친다. */
+  :root {
+    --g: #10B981; --g-2: #059669; --g-soft: #E7F8F1; --g-line: #B7EBD6;
+    --w: #F59E0B; --w-2: #C2700A; --w-soft: #FFF4E2; --w-line: #F8D79B;
+    --bg: #F6F5F1; --card: #fff; --line: #E8E6E0; --line-2: #F1EFEA;
+    --t1: #1C1B18; --t2: #57544C; --t3: #8F8B80;
+  }
+  body { font: 400 13px/1.4 'SUIT Variable', sans-serif; color: var(--t1); letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+  .browser { --bar: #E7E5DF; --tool: #fff; --fav: var(--g); --page: var(--bg); }
+  .br-fav { display: grid; place-items: center; }
+  .br-body { flex-direction: column; }
+
+  .head { height: 56px; flex: none; display: flex; align-items: center; gap: 12px; padding: 0 20px; background: #fff; border-bottom: 1px solid var(--line); }
+  .logo { display: flex; align-items: center; gap: 8px; }
+  .logo i { width: 30px; height: 30px; border-radius: 9px; background: var(--g); display: grid; place-items: center; }
+  .logo i svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .logo b { font-size: 16px; font-weight: 800; letter-spacing: -0.03em; }
+  .store { display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px 0 6px; border-radius: 9px; border: 1px solid var(--line); margin-left: 8px; }
+  .store i { width: 24px; height: 24px; border-radius: 7px; background: linear-gradient(135deg, #FDBA74, #F59E0B); display: grid; place-items: center; font-style: normal; font-weight: 800; font-size: 12px; color: #fff; }
+  .store b { font-weight: 700; font-size: 13px; }
+  .store svg { width: 12px; height: 12px; fill: none; stroke: var(--t3); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .open { display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px; border-radius: 17px; background: var(--g-soft); color: var(--g-2); font-weight: 800; font-size: 12.5px; }
+  .open .sw { width: 30px; height: 17px; border-radius: 9px; background: var(--g); position: relative; }
+  .open .sw::after { content: ""; position: absolute; right: 2px; top: 2px; width: 13px; height: 13px; border-radius: 50%; background: #fff; }
+  .head .sp { flex: 1; }
+  .sheet { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--t3); }
+  .sheet svg { width: 15px; height: 15px; fill: none; stroke: var(--g-2); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .btn { height: 34px; display: flex; align-items: center; gap: 6px; padding: 0 13px; border-radius: 9px; border: 1px solid var(--line); background: #fff; font-weight: 700; font-size: 12.5px; color: var(--t2); white-space: nowrap; }
+  .btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .btn.pri { background: var(--g); border-color: var(--g); color: #fff; }
+
+  .hero { height: 118px; flex: none; display: flex; align-items: center; gap: 30px; padding: 0 24px; }
+  .hero h1 { font-size: 15px; font-weight: 800; color: var(--t2); }
+  .hero h1 small { display: block; font-size: 12px; font-weight: 500; color: var(--t3); margin-top: 2px; }
+  .big { display: flex; align-items: baseline; gap: 6px; margin-top: 2px; }
+  .big strong { font-size: 64px; font-weight: 800; letter-spacing: -0.05em; line-height: 1; color: var(--t1); }
+  .big span { font-size: 22px; font-weight: 800; }
+  .stats { display: flex; gap: 10px; }
+  .st { padding: 12px 16px; border-radius: 14px; background: #fff; border: 1px solid var(--line); min-width: 118px; }
+  .st p { font-size: 12px; color: var(--t3); font-weight: 600; }
+  .st b { display: block; font-size: 26px; font-weight: 800; letter-spacing: -0.04em; line-height: 1.2; margin-top: 2px; }
+  .st b small { font-size: 14px; font-weight: 700; margin-left: 2px; color: var(--t2); }
+  .st.g { background: var(--g-soft); border-color: var(--g-line); }
+  .st.g b { color: var(--g-2); }
+  .chart { flex: 1; min-width: 0; height: 92px; padding: 10px 14px 6px; border-radius: 14px; background: #fff; border: 1px solid var(--line); display: flex; flex-direction: column; }
+  .chart p { display: flex; justify-content: space-between; font-size: 12px; color: var(--t3); font-weight: 600; }
+  .chart p b { color: var(--t1); font-weight: 700; }
+  .chart p span { font-weight: 500; }
+  .chart svg { margin-top: 4px; }
+  .chart svg text { font: 600 11px 'SUIT Variable'; fill: #A39E92; }
+
+  .main { flex: 1; min-height: 0; display: flex; gap: 16px; padding: 0 20px 16px; }
+  .list { width: 884px; flex: none; display: flex; flex-direction: column; border-radius: 14px; background: #fff; border: 1px solid var(--line); overflow: hidden; }
+  .l-top { height: 48px; flex: none; display: flex; align-items: center; gap: 4px; padding: 0 14px; border-bottom: 1px solid var(--line); }
+  .tab { height: 32px; display: flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: 8px; font-size: 13px; font-weight: 700; color: var(--t3); }
+  .tab span { font-size: 12px; padding: 1px 7px; border-radius: 9px; background: #F1EFEA; color: var(--t2); }
+  .tab.on { background: var(--t1); color: #fff; }
+  .tab.on span { background: rgb(255 255 255 / .2); color: #fff; }
+  .l-top .next { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--t3); }
+  .l-top .next b { color: var(--t1); font-weight: 800; }
+  table { width: 100%; border-collapse: collapse; }
+  th { height: 32px; text-align: left; padding: 0 12px; font-size: 11.5px; font-weight: 700; color: var(--t3); background: #FBFAF7; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td { height: 51px; padding: 0 12px; border-bottom: 1px solid var(--line-2); white-space: nowrap; }
+  th:first-child, td:first-child { padding-left: 16px; }
+  th.r, td.r { text-align: right; }
+  tr.call td { background: var(--w-soft); }
+  tr.call td:first-child { box-shadow: inset 4px 0 0 var(--w); }
+  tr.me td { background: #F4FBF8; }
+  .no { display: inline-grid; place-items: center; width: 46px; height: 34px; border-radius: 9px; background: #F3F1EC; font-size: 17px; font-weight: 800; letter-spacing: -0.03em; }
+  tr.call .no { background: var(--w); color: #fff; }
+  .ord { font-size: 12px; color: var(--t3); font-weight: 600; margin-left: 8px; }
+  .ppl { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 14px; }
+  .ppl svg { width: 16px; height: 16px; fill: none; stroke: var(--t3); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .tag { font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 5px; background: #F1EFEA; color: var(--t2); margin-left: 4px; }
+  .tel { font-size: 14px; font-weight: 700; color: var(--t2); letter-spacing: .02em; }
+  .tel small { font-size: 11.5px; color: var(--t3); font-weight: 500; margin-left: 4px; letter-spacing: 0; }
+  .wt b { font-size: 15px; font-weight: 800; }
+  .wt small { display: block; font-size: 11.5px; color: var(--t3); margin-top: 1px; }
+  .wt .bar { margin-top: 4px; width: 90px; height: 4px; border-radius: 2px; background: #EFEDE7; overflow: hidden; }
+  .wt .bar i { display: block; height: 100%; border-radius: 2px; background: var(--g); }
+  .wt .bar i.w { background: var(--w); }
+  .state { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--t2); }
+  .state i { width: 7px; height: 7px; border-radius: 50%; background: #CFCAC0; }
+  .state.call { color: var(--w-2); } .state.call i { background: var(--w); box-shadow: 0 0 0 3px rgb(245 158 11 / .22); }
+  .state.next { color: var(--g-2); } .state.next i { background: var(--g); }
+  .acts { display: flex; gap: 6px; justify-content: flex-end; }
+  .a { height: 32px; display: flex; align-items: center; gap: 5px; padding: 0 12px; border-radius: 8px; font-weight: 800; font-size: 12.5px; border: 1px solid var(--line); color: var(--t2); background: #fff; }
+  .a svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .a.call { background: var(--w); border-color: var(--w); color: #fff; }
+  .a.in { background: var(--g); border-color: var(--g); color: #fff; }
+  .a.ghost { width: 32px; padding: 0; justify-content: center; color: var(--t3); }
+  .more { height: 38px; flex: none; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--t3); margin-top: auto; border-top: 1px solid var(--line-2); }
+  .more svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+  .right { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+  .calling { border-radius: 14px; background: #fff; border: 1.5px solid var(--w-line); padding: 13px 14px; box-shadow: 0 10px 24px -16px rgb(245 158 11 / .6); }
+  .calling p { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--w-2); }
+  .calling p i { width: 8px; height: 8px; border-radius: 50%; background: var(--w); box-shadow: 0 0 0 4px rgb(245 158 11 / .2); }
+  .calling p span { margin-left: auto; color: var(--t3); font-weight: 600; }
+  .calling .row { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+  .calling .row strong { font-size: 34px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+  .calling .row strong small { font-size: 15px; margin-left: 1px; }
+  .calling .row div { font-size: 12.5px; color: var(--t2); line-height: 1.45; }
+  .calling .row div b { color: var(--t1); font-weight: 700; }
+
+  /* 손님 휴대폰: QR로 등록한 대기 화면 */
+  .clip { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 20; }
+  .phone { right: 34px; top: 370px; }
+  .ph-screen { --screen: #F6F5F1; }
+  .c-head { display: flex; align-items: center; gap: 9px; padding: 4px 18px 12px; }
+  .c-head i { width: 32px; height: 32px; border-radius: 10px; background: linear-gradient(135deg, #FDBA74, #F59E0B); display: grid; place-items: center; font-style: normal; font-weight: 800; font-size: 14px; color: #fff; }
+  .c-head b { display: block; font-size: 14px; font-weight: 800; }
+  .c-head small { display: block; font-size: 11px; color: var(--t3); }
+  .c-head span { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--t3); border: 1px solid var(--line); border-radius: 6px; padding: 2px 6px; background: #fff; }
+  .turn { margin: 0 12px; border-radius: 22px; background: #fff; padding: 16px 16px 14px; text-align: center; box-shadow: 0 6px 20px -12px rgb(0 0 0 / .25); }
+  .turn .tk { display: inline-block; font-size: 12px; font-weight: 800; color: var(--g-2); background: var(--g-soft); padding: 3px 10px; border-radius: 10px; }
+  .turn p.l { font-size: 14px; font-weight: 700; color: var(--t2); margin-top: 10px; }
+  .turn strong { display: block; font-size: 76px; font-weight: 800; letter-spacing: -0.06em; line-height: .95; color: var(--t1); margin-top: 2px; }
+  .turn strong small { font-size: 26px; letter-spacing: -0.03em; margin-left: 2px; }
+  .turn .eta { display: inline-flex; align-items: baseline; gap: 4px; margin-top: 8px; font-size: 14px; font-weight: 700; color: var(--t2); }
+  .turn .eta b { font-size: 24px; font-weight: 800; color: var(--g-2); letter-spacing: -0.03em; }
+  .dots { display: flex; justify-content: center; gap: 6px; margin-top: 12px; }
+  .dots i { width: 26px; height: 6px; border-radius: 3px; background: #E7E4DD; }
+  .dots i.d { background: #CFEBDD; }
+  .dots i.me { background: var(--g); width: 34px; }
+  .c-info { margin: 10px 12px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .c-info div { background: #fff; border-radius: 14px; padding: 9px 12px; }
+  .c-info p { font-size: 11px; color: var(--t3); font-weight: 600; }
+  .c-info b { font-size: 15px; font-weight: 800; }
+  .c-note { margin-top: 11px; display: flex; justify-content: center; align-items: center; gap: 5px; font-size: 11.5px; color: var(--t2); font-weight: 600; }
+  .c-note svg { width: 14px; height: 14px; flex: none; fill: none; stroke: var(--w-2); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+</style>
+</head>
+<body>
+<div class="browser">
+  <header class="br-tabs"><span class="mac-lights"><i></i><i></i><i></i></span>
+    <span class="br-tab"><i class="br-fav"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></i>차례콜 1.3.0 · 햇살키친 본점</span>
+    <span class="br-tab off">대기명단 · 구글 시트</span>
+  </header>
+  <div class="br-tool"><span class="br-nav"><i></i><i></i><i></i></span><span class="br-url"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7079" stroke-width="2.2" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>solutions.asidepartners.kr</b>/charyecall/haessal/staff</span></div>
+  <main class="br-body">
+    <div class="head">
+      <div class="logo"><i><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg></i><b>차례콜</b></div>
+      <div class="store"><i>햇</i><b>햇살키친 본점</b><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div>
+      <span class="open">대기 접수 중<i class="sw"></i></span>
+      <span class="sp"></span>
+      <span class="sheet"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 9h16M4 15h16M10 3v18"/></svg>구글 시트에 저장 중 · 12:43</span>
+      <span class="btn"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>통계 보기</span>
+      <span class="btn pri"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 17h3v3"/></svg>QR 출력</span>
+    </div>
+
+    <div class="hero">
+      <div>
+        <h1>오늘의 웨이팅<small>10월 26일 (월) 12:43 · 점심 피크</small></h1>
+        <div class="big"><strong>12</strong><span>팀 대기</span></div>
+      </div>
+      <div class="stats">
+        <div class="st g"><p>평균 대기</p><b>18<small>분</small></b></div>
+        <div class="st"><p>오늘 입장</p><b>48<small>팀</small></b></div>
+        <div class="st"><p>대기 포기</p><b>3<small>팀</small></b></div>
+      </div>
+      <div class="chart">
+        <p><b>시간대별 대기 팀 수</b><span>회색은 지난 월요일 기준 예상</span></p>
+        <svg width="584" height="62" viewBox="0 0 584 62"><g><rect x="0" y="40" width="32" height="6" rx="3" fill="#BDEBD8"/><rect x="46" y="36" width="32" height="10" rx="3" fill="#BDEBD8"/><rect x="92" y="29" width="32" height="17" rx="3" fill="#8FDDBE"/><rect x="138" y="22" width="32" height="24" rx="3" fill="#5FCFA4"/><rect x="184" y="12" width="32" height="34" rx="3" fill="#2FC28A"/><rect x="230" y="9" width="32" height="37" rx="3" fill="#10B981"/><rect x="276" y="14" width="32" height="32" rx="3" fill="#10B981"/><rect x="322" y="17" width="32" height="29" rx="3" fill="#F59E0B"/><rect x="368" y="24" width="32" height="22" rx="3" fill="#E6E2DA"/><rect x="414" y="31" width="32" height="15" rx="3" fill="#E6E2DA"/><rect x="460" y="36" width="32" height="10" rx="3" fill="#E6E2DA"/><rect x="506" y="40" width="32" height="6" rx="3" fill="#E6E2DA"/><rect x="552" y="42" width="32" height="4" rx="3" fill="#E6E2DA"/></g><text x="338.0" y="12" text-anchor="middle" style="fill:#C2700A;font-weight:800">지금 12</text><g text-anchor="middle"><text x="16.0" y="60">11시</text><text x="200.0" y="60">12시</text><text x="384.0" y="60">13시</text><text x="568.0" y="60">14시</text></g></svg>
+      </div>
+    </div>
+
+    <div class="main">
+      <section class="list">
+        <div class="l-top">
+          <span class="tab on">홀 대기 <span>12</span></span>
+          <span class="tab">배달 픽업 <span>2</span></span>
+          <span class="tab">입장 완료 <span>48</span></span>
+          <span class="tab">취소·포기 <span>3</span></span>
+          <span class="next">다음 호출 <b>58번 · 4명</b></span>
+        </div>
+        <table>
+          <thead><tr><th>대기번호</th><th>인원</th><th>연락처</th><th>기다린 시간</th><th>상태</th><th class="r">처리</th></tr></thead>
+          <tbody>
+            <tr class="call">
+              <td><span class="no">57</span><span class="ord">호출됨</span></td>
+              <td><span class="ppl"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2.2.7 3.5 2.8 3.5 6"/></svg>2명</span></td>
+              <td><span class="tel">**88<small>12:11 등록</small></span></td>
+              <td class="wt"><b>32분</b><div class="bar"><i class="w" style="width:100%"></i></div></td>
+              <td><span class="state call"><i></i>호출 중 · 2분 경과</span></td>
+              <td><div class="acts"><span class="a"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>재호출</span><span class="a in"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg>입장</span><span class="a ghost"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></span></div></td>
+            </tr>
+            <tr>
+              <td><span class="no">58</span><span class="ord">1번째</span></td>
+              <td><span class="ppl"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2.2.7 3.5 2.8 3.5 6"/></svg>4명</span></td>
+              <td><span class="tel">**47<small>12:14 등록</small></span></td>
+              <td class="wt"><b>29분</b><div class="bar"><i style="width:90%"></i></div></td>
+              <td><span class="state next"><i></i>다음 차례 · 약 3분</span></td>
+              <td><div class="acts"><span class="a call"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>호출</span><span class="a"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg>입장</span><span class="a ghost"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></span></div></td>
+            </tr>
+            <tr>
+              <td><span class="no">59</span><span class="ord">2번째</span></td>
+              <td><span class="ppl"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2.2.7 3.5 2.8 3.5 6"/></svg>2명</span></td>
+              <td><span class="tel">**03<small>12:16 등록</small></span></td>
+              <td class="wt"><b>27분</b><div class="bar"><i style="width:84%"></i></div></td>
+              <td><span class="state"><i></i>대기 · 약 6분</span></td>
+              <td><div class="acts"><span class="a call"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>호출</span><span class="a"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg>입장</span><span class="a ghost"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></span></div></td>
+            </tr>
+            <tr class="me">
+              <td><span class="no">60</span><span class="ord">3번째</span></td>
+              <td><span class="ppl"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2.2.7 3.5 2.8 3.5 6"/></svg>3명</span></td>
+              <td><span class="tel">**12<small>12:19 QR 등록</small></span></td>
+              <td class="wt"><b>24분</b><div class="bar"><i style="width:75%"></i></div></td>
+              <td><span class="state"><i></i>대기 · 약 9분</span></td>
+              <td><div class="acts"><span class="a call"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>호출</span><span class="a"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg>입장</span><span class="a ghost"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></span></div></td>
+            </tr>
+            <tr>
+              <td><span class="no">61</span><span class="ord">4번째</span></td>
+              <td><span class="ppl"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/></svg>1명</span></td>
+              <td><span class="tel">**59<small>12:22 등록</small></span></td>
+              <td class="wt"><b>21분</b><div class="bar"><i style="width:66%"></i></div></td>
+              <td><span class="state"><i></i>대기 · 약 12분</span></td>
+              <td><div class="acts"><span class="a call"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>호출</span><span class="a"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg>입장</span><span class="a ghost"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></span></div></td>
+            </tr>
+            <tr>
+              <td><span class="no">62</span><span class="ord">5번째</span></td>
+              <td><span class="ppl"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2.2.7 3.5 2.8 3.5 6"/></svg>4명<span class="tag">유아 의자</span></span></td>
+              <td><span class="tel">**36<small>12:27 등록</small></span></td>
+              <td class="wt"><b>16분</b><div class="bar"><i style="width:50%"></i></div></td>
+              <td><span class="state"><i></i>대기 · 약 15분</span></td>
+              <td><div class="acts"><span class="a call"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>호출</span><span class="a"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg>입장</span><span class="a ghost"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></span></div></td>
+            </tr>
+            <tr>
+              <td><span class="no">63</span><span class="ord">6번째</span></td>
+              <td><span class="ppl"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2.2.7 3.5 2.8 3.5 6"/></svg>2명</span></td>
+              <td><span class="tel">**71<small>12:31 등록</small></span></td>
+              <td class="wt"><b>12분</b><div class="bar"><i style="width:38%"></i></div></td>
+              <td><span class="state"><i></i>대기 · 약 18분</span></td>
+              <td><div class="acts"><span class="a call"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>호출</span><span class="a"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg>입장</span><span class="a ghost"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></span></div></td>
+            </tr>
+            <tr>
+              <td><span class="no">64</span><span class="ord">7번째</span></td>
+              <td><span class="ppl"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2.2.7 3.5 2.8 3.5 6"/></svg>5명<span class="tag">단체석</span></span></td>
+              <td><span class="tel">**24<small>12:35 등록</small></span></td>
+              <td class="wt"><b>8분</b><div class="bar"><i style="width:25%"></i></div></td>
+              <td><span class="state"><i></i>대기 · 약 22분</span></td>
+              <td><div class="acts"><span class="a call"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>호출</span><span class="a"><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg>입장</span><span class="a ghost"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></span></div></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="more">65~69번 5팀 더 보기<svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div>
+      </section>
+
+      <aside class="right">
+        <div class="calling">
+          <p><i></i>지금 호출 중<span>12:41 호출</span></p>
+          <div class="row"><strong>57<small>번</small></strong><div><b>2명 · **88</b><br>손님 화면에 알림·진동 전송됨</div></div>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<div class="clip"><div class="phone">
+  <div class="ph-screen">
+    <div class="ph-status"><span>12:43</span><i class="ph-island"></i><span class="ph-icons"></span></div>
+    <div class="c-head"><i>햇</i><div><b>햇살키친 본점</b><small>웨이팅 · 홀</small></div><span>EN</span></div>
+    <div class="turn">
+      <span class="tk">대기번호 60 · 3명</span>
+      <p class="l">내 순서</p>
+      <strong>3<small>번째</small></strong>
+      <div class="eta">예상 <b>9분</b></div>
+      <div class="dots"><i class="d"></i><i class="d"></i><i class="me"></i><i></i><i></i></div>
+      <p class="c-note"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>차례가 되면 알림·진동으로 알려 드려요</p>
+    </div>
+    <div class="c-info"><div><p>내 앞</p><b>2팀</b></div><div><p>등록</p><b>12:19</b></div></div>
+  </div>
+</div></div>
+</body>
+</html>

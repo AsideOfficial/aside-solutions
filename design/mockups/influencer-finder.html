@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>협찬픽</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2.0.5/fonts/variable/woff2/SUIT-Variable.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 협찬픽: 협찬 후보를 고르는 macOS 앱. 밝은 바탕, 핑크 포인트, 프로필 카드 그리드. */
+  :root {
+    --bg: #FFFFFF; --side: #F4F1F3; --line: #ECE6EA; --line-2: #DED6DB; --soft: #FBF6F9;
+    --text: #1F1A1D; --text-2: #5B5258; --text-3: #988E95;
+    --pk: #DB2777; --pk-2: #BE185D; --pk-soft: #FCE7F3; --pk-ink: #831843;
+  }
+  body { font: 400 13px/1.4 'SUIT Variable', 'Pretendard Variable', sans-serif; color: var(--text); background: #fff; letter-spacing: -0.01em; }
+  .mac { background: #fff; }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  /* 사이드바 */
+  .side { width: 236px; flex: none; background: var(--side); border-right: 1px solid var(--line); padding: 46px 14px 14px; display: flex; flex-direction: column; }
+  .app { display: flex; align-items: center; gap: 9px; padding: 0 4px; }
+  .app i { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(135deg, #F472B6, #DB2777 60%, #9D174D); display: grid; place-items: center; box-shadow: 0 3px 8px -3px rgb(219 39 119 / .6); }
+  .app b { display: block; font-size: 15px; font-weight: 800; letter-spacing: -0.03em; }
+  .app small { display: block; font-size: 11px; color: var(--text-3); }
+  .sec { margin-top: 18px; }
+  .sec > p { font-size: 11px; font-weight: 700; color: var(--text-3); padding: 0 4px; letter-spacing: 0.02em; }
+  .fld { margin-top: 10px; padding: 0 4px; }
+  .fld label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: var(--text-2); }
+  .fld label b { color: var(--pk-2); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+  .tags b { height: 24px; display: flex; align-items: center; gap: 4px; padding: 0 9px; border-radius: 12px; font-size: 12px; font-weight: 700; background: #fff; border: 1px solid var(--line-2); color: var(--text-2); }
+  .tags b.on { background: var(--pk); border-color: var(--pk); color: #fff; }
+  .tags b.add { color: var(--text-3); font-weight: 500; border-style: dashed; }
+  .range { position: relative; height: 22px; margin-top: 6px; }
+  .range::before { content: ""; position: absolute; left: 0; right: 0; top: 10px; height: 3px; border-radius: 2px; background: #E2D9DF; }
+  .range .fill { position: absolute; top: 10px; height: 3px; background: var(--pk); border-radius: 2px; }
+  .range .k { position: absolute; top: 4px; width: 15px; height: 15px; border-radius: 50%; background: #fff; border: 2px solid var(--pk); box-shadow: 0 1px 3px rgb(0 0 0 / .15); translate: -50% 0; }
+  .ticks { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .chk { display: flex; flex-direction: column; gap: 6px; margin-top: 7px; font-size: 12.5px; color: var(--text-2); }
+  .chk span { display: flex; align-items: center; gap: 7px; }
+  .chk i { width: 15px; height: 15px; border-radius: 4px; border: 1.5px solid #CFC5CC; background: #fff; display: grid; place-items: center; }
+  .chk i.on { background: var(--pk); border-color: var(--pk); color: #fff; }
+  .chk i svg { width: 10px; height: 10px; stroke-width: 3.2; }
+  .chk em { margin-left: auto; font-style: normal; font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .prod { margin-top: 7px; padding: 8px 10px; border-radius: 8px; background: #fff; border: 1px solid var(--line-2); font-size: 12px; color: var(--text); line-height: 1.45; }
+  .lists { margin-top: 7px; display: flex; flex-direction: column; gap: 1px; }
+  .lists span { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 8px; border-radius: 7px; font-size: 12.5px; color: var(--text-2); }
+  .lists span.on { background: rgb(219 39 119 / .1); color: var(--pk-ink); font-weight: 700; }
+  .lists span em { margin-left: auto; font-style: normal; font-size: 11.5px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .lists span.on em { color: var(--pk-2); font-weight: 700; }
+  .lists svg { width: 15px; height: 15px; }
+  .side .foot { margin-top: auto; display: flex; flex-direction: column; gap: 5px; padding: 10px 6px 0; border-top: 1px solid var(--line-2); font-size: 11.5px; color: var(--text-3); }
+  .side .foot span { display: flex; align-items: center; gap: 6px; }
+  .side .foot i { width: 6px; height: 6px; border-radius: 50%; background: #22A06B; }
+
+  /* 메인 */
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .tool { height: 62px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 20px; border-bottom: 1px solid var(--line); }
+  .tool h1 { font-size: 17px; font-weight: 800; letter-spacing: -0.03em; }
+  .tool h1 span { color: var(--pk); }
+  .tool p { font-size: 11.5px; color: var(--text-3); margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .tool p b { color: var(--text-2); font-weight: 700; }
+  .tool .sp { flex: 1; }
+  .sel { white-space: nowrap; height: 30px; display: flex; align-items: center; gap: 7px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line-2); font-size: 12px; font-weight: 600; color: var(--text-2); }
+  .sel i { width: 6px; height: 6px; border-right: 1.5px solid var(--text-3); border-bottom: 1.5px solid var(--text-3); rotate: 45deg; margin-top: -3px; }
+  .btn { white-space: nowrap; height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: 8px; font-size: 12px; font-weight: 700; border: 1px solid var(--line-2); color: var(--text-2); }
+  .btn.pri { background: var(--pk); border-color: var(--pk); color: #fff; }
+  .btn svg { width: 14px; height: 14px; }
+  .grid { flex: 1; min-height: 0; padding: 16px 18px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 12px; background: var(--soft); }
+  .card { position: relative; border-radius: 14px; background: #fff; border: 1px solid var(--line); padding: 14px 14px 12px; display: flex; flex-direction: column; box-shadow: 0 1px 2px rgb(131 24 67 / .04); }
+  .card.on { border-color: var(--pk); box-shadow: 0 0 0 3px rgb(219 39 119 / .14), 0 8px 20px -10px rgb(219 39 119 / .4); }
+  .c-top { display: flex; align-items: center; gap: 11px; }
+  .av { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; flex: none; font-weight: 800; font-size: 15px; color: #fff; letter-spacing: -0.02em; box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px var(--ring, #F9A8D4); }
+  .c-top div { min-width: 0; flex: 1; }
+  .c-top b { display: block; font-size: 13.5px; font-weight: 800; letter-spacing: -0.01em; }
+  .c-top small { display: block; font-size: 11.5px; color: var(--text-3); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fit { position: relative; width: 46px; height: 46px; flex: none; }
+  .fit svg { width: 46px; height: 46px; rotate: -90deg; }
+  .fit b { position: absolute; inset: 0; display: grid; place-items: center; font-size: 14px; font-weight: 800; color: var(--pk-2); font-variant-numeric: tabular-nums; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 12px; padding: 9px 0 0; border-top: 1px solid var(--line); }
+  .stats p { font-size: 11px; color: var(--text-3); }
+  .stats p b { display: block; font-size: 14px; font-weight: 800; color: var(--text); margin-top: 1px; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  .stats p b.hi { color: var(--pk-2); }
+  .mini { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 10px; }
+  .mini i { aspect-ratio: 1; border-radius: 6px; display: grid; place-items: center; }
+  .mini svg { width: 52%; height: 52%; fill: none; stroke: #fff; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .c-foot { margin-top: auto; display: flex; align-items: center; gap: 6px; padding-top: 8px; font-size: 11.5px; color: var(--text-3); }
+  .chip { height: 21px; display: flex; align-items: center; padding: 0 7px; border-radius: 6px; background: #F5F0F3; font-size: 11px; font-weight: 700; color: var(--text-2); }
+  .chip.pk { background: var(--pk-soft); color: var(--pk-2); }
+  .chip.gr { background: #E3F5EC; color: #1B7A4D; }
+  .c-foot .r { margin-left: auto; }
+
+  /* 상세 */
+  .detail { width: 318px; flex: none; border-left: 1px solid var(--line); display: flex; flex-direction: column; padding: 18px 18px 16px; }
+  .d-top { display: flex; align-items: center; gap: 13px; }
+  .d-top .av { width: 62px; height: 62px; font-size: 19px; }
+  .d-top b { display: block; font-size: 16px; font-weight: 800; }
+  .d-top small { display: block; font-size: 12px; color: var(--text-3); margin-top: 2px; }
+  .bio { margin-top: 10px; font-size: 12.5px; color: var(--text-2); line-height: 1.5; }
+  .nums { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 12px; border-radius: 10px; background: var(--soft); border: 1px solid var(--line); padding: 9px 0; text-align: center; }
+  .nums p { font-size: 11px; color: var(--text-3); }
+  .nums p + p { border-left: 1px solid var(--line); }
+  .nums b { display: block; font-size: 15px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+  .ai { margin-top: 12px; display: flex; gap: 12px; align-items: flex-start; }
+  .ai .fit { width: 64px; height: 64px; }
+  .ai .fit svg { width: 64px; height: 64px; }
+  .ai .fit b { font-size: 20px; flex-direction: column; line-height: 1; }
+  .ai .fit b small { display: block; font-size: 10px; font-weight: 600; color: var(--text-3); margin-top: 2px; }
+  .ai ul { flex: 1; display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: var(--text-2); line-height: 1.4; }
+  .ai ul p { font-size: 11px; font-weight: 700; color: var(--pk-2); }
+  .ai li { display: flex; gap: 6px; }
+  .ai li::before { content: ""; width: 4px; height: 4px; border-radius: 50%; background: var(--pk); margin-top: 7px; flex: none; }
+  .d-h { margin-top: 14px; display: flex; justify-content: space-between; align-items: baseline; font-size: 12.5px; font-weight: 800; }
+  .d-h span { font-size: 11.5px; font-weight: 500; color: var(--text-3); }
+  .posts { margin-top: 8px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+  .post { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; display: grid; place-items: center; }
+  .post svg { width: 58%; height: 58%; }
+  .post span { position: absolute; left: 5px; bottom: 4px; display: flex; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 700; color: #fff; text-shadow: 0 1px 2px rgb(0 0 0 / .35); font-variant-numeric: tabular-nums; }
+  .post span svg { width: 10px; height: 10px; fill: #fff; stroke: none; }
+  .post em { position: absolute; right: 5px; top: 5px; font-style: normal; font-size: 10px; font-weight: 800; color: #fff; background: rgb(0 0 0 / .35); padding: 1px 5px; border-radius: 4px; }
+  .spark { margin-top: 8px; }
+  .memo { margin-top: 8px; padding: 9px 11px; border-radius: 9px; background: #FFF8E6; border: 1px solid #F4E2B0; font-size: 12px; color: #6B5523; line-height: 1.45; }
+  .memo b { display: block; font-size: 11px; color: #A0761A; margin-bottom: 1px; }
+  .d-acts { margin-top: auto; display: flex; gap: 8px; padding-top: 12px; }
+  .d-acts .sel { flex: 1; height: 34px; }
+  .d-acts .btn { height: 34px; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs>
+  <symbol id="cup" viewBox="0 0 24 24"><path d="M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 3c0 1.5 1 1.5 1 3M11.5 3c0 1.5 1 1.5 1 3"/></symbol>
+  <symbol id="heart" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 16s-3.5-2.2-3.5-4.8A1.9 1.9 0 0 1 12 10a1.9 1.9 0 0 1 3.5 1.2c0 2.6-3.5 4.8-3.5 4.8z"/></symbol>
+  <symbol id="kettle" viewBox="0 0 24 24"><path d="M6 10h9v6a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3z"/><path d="M15 12c2 0 4-1 5-4M9 10V7a2 2 0 0 1 2-2h1"/></symbol>
+  <symbol id="bread" viewBox="0 0 24 24"><path d="M3 14c2-6 16-6 18 0-2 3-16 3-18 0z"/><path d="M8 10.5l1.5 4M12 9.5v5M16 10.5l-1.5 4"/></symbol>
+  <symbol id="bean" viewBox="0 0 24 24"><ellipse cx="8" cy="9" rx="2.6" ry="3.6" transform="rotate(-25 8 9)"/><ellipse cx="15.5" cy="10" rx="2.6" ry="3.6" transform="rotate(20 15.5 10)"/><ellipse cx="11" cy="16.5" rx="2.6" ry="3.6" transform="rotate(80 11 16.5)"/></symbol>
+  <symbol id="drip" viewBox="0 0 24 24"><path d="M7 4h10l-1.5 7h-7z"/><path d="M9.5 11v3h5v-3M8 20h8M12 14v6"/></symbol>
+  <symbol id="cake" viewBox="0 0 24 24"><path d="M4 20h16v-7H4z"/><path d="M4 16c2 1.5 4 1.5 6 0s4-1.5 6 0 3 1 4 0M12 13V9M12 6.5v.01"/></symbol>
+  <symbol id="plant" viewBox="0 0 24 24"><path d="M8 14h8l-1 6H9z"/><path d="M12 14V8M12 10c-3 0-4-2-4-4 3 0 4 2 4 4zM12 9c0-2.5 1.5-4 4.5-4 0 2.5-1.5 4-4.5 4z"/></symbol>
+</defs></svg>
+<div class="mac">
+  <span class="mac-lights"><i></i><i></i><i></i></span>
+  <main class="mac-body">
+    <aside class="side">
+      <div class="app"><i><svg viewBox="0 0 24 24" width="17" height="17"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" fill="#fff"/><circle cx="12" cy="10.5" r="2" fill="#DB2777"/></svg></i><div><b>협찬픽</b><small>1.2.5 · 인플루언서 찾기</small></div></div>
+
+      <div class="sec">
+        <p>검색 조건</p>
+        <div class="fld"><label>해시태그</label>
+          <div class="tags"><b class="on">#홈카페</b><b>#홈카페레시피</b><b>#핸드드립</b><b class="add">+ 추가</b></div>
+        </div>
+        <div class="fld"><label>팔로워<b>1만 ~ 10만</b></label>
+          <div class="range"><span class="fill" style="left:20%;right:30%"></span><span class="k" style="left:20%"></span><span class="k" style="left:70%"></span></div>
+          <div class="ticks"><span>0</span><span>5만</span><span>10만</span><span>20만+</span></div>
+        </div>
+        <div class="fld"><label>참여율<b>3% 이상</b></label>
+          <div class="range"><span class="fill" style="left:30%;right:0"></span><span class="k" style="left:30%"></span></div>
+          <div class="ticks"><span>0%</span><span>5%</span><span>10%</span></div>
+        </div>
+        <div class="fld"><label>분야</label>
+          <div class="chk">
+            <span><i class="on"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>푸드 · 카페<em>31</em></span>
+            <span><i class="on"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>리빙 · 인테리어<em>17</em></span>
+            <span><i></i>육아<em>9</em></span>
+          </div>
+        </div>
+        <div class="fld"><label>우리 제품 (AI 비교 기준)</label>
+          <div class="prod">핸드드립 원두와 머그 세트<br>홈카페 입문용 선물 구성</div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <p>후보 리스트</p>
+        <div class="lists">
+          <span class="on"><svg class="i" viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></svg>11월 홈카페 협찬<em>48</em></span>
+          <span><svg class="i" viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></svg>겨울 머그 공구<em>21</em></span>
+          <span><svg class="i" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg>제안 완료<em>9</em></span>
+        </div>
+      </div>
+
+      <div class="foot"><span><i></i>AI 분석 · Gemini 연결됨</span><span><i></i>검색 계정 로그인됨</span></div>
+    </aside>
+
+    <section class="main">
+      <div class="tool">
+        <div><h1><span>#홈카페</span> 후보 48명</h1><p>확인 계정 <b>312</b>개 · 조건 통과 <b>48</b>명 · 90점 이상 <b>7</b>명</p></div>
+        <span class="sp"></span>
+        <span class="sel">적합도 높은 순<i></i></span>
+        <span class="btn"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>AI 분석</span>
+        <span class="btn pri"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>엑셀 저장</span>
+      </div>
+
+      <div class="grid">
+        <article class="card on">
+          <div class="c-top"><span class="av" style="background:linear-gradient(135deg,#F9A8D4,#DB2777 55%,#9D174D);--ring:#DB2777">HC</span><div><b>@home_c***</b><small>홈카페 기록</small></div>
+            <span class="fit"><svg viewBox="0 0 46 46"><circle cx="23" cy="23" r="19" fill="none" stroke="#FCE7F3" stroke-width="5"/><circle cx="23" cy="23" r="19" fill="none" stroke="#DB2777" stroke-width="5" stroke-linecap="round" stroke-dasharray="109.8 119.4"/></svg><b>92</b></span></div>
+          <div class="stats"><p>팔로워<b>2.8만</b></p><p>참여율<b class="hi">4.6%</b></p><p>평균 반응<b>1,288</b></p></div>
+          <div class="mini"><i style="background:linear-gradient(150deg,#F5D0B5,#C08457)"><svg><use href="#cup"/></svg></i><i style="background:linear-gradient(150deg,#C79A7A,#7A4E36)"><svg><use href="#heart"/></svg></i><i style="background:linear-gradient(150deg,#FBCFE8,#E68AB4)"><svg><use href="#drip"/></svg></i><i style="background:linear-gradient(150deg,#FDE7C2,#E0A458)"><svg><use href="#bread"/></svg></i></div>
+          <div class="c-foot"><span class="chip pk">#홈카페 31회</span><span class="chip">후보</span><span class="r">제안 전</span></div>
+        </article>
+        <article class="card">
+          <div class="c-top"><span class="av" style="background:linear-gradient(135deg,#FCD34D,#F97316);--ring:#FDBA74">DM</span><div><b>@drip_m***</b><small>핸드드립</small></div>
+            <span class="fit"><svg viewBox="0 0 46 46"><circle cx="23" cy="23" r="19" fill="none" stroke="#FCE7F3" stroke-width="5"/><circle cx="23" cy="23" r="19" fill="none" stroke="#DB2777" stroke-width="5" stroke-linecap="round" stroke-dasharray="107.4 119.4"/></svg><b>90</b></span></div>
+          <div class="stats"><p>팔로워<b>4.1만</b></p><p>참여율<b class="hi">3.9%</b></p><p>평균 반응<b>1,599</b></p></div>
+          <div class="mini"><i style="background:linear-gradient(150deg,#FBCFE8,#E68AB4)"><svg><use href="#drip"/></svg></i><i style="background:linear-gradient(150deg,#6B4A3A,#2E1F18)"><svg><use href="#bean"/></svg></i><i style="background:linear-gradient(150deg,#D6E4DA,#7FA38B)"><svg><use href="#kettle"/></svg></i><i style="background:linear-gradient(150deg,#F5D0B5,#C08457)"><svg><use href="#cup"/></svg></i></div>
+          <div class="c-foot"><span class="chip pk">#핸드드립 22회</span><span class="chip">후보</span><span class="r">제안 전</span></div>
+        </article>
+        <article class="card">
+          <div class="c-top"><span class="av" style="background:linear-gradient(135deg,#A7F3D0,#10B981);--ring:#6EE7B7">CY</span><div><b>@cafe_y***</b><small>카페 디저트</small></div>
+            <span class="fit"><svg viewBox="0 0 46 46"><circle cx="23" cy="23" r="19" fill="none" stroke="#FCE7F3" stroke-width="5"/><circle cx="23" cy="23" r="19" fill="none" stroke="#DB2777" stroke-width="5" stroke-linecap="round" stroke-dasharray="106.3 119.4"/></svg><b>89</b></span></div>
+          <div class="stats"><p>팔로워<b>1.6만</b></p><p>참여율<b class="hi">5.2%</b></p><p>평균 반응<b>832</b></p></div>
+          <div class="mini"><i style="background:linear-gradient(150deg,#FDE2E4,#F29CA8)"><svg><use href="#cake"/></svg></i><i style="background:linear-gradient(150deg,#FDE7C2,#E0A458)"><svg><use href="#bread"/></svg></i><i style="background:linear-gradient(150deg,#F5D0B5,#C08457)"><svg><use href="#cup"/></svg></i><i style="background:linear-gradient(150deg,#C79A7A,#7A4E36)"><svg><use href="#heart"/></svg></i></div>
+          <div class="c-foot"><span class="chip pk">#홈카페 18회</span><span class="chip gr">제안 보냄</span><span class="r">10.24</span></div>
+        </article>
+        <article class="card">
+          <div class="c-top"><span class="av" style="background:linear-gradient(135deg,#C4B5FD,#7C3AED);--ring:#C4B5FD">ML</span><div><b>@mug_l***</b><small>리빙 소품</small></div>
+            <span class="fit"><svg viewBox="0 0 46 46"><circle cx="23" cy="23" r="19" fill="none" stroke="#FCE7F3" stroke-width="5"/><circle cx="23" cy="23" r="19" fill="none" stroke="#DB2777" stroke-width="5" stroke-linecap="round" stroke-dasharray="103.9 119.4"/></svg><b>87</b></span></div>
+          <div class="stats"><p>팔로워<b>6.3만</b></p><p>참여율<b class="hi">3.4%</b></p><p>평균 반응<b>2,142</b></p></div>
+          <div class="mini"><i style="background:linear-gradient(150deg,#F5D0B5,#C08457)"><svg><use href="#cup"/></svg></i><i style="background:linear-gradient(150deg,#DDEBD1,#8DB37A)"><svg><use href="#plant"/></svg></i><i style="background:linear-gradient(150deg,#D6E4DA,#7FA38B)"><svg><use href="#kettle"/></svg></i><i style="background:linear-gradient(150deg,#C79A7A,#7A4E36)"><svg><use href="#heart"/></svg></i></div>
+          <div class="c-foot"><span class="chip pk">#머그컵 14회</span><span class="chip">후보</span><span class="r">제안 전</span></div>
+        </article>
+        <article class="card">
+          <div class="c-top"><span class="av" style="background:linear-gradient(135deg,#FDE68A,#D97706);--ring:#FCD34D">SB</span><div><b>@slow_b***</b><small>아침 루틴</small></div>
+            <span class="fit"><svg viewBox="0 0 46 46"><circle cx="23" cy="23" r="19" fill="none" stroke="#FCE7F3" stroke-width="5"/><circle cx="23" cy="23" r="19" fill="none" stroke="#DB2777" stroke-width="5" stroke-linecap="round" stroke-dasharray="102.7 119.4"/></svg><b>86</b></span></div>
+          <div class="stats"><p>팔로워<b>1.2만</b></p><p>참여율<b class="hi">6.1%</b></p><p>평균 반응<b>732</b></p></div>
+          <div class="mini"><i style="background:linear-gradient(150deg,#FDE7C2,#E0A458)"><svg><use href="#bread"/></svg></i><i style="background:linear-gradient(150deg,#F5D0B5,#C08457)"><svg><use href="#cup"/></svg></i><i style="background:linear-gradient(150deg,#DDEBD1,#8DB37A)"><svg><use href="#plant"/></svg></i><i style="background:linear-gradient(150deg,#FDE2E4,#F29CA8)"><svg><use href="#cake"/></svg></i></div>
+          <div class="c-foot"><span class="chip pk">#홈카페 12회</span><span class="chip">후보</span><span class="r">제안 전</span></div>
+        </article>
+        <article class="card">
+          <div class="c-top"><span class="av" style="background:linear-gradient(135deg,#BAE6FD,#0284C7);--ring:#7DD3FC">LJ</span><div><b>@latte_j***</b><small>라테 아트</small></div>
+            <span class="fit"><svg viewBox="0 0 46 46"><circle cx="23" cy="23" r="19" fill="none" stroke="#FCE7F3" stroke-width="5"/><circle cx="23" cy="23" r="19" fill="none" stroke="#DB2777" stroke-width="5" stroke-linecap="round" stroke-dasharray="100.3 119.4"/></svg><b>84</b></span></div>
+          <div class="stats"><p>팔로워<b>3.5만</b></p><p>참여율<b class="hi">4.0%</b></p><p>평균 반응<b>1,400</b></p></div>
+          <div class="mini"><i style="background:linear-gradient(150deg,#C79A7A,#7A4E36)"><svg><use href="#heart"/></svg></i><i style="background:linear-gradient(150deg,#C79A7A,#7A4E36)"><svg><use href="#heart"/></svg></i><i style="background:linear-gradient(150deg,#F5D0B5,#C08457)"><svg><use href="#cup"/></svg></i><i style="background:linear-gradient(150deg,#D6E4DA,#7FA38B)"><svg><use href="#kettle"/></svg></i></div>
+          <div class="c-foot"><span class="chip pk">#라테아트 26회</span><span class="chip">후보</span><span class="r">제안 전</span></div>
+        </article>
+        <article class="card">
+          <div class="c-top"><span class="av" style="background:linear-gradient(135deg,#FBCFE8,#EC4899);--ring:#F9A8D4">BS</span><div><b>@bake_s***</b><small>홈베이킹</small></div>
+            <span class="fit"><svg viewBox="0 0 46 46"><circle cx="23" cy="23" r="19" fill="none" stroke="#FCE7F3" stroke-width="5"/><circle cx="23" cy="23" r="19" fill="none" stroke="#DB2777" stroke-width="5" stroke-linecap="round" stroke-dasharray="99.1 119.4"/></svg><b>83</b></span></div>
+          <div class="stats"><p>팔로워<b>8.9만</b></p><p>참여율<b class="hi">3.1%</b></p><p>평균 반응<b>2,759</b></p></div>
+          <div class="mini"><i style="background:linear-gradient(150deg,#FDE2E4,#F29CA8)"><svg><use href="#cake"/></svg></i><i style="background:linear-gradient(150deg,#FDE7C2,#E0A458)"><svg><use href="#bread"/></svg></i><i style="background:linear-gradient(150deg,#FDE2E4,#F29CA8)"><svg><use href="#cake"/></svg></i><i style="background:linear-gradient(150deg,#F5D0B5,#C08457)"><svg><use href="#cup"/></svg></i></div>
+          <div class="c-foot"><span class="chip pk">#홈카페 9회</span><span class="chip">후보</span><span class="r">제안 전</span></div>
+        </article>
+        <article class="card">
+          <div class="c-top"><span class="av" style="background:linear-gradient(135deg,#D9F99D,#65A30D);--ring:#BEF264">DH</span><div><b>@daily_h***</b><small>자취 일상</small></div>
+            <span class="fit"><svg viewBox="0 0 46 46"><circle cx="23" cy="23" r="19" fill="none" stroke="#FCE7F3" stroke-width="5"/><circle cx="23" cy="23" r="19" fill="none" stroke="#DB2777" stroke-width="5" stroke-linecap="round" stroke-dasharray="96.7 119.4"/></svg><b>81</b></span></div>
+          <div class="stats"><p>팔로워<b>2.2만</b></p><p>참여율<b class="hi">4.4%</b></p><p>평균 반응<b>968</b></p></div>
+          <div class="mini"><i style="background:linear-gradient(150deg,#DDEBD1,#8DB37A)"><svg><use href="#plant"/></svg></i><i style="background:linear-gradient(150deg,#F5D0B5,#C08457)"><svg><use href="#cup"/></svg></i><i style="background:linear-gradient(150deg,#FDE7C2,#E0A458)"><svg><use href="#bread"/></svg></i><i style="background:linear-gradient(150deg,#D6E4DA,#7FA38B)"><svg><use href="#kettle"/></svg></i></div>
+          <div class="c-foot"><span class="chip pk">#홈카페 7회</span><span class="chip">후보</span><span class="r">제안 전</span></div>
+        </article>
+        <article class="card">
+          <div class="c-top"><span class="av" style="background:linear-gradient(135deg,#E7E5E4,#78716C);--ring:#D6D3D1">BK</span><div><b>@brew_k***</b><small>커피 도구</small></div>
+            <span class="fit"><svg viewBox="0 0 46 46"><circle cx="23" cy="23" r="19" fill="none" stroke="#FCE7F3" stroke-width="5"/><circle cx="23" cy="23" r="19" fill="none" stroke="#DB2777" stroke-width="5" stroke-linecap="round" stroke-dasharray="95.5 119.4"/></svg><b>80</b></span></div>
+          <div class="stats"><p>팔로워<b>5.4만</b></p><p>참여율<b class="hi">3.6%</b></p><p>평균 반응<b>1,944</b></p></div>
+          <div class="mini"><i style="background:linear-gradient(150deg,#D6E4DA,#7FA38B)"><svg><use href="#kettle"/></svg></i><i style="background:linear-gradient(150deg,#FBCFE8,#E68AB4)"><svg><use href="#drip"/></svg></i><i style="background:linear-gradient(150deg,#6B4A3A,#2E1F18)"><svg><use href="#bean"/></svg></i><i style="background:linear-gradient(150deg,#F5D0B5,#C08457)"><svg><use href="#cup"/></svg></i></div>
+          <div class="c-foot"><span class="chip pk">#핸드드립 11회</span><span class="chip">후보</span><span class="r">제안 전</span></div>
+        </article>
+      </div>
+    </section>
+
+    <aside class="detail">
+      <div class="d-top"><span class="av" style="background:linear-gradient(135deg,#F9A8D4,#DB2777 55%,#9D174D);--ring:#DB2777">HC</span><div><b>@home_c***</b><small>홈카페 기록 · 레시피 계정</small></div></div>
+      <p class="bio">주말마다 내리는 핸드드립과 집에서 만드는 카페 메뉴를 기록합니다.</p>
+      <div class="nums"><p>게시물<b>412</b></p><p>팔로워<b>2.8만</b></p><p>팔로잉<b>318</b></p></div>
+
+      <div class="ai">
+        <span class="fit"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="27" fill="none" stroke="#FCE7F3" stroke-width="7"/><circle cx="32" cy="32" r="27" fill="none" stroke="#DB2777" stroke-width="7" stroke-linecap="round" stroke-dasharray="156.1 169.6"/></svg><b>92<small>적합도</small></b></span>
+        <ul>
+          <p>AI 적합도 분석 · 최근 게시물 12개</p>
+          <li>12개 중 9개가 홈카페 · 핸드드립 내용</li>
+          <li>머그 · 드리퍼 같은 도구가 자주 등장</li>
+          <li>협찬 표기 게시물 2개 · 광고 비중 낮음</li>
+        </ul>
+      </div>
+
+      <div class="d-h">최근 게시물<span>평균 좋아요 1,210 · 댓글 78</span></div>
+      <div class="posts">
+        <div class="post" style="background:linear-gradient(150deg,#F5D0B5,#C08457)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 3c0 1.5 1 1.5 1 3M11.5 3c0 1.5 1 1.5 1 3"/></svg><span><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>1,482</span></div>
+        <div class="post" style="background:radial-gradient(circle at 50% 50%,#F3E3CF 0 30%,#8B5A3C 31% 60%,#E9D5C0 61%)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M12 17s-4-2.6-4-5.6A2.2 2.2 0 0 1 12 10a2.2 2.2 0 0 1 4 1.4c0 3-4 5.6-4 5.6z"/></svg><span><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>1,906</span></div>
+        <div class="post" style="background:linear-gradient(150deg,#D6E4DA,#7FA38B)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10h9v6a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3z"/><path d="M15 12c2 0 4-1 5-4M9 10V7a2 2 0 0 1 2-2h1"/></svg><span><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>964</span><em>협찬</em></div>
+        <div class="post" style="background:linear-gradient(150deg,#FDE7C2,#E0A458)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14c2-6 16-6 18 0-2 3-16 3-18 0z"/><path d="M8 10.5l1.5 4M12 9.5v5M16 10.5l-1.5 4"/></svg><span><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>1,121</span></div>
+        <div class="post" style="background:linear-gradient(150deg,#6B4A3A,#2E1F18)"><svg viewBox="0 0 24 24" fill="none" stroke="#E9C9A8" stroke-width="1.6" stroke-linecap="round"><ellipse cx="8" cy="9" rx="2.6" ry="3.6" transform="rotate(-25 8 9)"/><ellipse cx="15.5" cy="10" rx="2.6" ry="3.6" transform="rotate(20 15.5 10)"/><ellipse cx="11" cy="16.5" rx="2.6" ry="3.6" transform="rotate(80 11 16.5)"/></svg><span><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>874</span></div>
+        <div class="post" style="background:linear-gradient(150deg,#FBCFE8,#F0A3C6)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10l-1.5 7h-7z"/><path d="M9.5 11v3h5v-3M8 20h8M12 14v6"/></svg><span><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>1,315</span><em>협찬</em></div>
+      </div>
+
+
+      <div class="d-h">게시물별 좋아요<span>최근 12개 · 연한 막대는 협찬</span></div>
+      <svg class="spark" width="282" height="98" viewBox="0 0 282 98">
+        <line x1="0" x2="282" y1="37" y2="37" stroke="#988E95" stroke-dasharray="3 3" stroke-width="1"/>
+        <text x="2" y="32" font-size="10.5" fill="#988E95">평균 1,210</text>
+        <rect x="4" y="44" width="15" height="38" rx="3" fill="#DB2777"/><rect x="27" y="38" width="15" height="44" rx="3" fill="#DB2777"/><rect x="50" y="48" width="15" height="34" rx="3" fill="#DB2777"/><rect x="73" y="34" width="15" height="48" rx="3" fill="#DB2777"/><rect x="96" y="32" width="15" height="50" rx="3" fill="#DB2777"/><rect x="119" y="43" width="15" height="39" rx="3" fill="#DB2777"/><rect x="142" y="33" width="15" height="49" rx="3" fill="#F9A8D4"/><rect x="165" y="50" width="15" height="32" rx="3" fill="#DB2777"/><rect x="188" y="41" width="15" height="41" rx="3" fill="#DB2777"/><rect x="211" y="46" width="15" height="36" rx="3" fill="#F9A8D4"/><rect x="234" y="11" width="15" height="71" rx="3" fill="#DB2777"/><rect x="257" y="27" width="15" height="55" rx="3" fill="#DB2777"/>
+        <text x="4" y="96" font-size="10.5" fill="#988E95">9월 초</text><text x="278" y="96" text-anchor="end" font-size="10.5" fill="#988E95">10.25</text>
+      </svg>
+      <div class="memo"><b>메모</b>12월 신상 머그와 함께 제안 예정 · 단가는 DM으로 문의</div>
+      <div class="d-acts"><span class="sel">후보 · 제안 전<i style="margin-left:auto"></i></span><span class="btn">메모</span><span class="btn pri"><svg class="i" viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></svg>리스트</span></div>
+    </aside>
+  </main>
+</div>
+</body>
+</html>

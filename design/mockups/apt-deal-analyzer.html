@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>실거래랩</title>
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 실거래랩: 엑셀 위에서 돌아가는 실거래 분석 도구. 리본에 전용 탭을 달고, 시트 하나를 대시보드로 쓴다. */
+  :root { --g: #1F6E43; --g2: #185C37; --g-soft: #E6F0EA; --line: #D4D4D4; --grid: #E2E2E2; --hd: #EFEFEF; --text: #1F1F1F; --text-2: #4F4F4F; --text-3: #7A7A7A; }
+  body { font: 400 12px/1.3 'Malgun Gothic', 'Segoe UI', sans-serif; color: var(--text); background: #fff; letter-spacing: -0.01em; }
+  .win { --bar: #1F6E43; --bar-fg: #fff; background: #fff; }
+  .win-body { flex-direction: column; }
+  svg.i { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .qat { display: flex; gap: 14px; align-items: center; margin-right: 10px; color: #fff; }
+  .qat svg { width: 15px; height: 15px; }
+  .win-title { text-align: center; padding-right: 60px; line-height: 1.5; }
+  .acct { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-right: 14px; white-space: nowrap; color: #CFE3D7; }
+  .auto { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+  .auto i { width: 30px; height: 15px; border-radius: 8px; border: 1px solid #fff; position: relative; }
+  .auto i::after { content: ""; position: absolute; left: 3px; top: 3px; width: 7px; height: 7px; border-radius: 50%; background: #fff; }
+  .acct i { width: 22px; height: 22px; border-radius: 50%; background: #CFE3D7; color: var(--g2); display: grid; place-items: center; font: 700 10.5px/1 'Malgun Gothic', sans-serif; font-style: normal; }
+
+  .tabs { height: 30px; flex: none; display: flex; align-items: flex-end; gap: 2px; padding: 0 8px; background: var(--g); color: #fff; font-size: 12.5px; }
+  .tabs b { height: 26px; display: flex; align-items: center; padding: 0 13px; font-weight: 400; }
+  .tabs b.file { background: var(--g2); margin-right: 4px; padding: 0 16px; }
+  .tabs b.on { background: #F3F3F3; color: var(--g); font-weight: 700; border-radius: 2px 2px 0 0; }
+  .tabs .sp { flex: 1; }
+  .tabs .tell { align-self: center; display: flex; align-items: center; gap: 6px; height: 22px; padding: 0 10px; color: #DDEBE2; font-size: 12px; }
+  .tabs .share { align-self: center; height: 22px; display: flex; align-items: center; gap: 6px; padding: 0 10px; border: 1px solid rgb(255 255 255 / .5); border-radius: 2px; font-size: 12px; }
+
+  .ribbon { height: 94px; flex: none; display: flex; background: #F3F3F3; border-bottom: 1px solid var(--line); padding: 4px 4px 0; }
+  .grp { display: flex; flex-direction: column; padding: 0 6px; border-right: 1px solid #D9D9D9; }
+  .grp .items { flex: 1; display: flex; gap: 2px; }
+  .grp > span { height: 18px; display: grid; place-items: center; font-size: 11px; color: var(--text-3); }
+  .big { width: 66px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 4px; border-radius: 2px; text-align: center; font-size: 11.5px; line-height: 1.2; color: var(--text); }
+  .big.on { background: #D5E5DA; box-shadow: inset 0 0 0 1px #9EC3AA; }
+  .big svg { width: 32px; height: 32px; }
+  .smalls { display: flex; flex-direction: column; justify-content: center; gap: 1px; padding: 0 2px; }
+  .sm { height: 22px; display: flex; align-items: center; gap: 6px; padding: 0 6px; font-size: 11.5px; white-space: nowrap; color: var(--text); }
+  .sm svg { width: 16px; height: 16px; }
+  .rinfo { margin-left: auto; align-self: center; padding: 0 14px; display: flex; flex-direction: column; gap: 4px; font-size: 11.5px; color: var(--text-2); white-space: nowrap; }
+  .rinfo b { color: var(--g); font-weight: 700; }
+  .rinfo span { display: flex; align-items: center; gap: 6px; }
+  .rinfo i { width: 7px; height: 7px; border-radius: 50%; background: #2EA35F; }
+
+  .fx { height: 30px; flex: none; display: flex; align-items: center; gap: 0; padding: 0 6px; border-bottom: 1px solid var(--line); background: #fff; }
+  .namebox { width: 92px; height: 22px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; border: 1px solid #C6C6C6; font-size: 12px; }
+  .namebox i { width: 5px; height: 5px; border-right: 1.3px solid #666; border-bottom: 1.3px solid #666; rotate: 45deg; margin-top: -3px; }
+  .fxbtn { display: flex; align-items: center; gap: 14px; padding: 0 14px; color: #8A8A8A; }
+  .fxbtn svg { width: 13px; height: 13px; }
+  .fxbtn em { font: italic 600 13px/1 'Times New Roman', serif; color: #555; }
+  .formula { flex: 1; height: 22px; display: flex; align-items: center; padding: 0 8px; border-left: 1px solid #D9D9D9; font: 12.5px/1 Consolas, 'Malgun Gothic', monospace; color: #222; }
+
+  .sheetwrap { flex: 1; min-height: 0; display: grid; grid-template-columns: 32px 1fr 16px; grid-template-rows: 20px 1fr; background: #fff; }
+  .corner { background: var(--hd); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); position: relative; }
+  .corner::after { content: ""; position: absolute; right: 3px; bottom: 3px; border: 5px solid transparent; border-right-color: #B5B5B5; border-bottom-color: #B5B5B5; }
+  .colh { display: flex; background: var(--hd); border-bottom: 1px solid var(--line); overflow: hidden; }
+  .colh b { flex: none; width: 64px; display: grid; place-items: center; font-weight: 400; color: var(--text-2); border-right: 1px solid var(--line); font-size: 11.5px; }
+  .colh b.on, .rowh b.on { background: #D2D2D2; color: var(--g2); font-weight: 700; }
+  .colh b.on { box-shadow: inset 0 -2px 0 var(--g); }
+  .rowh b.on { box-shadow: inset -2px 0 0 var(--g); }
+  .vscroll { grid-row: 1 / 3; grid-column: 3; background: #F3F3F3; border-left: 1px solid #E1E1E1; position: relative; }
+  .vscroll::after { content: ""; position: absolute; left: 3px; right: 3px; top: 34px; height: 150px; background: #C8C8C8; border-radius: 1px; }
+  .rowh { display: flex; flex-direction: column; background: var(--hd); border-right: 1px solid var(--line); overflow: hidden; }
+  .rowh b { flex: none; height: 20px; display: grid; place-items: center; font-weight: 400; color: var(--text-2); border-bottom: 1px solid var(--line); font-size: 11.5px; }
+  .grid { position: relative; overflow: hidden;
+    background-image: linear-gradient(to right, var(--grid) 1px, transparent 1px), linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+    background-size: 64px 20px; background-position: -1px -1px; }
+
+  .title { position: absolute; left: 0; top: 20px; width: 1216px; height: 40px; background: #fff; padding: 0 10px; display: flex; align-items: baseline; gap: 14px; }
+  .title h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.04em; line-height: 40px; color: #13472B; }
+  .title p { font-size: 12px; color: var(--text-3); }
+  .title p b { color: var(--text-2); font-weight: 700; }
+
+  .slicer { position: absolute; left: 10px; width: 172px; background: #fff; border: 1px solid #C9C9C9; box-shadow: 0 1px 3px rgb(0 0 0 / .1); padding: 8px 8px 9px; }
+  .slicer h4 { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--text); padding: 0 2px 7px; }
+  .slicer h4 span { display: flex; gap: 8px; color: #8A8A8A; }
+  .slicer h4 svg { width: 14px; height: 14px; }
+  .slicer b { display: flex; align-items: center; justify-content: space-between; height: 26px; margin-top: 4px; padding: 0 9px; border: 1px solid #D0D0D0; background: #fff; font-weight: 400; font-size: 12px; color: var(--text-2); }
+  .slicer b.on { background: var(--g); border-color: var(--g); color: #fff; font-weight: 700; }
+  .slicer b small { font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .slicer b.on small { color: #CFE3D7; }
+  .slicer b.off { color: #B5B5B5; border-style: dashed; }
+
+  .kpi { position: absolute; top: 84px; height: 72px; width: 246px; background: #fff; border: 1px solid #CFCFCF; border-top: 3px solid var(--g); padding: 9px 14px 0; box-shadow: 0 1px 2px rgb(0 0 0 / .06); }
+  .kpi p { font-size: 11.5px; color: var(--text-3); display: flex; justify-content: space-between; }
+  .kpi p em { font-style: normal; font-weight: 700; color: #1F6E43; }
+  .kpi p em.up { color: #C0392B; }
+  .kpi strong { display: block; margin-top: 4px; font-size: 25px; font-weight: 700; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; color: #111; }
+  .kpi strong small { font-size: 13px; font-weight: 400; color: var(--text-2); margin-left: 2px; letter-spacing: 0; }
+  .kpi.alt { border-top-color: #E08A1E; }
+
+  .chart { position: absolute; left: 198px; top: 184px; width: 496px; height: 344px; background: #fff; border: 1px solid #C9C9C9; box-shadow: 0 1px 3px rgb(0 0 0 / .08); }
+  .chart text { font: 11px 'Malgun Gothic', sans-serif; fill: #6B6B6B; font-variant-numeric: tabular-nums; }
+  .chart .ttl { font-size: 13.5px; font-weight: 700; fill: #262626; }
+  .chart .sub { font-size: 11px; fill: #8A8A8A; }
+  .chart .lab { font-size: 11.5px; font-weight: 700; }
+  .chart .lab2 { font-size: 11px; fill: #6B7F72; font-weight: 700; }
+  .chart .lg text { fill: #404040; }
+  .handle { position: absolute; width: 7px; height: 7px; border: 1px solid #8A8A8A; background: #fff; }
+
+  .c { position: absolute; height: 21px; display: flex; align-items: center; justify-content: flex-end; padding: 0 6px; font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; border-right: 1px solid #DADADA; border-bottom: 1px solid #DADADA; background: #fff; }
+  .c.l { justify-content: flex-start; }
+  .c.th { background: var(--g); color: #fff; font-weight: 700; justify-content: center; border-color: #2F7D52; }
+  .c.th.l { justify-content: flex-start; }
+  .c.band { background: #EEF5F0; }
+  .c.ok { font-weight: 700; color: #13472B; }
+  .c.rate { justify-content: center; color: #1F1F1F; }
+  .c.rate.sel { outline: 2px solid var(--g); outline-offset: -1px; z-index: 2; }
+  .c.rate.sel::after { content: ""; position: absolute; right: -4px; bottom: -4px; width: 6px; height: 6px; background: var(--g); border: 1px solid #fff; }
+    .c.gap i { position: absolute; left: 3px; top: 4px; bottom: 4px; background: linear-gradient(90deg, #7FB895, #CFE6D7); }
+  .c.gap span { position: relative; z-index: 1; }
+  .c.note { background: transparent; border: 0; justify-content: flex-start; color: var(--text-2); }
+  .c.note.b { font-weight: 700; color: var(--text); }
+  .c.note.s { color: var(--text-3); font-size: 11.5px; }
+  .c.note b { color: #13472B; margin: 0 2px; }
+  .c.inp { background: #FFF6D6; border: 1px solid #E4C766; font-weight: 700; color: #6A4E00; justify-content: center; }
+
+  .bottom { height: 28px; flex: none; display: flex; align-items: stretch; background: #F3F3F3; border-top: 1px solid var(--line); font-size: 12px; }
+  .nav { display: flex; align-items: center; gap: 12px; padding: 0 12px; color: #9A9A9A; }
+  .nav i { width: 6px; height: 6px; border-left: 1.4px solid currentColor; border-bottom: 1.4px solid currentColor; rotate: 45deg; }
+  .nav i + i { rotate: -135deg; }
+  .stab { display: flex; align-items: center; padding: 0 16px; color: var(--text-2); border-right: 1px solid #DCDCDC; }
+  .stab.on { background: #fff; color: var(--g); font-weight: 700; box-shadow: inset 0 -3px 0 var(--g); }
+  .addsh { display: grid; place-items: center; width: 34px; color: #7A7A7A; }
+  .addsh i { width: 16px; height: 16px; border-radius: 50%; border: 1.3px solid currentColor; position: relative; }
+  .addsh i::before, .addsh i::after { content: ""; position: absolute; left: 50%; top: 50%; width: 8px; height: 1.3px; background: currentColor; translate: -50% -50%; }
+  .addsh i::after { rotate: 90deg; }
+  .hscroll { flex: 1; margin: 7px 16px 7px 30px; background: #E6E6E6; position: relative; }
+  .hscroll::after { content: ""; position: absolute; left: 0; top: 2px; bottom: 2px; width: 46%; background: #C8C8C8; }
+
+  .status { height: 24px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 12px; background: #F3F3F3; border-top: 1px solid #E1E1E1; color: var(--text-2); font-size: 11.5px; }
+  .status .r { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+  .views { display: flex; gap: 10px; color: #6B6B6B; }
+  .views svg { width: 14px; height: 14px; }
+  .zoom { display: flex; align-items: center; gap: 8px; }
+  .zoom span { width: 100px; height: 2px; background: #9A9A9A; position: relative; }
+  .zoom span::after { content: ""; position: absolute; left: 50%; top: -5px; width: 4px; height: 12px; background: #5A5A5A; translate: -50% 0; }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar">
+    <span class="qat"><span class="auto">자동 저장<i></i>끔</span>
+      <svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></svg>
+      <svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg>
+      <svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/></svg>
+    </span>
+    <span class="win-title">수지구_단지분석.xlsm — 실거래랩 2.3.1</span>
+    <span class="acct">저장됨 · 오전 9:07</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <nav class="tabs">
+      <b class="file">파일</b><b>홈</b><b>삽입</b><b>페이지 레이아웃</b><b>수식</b><b>데이터</b><b>검토</b><b>보기</b><b class="on">실거래랩</b>
+      <span class="sp"></span>
+      <span class="tell"><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>검색</span>
+      <span class="share"><svg class="i" viewBox="0 0 24 24" style="width:13px;height:13px"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>공유</span>
+    </nav>
+
+    <div class="ribbon">
+      <div class="grp"><div class="items">
+        <span class="big"><svg viewBox="0 0 32 32"><rect x="4" y="5" width="24" height="22" rx="2" fill="#fff" stroke="#6B6B6B" stroke-width="1.4"/><path d="M4 11h24M12 11v16M20 11v16M4 17h24M4 22h24" stroke="#B9B9B9" stroke-width="1"/><circle cx="23" cy="23" r="7" fill="#1F6E43"/><path d="M23 19.5v6.5M20.2 23.4 23 26.2l2.8-2.8" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>데이터<br>수집</span>
+        <div class="smalls">
+          <span class="sm"><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>데이터 갱신</span>
+          <span class="sm"><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><circle cx="8" cy="15" r="4"/><path d="m10.8 12.2 8.7-8.7M17 6l2 2M15 8l2 2"/></svg>API 인증키</span>
+          <span class="sm"><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>기간 · 최근 10개월</span>
+        </div>
+      </div><span>수집</span></div>
+      <div class="grp"><div class="items">
+        <span class="big on"><svg viewBox="0 0 32 32"><rect x="4" y="13" width="6" height="14" fill="#9BC6AB"/><rect x="13" y="7" width="6" height="20" fill="#1F6E43"/><rect x="22" y="10" width="6" height="17" fill="#E08A1E"/><path d="M3 27.5h26" stroke="#6B6B6B" stroke-width="1.4"/></svg>단지<br>비교</span>
+        <div class="smalls">
+          <span class="sm"><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M4 5h16l-6 8v6l-4 2v-8z"/></svg>조건 필터</span>
+          <span class="sm"><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/></svg>전세가율 계산</span>
+          <span class="sm"><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M3 21h18M5 21V10l7-5 7 5v11"/><path d="M10 21v-6h4v6"/></svg>단지 정보 정리</span>
+        </div>
+      </div><span>분석</span></div>
+      <div class="grp"><div class="items">
+        <span class="big"><svg viewBox="0 0 32 32"><path d="M8 3h12l6 6v20H8z" fill="#fff" stroke="#6B6B6B" stroke-width="1.4" stroke-linejoin="round"/><path d="M20 3v6h6" fill="none" stroke="#6B6B6B" stroke-width="1.4"/><path d="M12 15h10M12 19h10M12 23h6" stroke="#1F6E43" stroke-width="1.8" stroke-linecap="round"/></svg>보고서</span>
+        <span class="big"><svg viewBox="0 0 32 32"><path d="M4 4v24h24" fill="none" stroke="#6B6B6B" stroke-width="1.4"/><path d="M7 22l6-7 5 4 9-10" fill="none" stroke="#1F6E43" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 25l6-4 5 1 9-5" fill="none" stroke="#E08A1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>차트<br>그리기</span>
+        <div class="smalls">
+          <span class="sm"><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M6 9V3h12v6"/><rect x="3" y="9" width="18" height="8" rx="1.5"/><path d="M7 14h10v7H7z"/></svg>인쇄 영역</span>
+          <span class="sm"><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 15h6"/></svg>PDF로 저장</span>
+        </div>
+      </div><span>출력</span></div>
+      <div class="grp"><div class="items">
+        <div class="smalls">
+          <span class="sm"><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>조건 초기화</span>
+          <span class="sm"><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>옵션</span>
+          <span class="sm"><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17v.01"/></svg>도움말</span>
+        </div>
+      </div><span>설정</span></div>
+      <div class="rinfo">
+        <span><i></i>공공데이터 API 연결됨</span>
+        <span>마지막 수집 <b>10.26 09:05</b> · 매매 412 · 전세 538건</span>
+        <span>조건 일치 단지 <b>23곳</b> · 표시 12곳</span>
+      </div>
+    </div>
+
+    <div class="fx">
+      <span class="namebox">R12<i></i></span>
+      <span class="fxbtn"><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M6 6l12 12M18 6 6 18"/></svg><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="m5 12 5 5 9-10"/></svg><em>fx</em></span>
+      <span class="formula">=IFERROR(Q12/P12,"-")</span>
+    </div>
+
+    <div class="sheetwrap">
+      <span class="corner"></span>
+      <div class="colh"><b>A</b><b>B</b><b>C</b><b>D</b><b>E</b><b>F</b><b>G</b><b>H</b><b>I</b><b>J</b><b>K</b><b>L</b><b>M</b><b>N</b><b>O</b><b>P</b><b>Q</b><b class="on">R</b><b>S</b><b>T</b></div>
+      <div class="vscroll"></div>
+      <div class="rowh"><b>1</b><b>2</b><b>3</b><b>4</b><b>5</b><b>6</b><b>7</b><b>8</b><b>9</b><b>10</b><b>11</b><b class="on">12</b><b>13</b><b>14</b><b>15</b><b>16</b><b>17</b><b>18</b><b>19</b><b>20</b><b>21</b><b>22</b><b>23</b><b>24</b><b>25</b><b>26</b><b>27</b><b>28</b></div>
+      <div class="grid">
+        <div class="title"><h1>수지구 아파트 단지 분석</h1><p>경기 용인시 수지구 · 전용 84㎡ · 6억~10억 · 2005년 이후 준공 · <b>2026.01~10 실거래</b></p></div>
+
+        <div class="slicer" style="top:84px">
+          <h4>지역 (구)<span><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M4 6h16M7 12h10M10 18h4"/></svg><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M4 5h16l-6 8v6l-4 2v-8z"/><path d="m15 15 5 5M20 15l-5 5"/></svg></span></h4>
+          <b class="on">수지구<small>950</small></b><b>기흥구<small>1,284</small></b><b>처인구<small>506</small></b>
+        </div>
+        <div class="slicer" style="top:224px">
+          <h4>전용면적<span><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M4 6h16M7 12h10M10 18h4"/></svg><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M4 5h16l-6 8v6l-4 2v-8z"/><path d="m15 15 5 5M20 15l-5 5"/></svg></span></h4>
+          <b>59㎡<small>214</small></b><b>74㎡<small>23</small></b><b class="on">84㎡<small>713</small></b><b class="off">102㎡ 이상<small>0</small></b>
+        </div>
+        <div class="slicer" style="top:394px">
+          <h4>거래 유형<span><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M4 6h16M7 12h10M10 18h4"/></svg></span></h4>
+          <b class="on">매매<small>312</small></b><b class="on">전세<small>401</small></b>
+        </div>
+
+        <div class="kpi" style="left:197px"><p>평균 매매가<em class="up">1월 대비 +8.0%</em></p><strong>8억 4,000<small>만원</small></strong></div>
+        <div class="kpi alt" style="left:453px"><p>평균 전세가<em class="up" style="color:#B86A0C">+6.0%</em></p><strong>5억 1,000<small>만원</small></strong></div>
+        <div class="kpi" style="left:709px"><p>평균 전세가율<em>매매 대비</em></p><strong>61<small>%</small></strong></div>
+        <div class="kpi" style="left:965px"><p>거래 건수<em style="color:#7A7A7A;font-weight:400">10개월</em></p><strong>713<small>건 · 매매 312 / 전세 401</small></strong></div>
+
+        <div class="chart"><svg width="496" height="344" viewBox="0 0 496 344"><line x1="46" x2="452" y1="286" y2="286" stroke="#E4E4E4"/><text x="40" y="290" text-anchor="end">4억</text><line x1="46" x2="452" y1="249" y2="249" stroke="#E4E4E4"/><text x="40" y="253" text-anchor="end">5억</text><line x1="46" x2="452" y1="212" y2="212" stroke="#E4E4E4"/><text x="40" y="216" text-anchor="end">6억</text><line x1="46" x2="452" y1="175" y2="175" stroke="#E4E4E4"/><text x="40" y="179" text-anchor="end">7억</text><line x1="46" x2="452" y1="138" y2="138" stroke="#E4E4E4"/><text x="40" y="142" text-anchor="end">8억</text><line x1="46" x2="452" y1="101" y2="101" stroke="#E4E4E4"/><text x="40" y="105" text-anchor="end">9억</text><line x1="46" x2="452" y1="64" y2="64" stroke="#E4E4E4"/><text x="40" y="68" text-anchor="end">10억</text><text x="458" y="290">0</text><text x="458" y="253">10</text><text x="458" y="216">20</text><text x="458" y="179">30</text><text x="458" y="142">40</text><text x="458" y="105">50</text><text x="458" y="68">60</text><rect x="55.3" y="204.60000000000002" width="22" height="81.39999999999998" fill="#D3DBD6"/><rect x="95.9" y="182.39999999999998" width="22" height="103.60000000000002" fill="#D3DBD6"/><rect x="136.5" y="193.5" width="22" height="92.5" fill="#D3DBD6"/><rect x="177.1" y="171.29999999999998" width="22" height="114.70000000000002" fill="#D3DBD6"/><rect x="217.70000000000002" y="156.5" width="22" height="129.5" fill="#D3DBD6"/><rect x="258.3" y="175" width="22" height="111" fill="#D3DBD6"/><rect x="298.90000000000003" y="163.89999999999998" width="22" height="122.10000000000002" fill="#D3DBD6"/><rect x="339.5" y="149.1" width="22" height="136.9" fill="#D3DBD6"/><rect x="380.1" y="160.2" width="22" height="125.80000000000001" fill="#D3DBD6"/><rect x="420.7" y="149.1" width="22" height="136.9" fill="#D3DBD6"/><polyline points="66.3,134.3 106.9,131.7 147.5,129.9 188.1,126.5 228.7,124.3 269.3,122.1 309.9,119.9 350.5,117.6 391.1,115.4 431.7,110.3" fill="none" stroke="#1F6E43" stroke-width="2.4" stroke-linejoin="round"/><circle cx="66.3" cy="134.3" r="3.2" fill="#fff" stroke="#1F6E43" stroke-width="2"/><circle cx="106.9" cy="131.7" r="3.2" fill="#fff" stroke="#1F6E43" stroke-width="2"/><circle cx="147.5" cy="129.9" r="3.2" fill="#fff" stroke="#1F6E43" stroke-width="2"/><circle cx="188.1" cy="126.5" r="3.2" fill="#fff" stroke="#1F6E43" stroke-width="2"/><circle cx="228.7" cy="124.3" r="3.2" fill="#fff" stroke="#1F6E43" stroke-width="2"/><circle cx="269.3" cy="122.1" r="3.2" fill="#fff" stroke="#1F6E43" stroke-width="2"/><circle cx="309.9" cy="119.9" r="3.2" fill="#fff" stroke="#1F6E43" stroke-width="2"/><circle cx="350.5" cy="117.6" r="3.2" fill="#fff" stroke="#1F6E43" stroke-width="2"/><circle cx="391.1" cy="115.4" r="3.2" fill="#fff" stroke="#1F6E43" stroke-width="2"/><circle cx="431.7" cy="110.3" r="3.2" fill="#fff" stroke="#1F6E43" stroke-width="2"/><polyline points="66.3,249.7 106.9,248.6 147.5,247.9 188.1,246.8 228.7,246.0 269.3,245.3 309.9,244.6 350.5,243.4 391.1,242.0 431.7,238.6" fill="none" stroke="#E08A1E" stroke-width="2.4" stroke-linejoin="round"/><circle cx="66.3" cy="249.7" r="3.2" fill="#fff" stroke="#E08A1E" stroke-width="2"/><circle cx="106.9" cy="248.6" r="3.2" fill="#fff" stroke="#E08A1E" stroke-width="2"/><circle cx="147.5" cy="247.9" r="3.2" fill="#fff" stroke="#E08A1E" stroke-width="2"/><circle cx="188.1" cy="246.8" r="3.2" fill="#fff" stroke="#E08A1E" stroke-width="2"/><circle cx="228.7" cy="246.0" r="3.2" fill="#fff" stroke="#E08A1E" stroke-width="2"/><circle cx="269.3" cy="245.3" r="3.2" fill="#fff" stroke="#E08A1E" stroke-width="2"/><circle cx="309.9" cy="244.6" r="3.2" fill="#fff" stroke="#E08A1E" stroke-width="2"/><circle cx="350.5" cy="243.4" r="3.2" fill="#fff" stroke="#E08A1E" stroke-width="2"/><circle cx="391.1" cy="242.0" r="3.2" fill="#fff" stroke="#E08A1E" stroke-width="2"/><circle cx="431.7" cy="238.6" r="3.2" fill="#fff" stroke="#E08A1E" stroke-width="2"/><text x="431.7" y="100.25" text-anchor="middle" class="lab" fill="#1F6E43">8.75억</text><text x="431.7" y="228.64" text-anchor="middle" class="lab" fill="#B86A0C">5.28억</text><text x="431.7" y="144.1" text-anchor="middle" class="lab2">37건</text><text x="66.3" y="302" text-anchor="middle">1월</text><text x="106.9" y="302" text-anchor="middle">2월</text><text x="147.5" y="302" text-anchor="middle">3월</text><text x="188.1" y="302" text-anchor="middle">4월</text><text x="228.70000000000002" y="302" text-anchor="middle">5월</text><text x="269.3" y="302" text-anchor="middle">6월</text><text x="309.90000000000003" y="302" text-anchor="middle">7월</text><text x="350.5" y="302" text-anchor="middle">8월</text><text x="391.1" y="302" text-anchor="middle">9월</text><text x="431.7" y="302" text-anchor="middle">10월</text><line x1="46" x2="452" y1="286" y2="286" stroke="#BFBFBF"/><text x="248" y="24" text-anchor="middle" class="ttl">월별 매매·전세 평균가와 매매 거래량</text><text x="248" y="42" text-anchor="middle" class="sub">수지구 · 전용 84㎡ · 2026년</text><g class="lg"><line x1="80" x2="100" y1="322" y2="322" stroke="#1F6E43" stroke-width="2.4"/><circle cx="90" cy="322" r="3" fill="#fff" stroke="#1F6E43" stroke-width="2"/><text x="106" y="326">매매 평균(억)</text>
+<line x1="196" x2="216" y1="322" y2="322" stroke="#E08A1E" stroke-width="2.4"/><circle cx="206" cy="322" r="3" fill="#fff" stroke="#E08A1E" stroke-width="2"/><text x="222" y="326">전세 평균(억)</text>
+<rect x="314" y="316" width="12" height="10" fill="#D3DBD6"/><text x="332" y="326">매매 거래량(건)</text></g></svg></div>
+
+        <div class="c th l" style="left:704px;top:180px;width:128px;">단지명</div><div class="c th " style="left:832px;top:180px;width:64px;">준공</div><div class="c th " style="left:896px;top:180px;width:64px;">세대수</div><div class="c th " style="left:960px;top:180px;width:64px;">매매 평균</div><div class="c th " style="left:1024px;top:180px;width:64px;">전세 평균</div><div class="c th " style="left:1088px;top:180px;width:64px;">전세가율</div><div class="c th " style="left:1152px;top:180px;width:64px;">갭</div><div class="c td l  ok" style="left:704px;top:200px;width:128px;">죽전 새솔마을</div><div class="c td " style="left:832px;top:200px;width:64px;">2005</div><div class="c td " style="left:896px;top:200px;width:64px;">1,236</div><div class="c td " style="left:960px;top:200px;width:64px;">72,900</div><div class="c td " style="left:1024px;top:200px;width:64px;">47,700</div><div class="c td rate" style="left:1088px;top:200px;width:64px;background:#63be7b">65.4%</div><div class="c td  gap" style="left:1152px;top:200px;width:64px;"><i style="width:33.1px"></i><span>25,200</span></div><div class="c td l band ok" style="left:704px;top:220px;width:128px;">풍덕천 정든마을1</div><div class="c td band" style="left:832px;top:220px;width:64px;">2006</div><div class="c td band" style="left:896px;top:220px;width:64px;">856</div><div class="c td band" style="left:960px;top:220px;width:64px;">74,800</div><div class="c td band" style="left:1024px;top:220px;width:64px;">48,900</div><div class="c td rate sel" style="left:1088px;top:220px;width:64px;background:#65bf7b">65.4%</div><div class="c td band gap" style="left:1152px;top:220px;width:64px;"><i style="width:34.0px"></i><span>25,900</span></div><div class="c td l  ok" style="left:704px;top:240px;width:128px;">신봉 산들마을2</div><div class="c td " style="left:832px;top:240px;width:64px;">2007</div><div class="c td " style="left:896px;top:240px;width:64px;">768</div><div class="c td " style="left:960px;top:240px;width:64px;">76,400</div><div class="c td " style="left:1024px;top:240px;width:64px;">49,800</div><div class="c td rate" style="left:1088px;top:240px;width:64px;background:#6cc17c">65.2%</div><div class="c td  gap" style="left:1152px;top:240px;width:64px;"><i style="width:35.0px"></i><span>26,600</span></div><div class="c td l band ok" style="left:704px;top:260px;width:128px;">풍덕천 한빛마을2</div><div class="c td band" style="left:832px;top:260px;width:64px;">2006</div><div class="c td band" style="left:896px;top:260px;width:64px;">1,124</div><div class="c td band" style="left:960px;top:260px;width:64px;">79,800</div><div class="c td band" style="left:1024px;top:260px;width:64px;">50,600</div><div class="c td rate" style="left:1088px;top:260px;width:64px;background:#afd47f">63.4%</div><div class="c td band gap" style="left:1152px;top:260px;width:64px;"><i style="width:38.4px"></i><span>29,200</span></div><div class="c td l  ok" style="left:704px;top:280px;width:128px;">상현 은행나무5</div><div class="c td " style="left:832px;top:280px;width:64px;">2008</div><div class="c td " style="left:896px;top:280px;width:64px;">942</div><div class="c td " style="left:960px;top:280px;width:64px;">83,200</div><div class="c td " style="left:1024px;top:280px;width:64px;">52,900</div><div class="c td rate" style="left:1088px;top:280px;width:64px;background:#a9d27f">63.6%</div><div class="c td  gap" style="left:1152px;top:280px;width:64px;"><i style="width:39.8px"></i><span>30,300</span></div><div class="c td l band ok" style="left:704px;top:300px;width:128px;">상현 느티마을3</div><div class="c td band" style="left:832px;top:300px;width:64px;">2009</div><div class="c td band" style="left:896px;top:300px;width:64px;">1,388</div><div class="c td band" style="left:960px;top:300px;width:64px;">84,600</div><div class="c td band" style="left:1024px;top:300px;width:64px;">52,100</div><div class="c td rate" style="left:1088px;top:300px;width:64px;background:#f4e883">61.6%</div><div class="c td band gap" style="left:1152px;top:300px;width:64px;"><i style="width:42.7px"></i><span>32,500</span></div><div class="c td l  " style="left:704px;top:320px;width:128px;">동천 하늘마을</div><div class="c td " style="left:832px;top:320px;width:64px;">2011</div><div class="c td " style="left:896px;top:320px;width:64px;">980</div><div class="c td " style="left:960px;top:320px;width:64px;">87,200</div><div class="c td " style="left:1024px;top:320px;width:64px;">51,700</div><div class="c td rate" style="left:1088px;top:320px;width:64px;background:#fcac78">59.3%</div><div class="c td  gap" style="left:1152px;top:320px;width:64px;"><i style="width:46.7px"></i><span>35,500</span></div><div class="c td l band " style="left:704px;top:340px;width:128px;">동천 별빛마을</div><div class="c td band" style="left:832px;top:340px;width:64px;">2010</div><div class="c td band" style="left:896px;top:340px;width:64px;">1,410</div><div class="c td band" style="left:960px;top:340px;width:64px;">89,700</div><div class="c td band" style="left:1024px;top:340px;width:64px;">53,400</div><div class="c td rate" style="left:1088px;top:340px;width:64px;background:#fcb479">59.5%</div><div class="c td band gap" style="left:1152px;top:340px;width:64px;"><i style="width:47.7px"></i><span>36,300</span></div><div class="c td l  " style="left:704px;top:360px;width:128px;">신봉 햇살마을</div><div class="c td " style="left:832px;top:360px;width:64px;">2016</div><div class="c td " style="left:896px;top:360px;width:64px;">1,612</div><div class="c td " style="left:960px;top:360px;width:64px;">95,100</div><div class="c td " style="left:1024px;top:360px;width:64px;">55,200</div><div class="c td rate" style="left:1088px;top:360px;width:64px;background:#fa8570">58.0%</div><div class="c td  gap" style="left:1152px;top:360px;width:64px;"><i style="width:52.5px"></i><span>39,900</span></div><div class="c td l band " style="left:704px;top:380px;width:128px;">광교 호수마을</div><div class="c td band" style="left:832px;top:380px;width:64px;">2013</div><div class="c td band" style="left:896px;top:380px;width:64px;">2,150</div><div class="c td band" style="left:960px;top:380px;width:64px;">99,400</div><div class="c td band" style="left:1024px;top:380px;width:64px;">57,600</div><div class="c td rate" style="left:1088px;top:380px;width:64px;background:#f98270">57.9%</div><div class="c td band gap" style="left:1152px;top:380px;width:64px;"><i style="width:54.9px"></i><span>41,800</span></div><div class="c td l  " style="left:704px;top:400px;width:128px;">성복 숲속마을1</div><div class="c td " style="left:832px;top:400px;width:64px;">2012</div><div class="c td " style="left:896px;top:400px;width:64px;">1,820</div><div class="c td " style="left:960px;top:400px;width:64px;">98,500</div><div class="c td " style="left:1024px;top:400px;width:64px;">56,300</div><div class="c td rate" style="left:1088px;top:400px;width:64px;background:#f8696b">57.2%</div><div class="c td  gap" style="left:1152px;top:400px;width:64px;"><i style="width:55.5px"></i><span>42,200</span></div><div class="c td l band " style="left:704px;top:420px;width:128px;">성복 푸른숲2</div><div class="c td band" style="left:832px;top:420px;width:64px;">2015</div><div class="c td band" style="left:896px;top:420px;width:64px;">1,064</div><div class="c td band" style="left:960px;top:420px;width:64px;">99,900</div><div class="c td band" style="left:1024px;top:420px;width:64px;">57,300</div><div class="c td rate" style="left:1088px;top:420px;width:64px;background:#f86f6c">57.4%</div><div class="c td band gap" style="left:1152px;top:420px;width:64px;"><i style="width:56.0px"></i><span>42,600</span></div><div class="c note b" style="left:704px;top:460px;width:128px;">가용 자금(만원)</div><div class="c inp" style="left:832px;top:460px;width:64px;">33,000</div><div class="c note" style="left:896px;top:460px;width:320px;">갭이 가용 자금 이하인 단지 <b>6곳</b> · 굵게 표시</div><div class="c note s" style="left:704px;top:480px;width:512px;">※ 단위 만원 · 전용 84㎡ · 2026.01~10 실거래 평균 · 갭 = 매매 평균 − 전세 평균</div>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <span class="nav"><i></i><i></i></span>
+      <span class="stab on">단지 분석</span><span class="stab">거래 내역</span><span class="stab">단지 정보</span><span class="stab">월별 추이</span><span class="stab">설정</span>
+      <span class="addsh"><i></i></span>
+      <span class="hscroll"></span>
+    </div>
+    <footer class="status">
+      <span>준비</span>
+      <span>실거래랩: 후보 단지 23곳 · 거래 950건 · 기간 최근 10개월</span>
+      <span class="r">
+        <span class="views"><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 9h18M9 4v16"/></svg><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M8 7h8M8 11h8"/></svg><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M12 4v16M3 12h18" stroke-dasharray="2 2"/></svg></span>
+        <span class="zoom">−<span></span>+ 100%</span>
+      </span>
+    </footer>
+  </main>
+</div>
+</body>
+</html>

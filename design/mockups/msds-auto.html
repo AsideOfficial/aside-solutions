@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>케미대장</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 케미대장: 브라우저에서 파일로 여는 오프라인 도구. 왼쪽 MSDS 원문, 오른쪽 관리대장·경고표지. 안전 빨강 + 앰버. */
+  :root {
+    --r: #DC2626; --r-2: #B91C1C; --r-soft: #FEF2F2; --amb: #D97706; --amb-2: #B45309; --amb-soft: #FFF7E6; --amb-hl: #FDE68A;
+    --bg: #F3F4F6; --card: #fff; --line: #E2E5EA; --line-2: #EEF0F3;
+    --t1: #16191F; --t2: #4A5160; --t3: #858C99; --ok: #0F8A5F;
+  }
+  body { font: 400 13px/1.45 'Noto Sans KR', sans-serif; color: var(--t1); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .browser { --bar: #E6E8EC; --tool: #fff; --fav: var(--r); --page: var(--bg); }
+  .br-fav { display: grid; place-items: center; }
+  .br-url .file { font: 500 12px 'Noto Sans KR'; color: #5B616C; padding: 2px 8px; border-radius: 9px; background: #E2E5EA; margin-right: 4px; }
+  .br-body { flex-direction: column; }
+
+  .head { height: 52px; flex: none; display: flex; align-items: center; gap: 14px; padding: 0 16px; background: #fff; border-bottom: 1px solid var(--line); }
+  .logo { display: flex; align-items: center; gap: 8px; padding-right: 14px; border-right: 1px solid var(--line); height: 30px; }
+  .logo i { width: 28px; height: 28px; border-radius: 7px; background: var(--r); display: grid; place-items: center; }
+  .logo i svg { width: 17px; height: 17px; fill: none; stroke: #fff; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; }
+  .logo b { font-size: 15px; font-weight: 900; letter-spacing: -0.04em; white-space: nowrap; }
+  .depts { display: flex; gap: 2px; align-self: stretch; }
+  .depts a { display: flex; align-items: center; gap: 5px; padding: 0 9px; white-space: nowrap; font-size: 12.5px; font-weight: 500; color: var(--t2); position: relative; }
+  .depts a span { font-size: 11px; color: var(--t3); font-weight: 700; }
+  .depts a.on { color: var(--t1); font-weight: 700; }
+  .depts a.on span { color: var(--r); }
+  .depts a.on::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2px; background: var(--r); }
+  .depts a.add { color: var(--t3); }
+  .head .sp { flex: 1; }
+  .chip { height: 26px; display: flex; align-items: center; gap: 5px; padding: 0 9px; border-radius: 6px; background: #F1F3F6; font-size: 11.5px; color: var(--t2); font-weight: 500; white-space: nowrap; }
+  .chip svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .chip.off { background: #EAF6F0; color: var(--ok); font-weight: 700; }
+  .btn { height: 32px; display: flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: 7px; border: 1px solid var(--line); background: #fff; font-weight: 700; font-size: 12.5px; color: var(--t2); white-space: nowrap; }
+  .btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .btn.pri { background: var(--r); border-color: var(--r); color: #fff; }
+
+  .work { flex: 1; min-height: 0; display: flex; gap: 12px; padding: 12px; }
+
+  /* 왼쪽: MSDS 원문 뷰어 */
+  .viewer { width: 590px; flex: none; display: flex; flex-direction: column; border-radius: 10px; overflow: hidden; border: 1px solid #CDD2DA; background: #DADDE3; }
+  .v-bar { height: 40px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 12px; background: #2B2F37; color: #E6E8EC; font-size: 12px; }
+  .v-bar svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+  .v-bar b { font-weight: 700; }
+  .v-bar .pg { margin-left: auto; display: flex; align-items: center; gap: 8px; color: #AEB3BD; }
+  .v-bar .pg span { padding: 2px 8px; border-radius: 5px; background: #3A3F49; color: #fff; }
+  .v-in { flex: 1; min-height: 0; display: flex; }
+  .toc { width: 168px; flex: none; background: #F7F8FA; border-right: 1px solid #D5D9E0; padding: 10px 8px; }
+  .toc p { font-size: 11px; font-weight: 700; color: var(--t3); padding: 0 6px 6px; }
+  .toc li { display: flex; align-items: center; gap: 6px; height: 23.5px; padding: 0 6px; border-radius: 5px; font-size: 11.5px; color: var(--t2); white-space: nowrap; }
+  .toc li em { font-style: normal; width: 16px; font-weight: 700; color: var(--t3); font-size: 11px; text-align: right; flex: none; }
+  .toc li i { margin-left: auto; width: 14px; height: 14px; border-radius: 50%; background: #DDF1E7; display: grid; place-items: center; flex: none; }
+  .toc li i svg { width: 9px; height: 9px; fill: none; stroke: var(--ok); stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; }
+  .toc li.on { background: #fff; color: var(--t1); font-weight: 700; box-shadow: inset 2px 0 0 var(--r), 0 1px 2px rgb(0 0 0 / .06); }
+  .toc li.on em { color: var(--r); }
+  .stage { flex: 1; min-width: 0; padding: 14px 0 0 14px; overflow: hidden; }
+  .paper { width: 396px; height: 640px; background: #fff; box-shadow: 0 2px 10px rgb(0 0 0 / .14); padding: 22px 22px; font-size: 11px; line-height: 1.6; color: #2A2E36; position: relative; }
+  .paper .hd { display: flex; justify-content: space-between; font-size: 11px; color: #8A909B; border-bottom: 1px solid #E5E7EB; padding-bottom: 6px; margin-bottom: 10px; }
+  .paper h4 { font-size: 12.5px; font-weight: 900; color: #111; margin: 10px 0 4px; }
+  .paper h5 { font-size: 11.5px; font-weight: 700; margin: 6px 0 2px; color: #222; }
+  .paper p { margin: 1px 0; }
+  .hl { background: var(--amb-hl); box-shadow: 0 0 0 2px var(--amb-hl); border-radius: 2px; position: relative; }
+  .hl.chk { background: #FECACA; box-shadow: 0 0 0 2px #FECACA; outline: 1.5px dashed var(--r); outline-offset: 2px; }
+  .pin { display: inline-grid; place-items: center; width: 15px; height: 15px; border-radius: 50%; background: var(--amb); color: #fff; font-size: 10px; font-weight: 900; margin-left: 4px; vertical-align: 1px; line-height: 1; }
+  .pin.r { background: var(--r); }
+  .ptbl { width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 11px; }
+  .ptbl th, .ptbl td { border: 1px solid #D9DCE1; padding: 2px 6px; text-align: left; white-space: nowrap; }
+  .ptbl th { background: #F3F4F6; font-weight: 700; }
+  .fade { color: #A3A8B1; }
+  .bars i { display: block; height: 6px; border-radius: 3px; background: #ECEEF1; margin: 7px 0; }
+
+  /* 오른쪽: 추출 결과 */
+  .result { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
+  .prod { height: 58px; flex: none; display: flex; align-items: center; gap: 12px; padding: 0 14px; }
+  .prod .ico { width: 34px; height: 34px; border-radius: 8px; background: var(--r-soft); display: grid; place-items: center; color: var(--r); }
+  .prod .ico svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+  .prod h2 { font-size: 16px; font-weight: 900; letter-spacing: -0.04em; }
+  .prod h2 small { font-size: 12px; color: var(--t3); font-weight: 500; margin-left: 8px; letter-spacing: -0.02em; }
+  .prod .tg { display: flex; gap: 5px; margin-top: 2px; }
+  .prod .tg span { font-size: 11px; color: var(--t2); background: #F1F3F6; padding: 0 6px; border-radius: 4px; }
+  .sig { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--t3); }
+  .sig b { font-size: 14px; font-weight: 900; color: #fff; background: var(--r); padding: 2px 10px; border-radius: 5px; letter-spacing: 0.1em; }
+
+  .alert { flex: none; border-color: #F6D38E; background: var(--amb-soft); padding: 10px 14px 8px; }
+  .alert-h { display: flex; align-items: center; gap: 8px; }
+  .alert-h svg { width: 17px; height: 17px; fill: none; stroke: var(--amb-2); stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; }
+  .alert-h b { font-size: 13.5px; font-weight: 900; color: var(--amb-2); }
+  .alert-h b em { font-style: normal; display: inline-grid; place-items: center; min-width: 20px; height: 20px; border-radius: 10px; background: var(--amb); color: #fff; font-size: 12px; margin-left: 4px; padding: 0 6px; }
+  .alert-h span { margin-left: auto; font-size: 11.5px; color: #9A6A1F; }
+  .alert ul { margin-top: 6px; }
+  .alert li { display: grid; grid-template-columns: 18px 150px 1fr auto; align-items: center; gap: 8px; height: 28px; border-top: 1px dashed #F1D59B; font-size: 12px; }
+  .alert li .n { width: 17px; height: 17px; border-radius: 50%; background: var(--amb); color: #fff; font-size: 10.5px; font-weight: 900; display: grid; place-items: center; }
+  .alert li .n.r { background: var(--r); }
+  .alert li b { font-weight: 700; }
+  .alert li span { color: var(--t2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .alert li a { font-size: 11.5px; font-weight: 700; color: var(--amb-2); padding: 2px 8px; border-radius: 5px; background: #fff; border: 1px solid #F1D59B; }
+
+  .ledger { flex: none; overflow: hidden; }
+  .lg-h { height: 40px; display: flex; align-items: center; gap: 10px; padding: 0 14px; border-bottom: 1px solid var(--line); }
+  .lg-h h3 { font-size: 13.5px; font-weight: 900; }
+  .lg-h small { font-size: 11.5px; color: var(--t3); }
+  .lg-h .sp { flex: 1; }
+  .lg-h a { font-size: 11.5px; color: var(--t2); font-weight: 700; display: flex; align-items: center; gap: 4px; }
+  .lg-h a svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  table.lt { width: 100%; border-collapse: collapse; }
+  .lt th { height: 29px; text-align: left; padding: 0 10px; font-size: 11.5px; font-weight: 700; color: var(--t3); background: #F8F9FB; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .lt td { height: 33px; padding: 0 10px; border-bottom: 1px solid var(--line-2); white-space: nowrap; font-size: 12.5px; }
+  .lt tr:last-child td { border-bottom: 0; }
+  .lt td b { font-weight: 700; }
+  .lt .cas { font-family: 'Noto Sans KR'; color: var(--t2); letter-spacing: 0; }
+  .lt .cls { font-size: 11.5px; color: var(--t2); }
+  .cell-chk { background: var(--amb-soft); box-shadow: inset 0 0 0 1.5px #F3C66E; border-radius: 4px; padding: 1px 5px; }
+  .y { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 700; padding: 2px 7px; border-radius: 5px; }
+  .y.on { background: var(--r-soft); color: var(--r-2); }
+  .y.no { color: var(--t3); font-weight: 500; padding-left: 0; }
+  .y.q { background: var(--amb-soft); color: var(--amb-2); box-shadow: inset 0 0 0 1px #F3C66E; }
+
+  .bottom { flex: 1; min-height: 0; display: flex; gap: 10px; }
+  .label-card { flex: 1; min-width: 0; padding: 10px 12px; display: flex; flex-direction: column; }
+  .lc-h { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--t2); }
+  .lc-h span { font-weight: 500; color: var(--t3); font-size: 11.5px; }
+  .label { margin-top: 8px; flex: 1; border: 2px solid #111; border-radius: 3px; padding: 8px 10px; display: grid; grid-template-columns: 112px 1fr; gap: 10px; background: #fff; }
+  .picto { display: grid; grid-template-columns: 1fr 1fr; gap: 0; align-content: start; justify-items: center; }
+  .picto svg { width: 54px; height: 54px; }
+  .picto svg:nth-child(3) { grid-column: 1 / 3; margin-top: -8px; }
+  .lb-t h5 { font-size: 13px; font-weight: 900; letter-spacing: -0.03em; }
+  .lb-t .sw { display: inline-block; font-size: 15px; font-weight: 900; color: var(--r); letter-spacing: 0.12em; margin: 1px 0 2px; }
+  .lb-t p { font-size: 11px; line-height: 1.45; color: #222; }
+  .lb-t p b { font-weight: 700; }
+  .lb-t .sup { margin-top: 4px; padding-top: 4px; border-top: 1px solid #DDD; color: #555; }
+  .side2 { width: 196px; flex: none; padding: 10px 12px; display: flex; flex-direction: column; gap: 7px; }
+  .side2 .btn { margin-top: auto; }
+  .side2 h4 { font-size: 12px; font-weight: 700; color: var(--t2); }
+  .basis li { display: flex; gap: 6px; font-size: 11.5px; color: var(--t2); line-height: 1.4; padding: 2px 0; white-space: nowrap; }
+  .basis li i { width: 6px; height: 6px; border-radius: 50%; background: var(--r); margin-top: 6px; flex: none; }
+  .basis li i.a { background: var(--amb); }
+  .side2 .spec { font-size: 11.5px; color: var(--t3); padding: 7px 9px; border-radius: 7px; background: #F6F7F9; }
+  .side2 .spec b { color: var(--t1); font-weight: 700; display: block; font-size: 12.5px; }
+  .side2 .btn { justify-content: center; }
+</style>
+</head>
+<body>
+<div class="browser">
+  <header class="br-tabs"><span class="mac-lights"><i></i><i></i><i></i></span>
+    <span class="br-tab"><i class="br-fav"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/></svg></i>케미대장 1.6.2 · MSDS 관리대장</span>
+    <span class="br-tab off">관리대장_도장부.xlsx</span>
+  </header>
+  <div class="br-tool"><span class="br-nav"><i></i><i></i><i></i></span><span class="br-url"><span class="file">파일</span><b>D:/MSDS/케미대장_1.6.2.html</b></span></div>
+  <main class="br-body">
+    <div class="head">
+      <div class="logo"><i><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/><path d="M7.5 14h9"/></svg></i><b>케미대장</b></div>
+      <nav class="depts"><a>전체 <span>84</span></a><a class="on">도장부 <span>14</span></a><a>세척실 <span>9</span></a><a>품질팀 <span>11</span></a><a>자재창고 <span>18</span></a><a>생산1팀 <span>20</span></a><a>연구실 <span>12</span></a><a class="add">+ 부서</a></nav>
+      <span class="sp"></span>
+      <span class="chip off"><svg viewBox="0 0 24 24"><path d="M12 3 19 6v5c0 4.4-3 8.1-7 10-4-1.9-7-5.6-7-10V6z"/></svg>오프라인 · 외부 전송 없음</span>
+      <span class="btn"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2"/><rect x="6" y="14" width="12" height="7"/></svg>경고표지 인쇄</span>
+      <span class="btn pri"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>관리대장 엑셀</span>
+    </div>
+
+    <div class="work">
+      <section class="viewer">
+        <div class="v-bar"><svg viewBox="0 0 24 24"><path d="M14 3v5h5"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/></svg><b>희석제_T-200_MSDS.pdf</b><span style="color:#8E94A0">도장부 · 14건 중 3번째</span><span class="pg"><span>2 / 9쪽</span>100%</span></div>
+        <div class="v-in">
+          <ul class="toc">
+            <p>MSDS 16개 항목</p>
+            <li><em>1</em>제품·회사 정보<i><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg></i></li>
+            <li class="on"><em>2</em>유해성·위험성<i><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg></i></li>
+            <li class="on"><em>3</em>구성성분·함유량<i><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg></i></li>
+            <li><em>4</em>응급조치 요령</li>
+            <li><em>5</em>폭발·화재 시 대처</li>
+            <li><em>6</em>누출 사고 시 대처</li>
+            <li><em>7</em>취급 및 저장</li>
+            <li><em>8</em>노출방지·보호구</li>
+            <li><em>9</em>물리화학적 특성<i><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg></i></li>
+            <li><em>10</em>안정성·반응성</li>
+            <li><em>11</em>독성 정보</li>
+            <li><em>12</em>환경 영향</li>
+            <li><em>13</em>폐기 시 주의사항</li>
+            <li><em>14</em>운송 정보<i><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg></i></li>
+            <li><em>15</em>법적 규제 현황<i><svg viewBox="0 0 24 24"><path d="m5 12 4 4 10-10"/></svg></i></li>
+            <li><em>16</em>그 밖의 참고사항</li>
+          </ul>
+          <div class="stage">
+            <div class="paper">
+              <div class="hd"><span>물질안전보건자료(MSDS) · 희석제 T-200</span><span>2 / 9</span></div>
+              <h4>2. 유해성·위험성</h4>
+              <h5>가. 유해성·위험성 분류</h5>
+              <p><span class="hl">인화성 액체 : 구분2 · 생식독성 : 구분2</span></p>
+              <p><span class="hl">특정표적장기 독성(1회 노출) : 구분3 · 피부 자극성 : 구분2</span></p>
+              <h5>나. 경고표지 항목</h5>
+              <p>그림문자 : <span class="hl chk">[불꽃] [건강 유해성] [감탄부호]</span><span class="pin r">!</span></p>
+              <p>신호어 : <span class="hl">위험</span></p>
+              <p>유해·위험 문구 : <span class="hl">H225, H315, H336, H361d</span></p>
+              <p class="fade">예방조치 문구 : P210, P233, P280, P303+P361+P353, P403+P235 …</p>
+              <h4>3. 구성성분의 명칭 및 함유량</h4>
+              <table class="ptbl">
+                <thead><tr><th>화학물질명</th><th>관용명</th><th>CAS 번호</th><th>함유량(%)</th></tr></thead>
+                <tbody>
+                  <tr><td><span class="hl">톨루엔</span></td><td>메틸벤젠</td><td><span class="hl">108-88-3</span></td><td><span class="hl">40~50</span></td></tr>
+                  <tr><td><span class="hl">메틸에틸케톤</span></td><td>MEK</td><td><span class="hl">78-93-3</span></td><td><span class="hl chk">20~30</span><span class="pin r">!</span></td></tr>
+                  <tr><td><span class="hl">이소프로필알코올</span></td><td>IPA</td><td><span class="hl">67-63-0</span></td><td><span class="hl">10~20</span></td></tr>
+                  <tr><td><span class="hl">자일렌</span></td><td>크실렌</td><td><span class="hl">1330-20-7</span></td><td><span class="hl">5~10</span></td></tr>
+                </tbody>
+              </table>
+              <p class="fade" style="margin-top:4px">※ 영업비밀 성분 없음 · 함유량은 공급사 기준 범위로 표기</p>
+              <h4>4. 응급조치 요령</h4>
+              <h5 class="fade">가. 눈에 들어갔을 때</h5>
+              <p class="fade">긴급 의료조치를 받으시오. 눈에 묻으면 몇 분간 물로 조심해서 씻으시오.</p>
+              <h5 class="fade">나. 피부에 접촉했을 때</h5>
+              <p class="fade">오염된 옷과 신발을 제거하고 오염지역을 격리하시오.</p>
+              <div class="bars"><i style="width:92%"></i><i style="width:78%"></i><i style="width:85%"></i><i style="width:60%"></i></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="result">
+        <div class="card prod">
+          <span class="ico"><svg viewBox="0 0 24 24"><path d="M8 3h8M9 3v4l-3 4v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-8l-3-4V3"/><path d="M6 13h12"/></svg></span>
+          <div><h2>희석제 T-200<small>○○화학(주)</small></h2><div class="tg"><span>도장부</span><span>제출번호 A2408-15372</span><span>성분 4종</span></div></div>
+          <div class="sig">신호어<b>위험</b></div>
+        </div>
+
+        <div class="card alert">
+          <div class="alert-h"><svg viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg><b>확인할 항목<em>3</em></b><span>원문과 맞춰 본 뒤 확정하세요</span></div>
+          <ul>
+            <li><i class="n r">!</i><b>그림문자</b><span>원문에 그림 대신 문구로 표기 · 문구로 추정함</span><a>원문 보기</a></li>
+            <li><i class="n r">!</i><b>메틸에틸케톤 함유량</b><span>단위 표기 없음 · '20~30'을 %로 추정함</span><a>원문 보기</a></li>
+            <li><i class="n">?</i><b>이소프로필알코올 특검</b><span>규제 자료와 별표 목록 판정이 다름 · 대조 권장</span><a>근거 보기</a></li>
+          </ul>
+        </div>
+
+        <div class="card ledger">
+          <div class="lg-h"><h3>관리대장</h3><small>도장부 · 희석제 T-200 · 성분 4종</small><span class="sp"></span><a><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>칸 직접 고치기</a></div>
+          <table class="lt">
+            <thead><tr><th>물질명</th><th>CAS No.</th><th>함유량</th><th>유해성 분류</th><th>작업환경측정</th><th>특수건강진단</th></tr></thead>
+            <tbody>
+              <tr><td><b>톨루엔</b></td><td class="cas">108-88-3</td><td>40~50%</td><td class="cls">인화성 액체 2 · 생식독성 2</td><td><span class="y on">대상</span></td><td><span class="y on">대상</span></td></tr>
+              <tr><td><b>메틸에틸케톤</b></td><td class="cas">78-93-3</td><td><span class="cell-chk">20~30%</span></td><td class="cls">인화성 액체 2 · 눈 자극 2</td><td><span class="y on">대상</span></td><td><span class="y on">대상</span></td></tr>
+              <tr><td><b>이소프로필알코올</b></td><td class="cas">67-63-0</td><td>10~20%</td><td class="cls">인화성 액체 2 · 눈 자극 2</td><td><span class="y on">대상</span></td><td><span class="y q">대조 권장</span></td></tr>
+              <tr><td><b>자일렌</b></td><td class="cas">1330-20-7</td><td>5~10%</td><td class="cls">인화성 액체 3 · 피부 자극 2</td><td><span class="y on">대상</span></td><td><span class="y on">대상</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bottom">
+          <div class="card label-card">
+            <div class="lc-h">경고표지 미리보기 <span>용기 부착용 10×7cm</span></div>
+            <div class="label">
+              <div class="picto">
+                <svg viewBox="0 0 40 40"><rect x="8.5" y="8.5" width="23" height="23" transform="rotate(45 20 20)" fill="#fff" stroke="#DC2626" stroke-width="2.6"/><path d="M20.4 9.8c.8 3.4 4.6 5.4 4.6 9.7a5 5 0 0 1-10 0c0-2 .9-3.3 1.9-4.3 0 1.8.8 2.8 1.8 3-1-2.8.1-5.6 1.7-8.4z" fill="#111"/><rect x="13.5" y="26.2" width="13" height="1.8" rx=".6" fill="#111"/></svg>
+                <svg viewBox="0 0 40 40"><rect x="8.5" y="8.5" width="23" height="23" transform="rotate(45 20 20)" fill="#fff" stroke="#DC2626" stroke-width="2.6"/><circle cx="20" cy="12.6" r="2.3" fill="#111"/><path d="M14 28.5v-6.2c0-2.6 2.6-4.8 6-4.8s6 2.2 6 4.8v6.2z" fill="#111"/><path d="M20 19.2l1 2.1 2.3.2-1.8 1.5.6 2.3-2.1-1.3-2.1 1.3.6-2.3-1.8-1.5 2.3-.2z" fill="#fff"/></svg>
+                <svg viewBox="0 0 40 40"><rect x="8.5" y="8.5" width="23" height="23" transform="rotate(45 20 20)" fill="#fff" stroke="#DC2626" stroke-width="2.6"/><rect x="18.7" y="11.5" width="2.6" height="10.5" rx="1.1" fill="#111"/><circle cx="20" cy="25.8" r="1.6" fill="#111"/></svg>
+              </div>
+              <div class="lb-t">
+                <h5>희석제 T-200</h5>
+                <span class="sw">위험</span>
+                <p><b>H225</b> 고인화성 액체 및 증기</p>
+                <p><b>H361d</b> 태아에 손상을 일으킬 것으로 의심됨</p>
+                <p><b>H336</b> 졸음 또는 현기증을 일으킬 수 있음</p>
+                <p><b>P210</b> 열·스파크·화염으로부터 멀리하시오</p>
+                <p class="sup">○○화학(주) · 02-****-1234</p>
+              </div>
+            </div>
+          </div>
+          <div class="card side2">
+            <h4>판정 근거</h4>
+            <ul class="basis">
+              <li><i></i>측정 · 시행규칙 별표 21</li>
+              <li><i></i>특검 · 시행규칙 별표 22</li>
+              <li><i class="a"></i>IPA 특검 · 자료 간 불일치</li>
+            </ul>
+            <div class="spec"><b>규제 자료 2026.09.30</b>A4 한 장에 표지 4개</div>
+            <span class="btn"><svg viewBox="0 0 24 24"><path d="M14 3v5h5"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/></svg>표지 PDF 저장</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</body>
+</html>

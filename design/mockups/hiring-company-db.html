@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>채용시그널</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 채용시그널: 채용 공고를 영업 신호로 읽는 도구. 어두운 네이비 위에 라임 하이라이트, 요일별 타임라인. */
+  :root {
+    --bg: #0F172A; --bg-2: #131C31; --card: #172138; --card-2: #1C2742; --line: rgb(148 163 184 / .13); --line-2: rgb(148 163 184 / .22);
+    --text: #E8EDF6; --text-2: #A3AEC2; --text-3: #6B7890;
+    --lime: #A3E635; --lime-2: #BEF264; --lime-ink: #1A2E05; --sky: #7DD3FC;
+  }
+  body { font: 400 13px/1.4 'Pretendard Variable', 'Segoe UI', sans-serif; color: var(--text); background: var(--bg); letter-spacing: -0.01em; }
+  .win { --bar: #0A1120; --bar-fg: #9AA6BA; background: var(--bg); }
+  .win-body { flex-direction: column; }
+  .win-title { line-height: 1.5; }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  .head { height: 112px; flex: none; display: flex; align-items: center; gap: 28px; padding: 0 26px; border-bottom: 1px solid var(--line); background: radial-gradient(600px 200px at 0% 0%, rgb(163 230 53 / .08), transparent 70%); }
+  .h-main p { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-2); }
+  .h-main p .live { display: inline-flex; align-items: center; gap: 6px; height: 20px; padding: 0 8px; border-radius: 10px; background: rgb(163 230 53 / .12); color: var(--lime); font-weight: 700; font-size: 11px; }
+  .h-main p .live i { width: 6px; height: 6px; border-radius: 50%; background: var(--lime); }
+  .h-main h1 { display: flex; align-items: baseline; gap: 12px; margin-top: 6px; font-size: 23px; font-weight: 700; letter-spacing: -0.035em; white-space: nowrap; }
+  .h-main h1 em { font-style: normal; font-size: 58px; font-weight: 800; color: var(--lime); letter-spacing: -0.05em; line-height: .9; font-variant-numeric: tabular-nums; }
+  .h-main h1 em small { font-size: 26px; font-weight: 700; margin-left: 2px; letter-spacing: -0.02em; }
+  .week { display: flex; align-items: flex-end; gap: 7px; height: 72px; padding-left: 26px; border-left: 1px solid var(--line); }
+  .week div { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .week i { width: 20px; border-radius: 4px 4px 2px 2px; background: rgb(163 230 53 / .28); }
+  .week div.today i { background: var(--lime); }
+  .week b { font-size: 11px; font-weight: 500; color: var(--text-3); }
+  .week div.today b { color: var(--lime); font-weight: 700; }
+  .week span { font-size: 11px; font-weight: 700; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .head .sp { flex: 1; }
+  .stats { display: grid; grid-template-columns: repeat(3, auto); gap: 4px 22px; }
+  .stats p { font-size: 11.5px; color: var(--text-3); }
+  .stats b { display: block; font-size: 18px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  .stats b small { font-size: 12px; font-weight: 500; color: var(--text-2); margin-left: 2px; }
+  .btns { display: flex; flex-direction: column; gap: 8px; }
+  .btn { height: 34px; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--line-2); font-weight: 600; font-size: 12.5px; color: var(--text-2); white-space: nowrap; }
+  .btn.pri { background: var(--lime); border-color: var(--lime); color: var(--lime-ink); font-weight: 700; }
+
+  .filters { height: 48px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 26px; border-bottom: 1px solid var(--line); }
+  .f { height: 30px; display: flex; align-items: center; gap: 7px; padding: 0 11px; border-radius: 7px; background: var(--bg-2); border: 1px solid var(--line-2); font-size: 12.5px; color: var(--text); white-space: nowrap; }
+  .f span { color: var(--text-3); font-size: 11.5px; }
+  .f .car { width: 6px; height: 6px; border-right: 1.5px solid var(--text-3); border-bottom: 1.5px solid var(--text-3); rotate: 45deg; margin: -3px 0 0 2px; }
+  .f.on { border-color: rgb(163 230 53 / .45); background: rgb(163 230 53 / .07); }
+  .tg { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-2); margin-left: 6px; }
+  .tg i { width: 30px; height: 17px; border-radius: 9px; background: #2A3550; position: relative; }
+  .tg i::after { content: ""; position: absolute; left: 3px; top: 3px; width: 11px; height: 11px; border-radius: 50%; background: #7D89A0; }
+  .tg.on i { background: var(--lime); }
+  .tg.on i::after { left: auto; right: 3px; background: var(--lime-ink); }
+  .filters .sp { flex: 1; }
+  .sort { font-size: 12px; color: var(--text-3); display: flex; align-items: center; gap: 6px; }
+  .sort b { color: var(--text); font-weight: 600; }
+  .view { display: flex; padding: 3px; border-radius: 7px; background: var(--bg-2); border: 1px solid var(--line); }
+  .view b { width: 28px; height: 22px; display: grid; place-items: center; border-radius: 5px; color: var(--text-3); }
+  .view b.on { background: var(--card-2); color: var(--lime); }
+  .view svg { width: 14px; height: 14px; }
+
+  .content { flex: 1; min-height: 0; display: flex; }
+  .feed { flex: 1; min-width: 0; padding: 14px 20px 0 26px; overflow: hidden; position: relative; }
+    .day { position: relative; padding-left: 92px; margin-bottom: 13px; }
+  .day::before { content: ""; position: absolute; left: 70px; top: 10px; bottom: -14px; width: 1px; background: var(--line-2); }
+  .dlab { position: absolute; left: 0; top: 0; width: 60px; text-align: right; }
+  .dlab b { display: block; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  .dlab span { display: block; font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
+  .dlab em { display: inline-block; margin-top: 5px; font-style: normal; font-size: 11px; font-weight: 700; color: var(--lime); background: rgb(163 230 53 / .1); padding: 1px 6px; border-radius: 4px; font-variant-numeric: tabular-nums; }
+  .day.today .dlab b { color: var(--lime); }
+  .node { position: absolute; left: 65px; top: 6px; width: 11px; height: 11px; border-radius: 50%; background: var(--bg); border: 2px solid var(--text-3); }
+  .day.today .node { border-color: var(--lime); background: var(--lime); box-shadow: 0 0 0 4px rgb(163 230 53 / .18); }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .card { position: relative; padding: 11px 13px 9px; border-radius: 11px; background: var(--card); border: 1px solid var(--line); }
+  .card.hl { border-color: rgb(163 230 53 / .5); background: linear-gradient(180deg, rgb(163 230 53 / .07), var(--card) 60%); }
+  .c-top { display: flex; align-items: flex-start; gap: 10px; }
+  .logo { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; flex: none; font-weight: 800; font-size: 13px; color: #0F172A; }
+  .c-top h3 { font-size: 14px; font-weight: 700; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .c-top p { font-size: 11.5px; color: var(--text-3); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .c-top > div { min-width: 0; flex: 1; }
+  .sig { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex: none; }
+  .sig span { display: flex; gap: 2px; align-items: flex-end; height: 14px; }
+  .sig span i { width: 4px; border-radius: 1px; background: #2A3550; }
+  .sig span i:nth-child(1) { height: 5px; } .sig span i:nth-child(2) { height: 7px; } .sig span i:nth-child(3) { height: 9px; } .sig span i:nth-child(4) { height: 11.5px; } .sig span i:nth-child(5) { height: 14px; }
+  .sig span i.on { background: var(--lime); }
+  .sig small { font-size: 11px; font-weight: 700; color: var(--lime); }
+  .sig small.m { color: var(--text-2); }
+  .jobs { display: flex; flex-wrap: nowrap; gap: 5px; margin-top: 9px; overflow: hidden; }
+  .jobs b { height: 22px; display: flex; align-items: center; padding: 0 8px; border-radius: 5px; background: var(--card-2); border: 1px solid var(--line); font-size: 11.5px; font-weight: 600; color: var(--text); white-space: nowrap; }
+  .jobs b.more { color: var(--text-3); font-weight: 500; }
+  .c-foot { display: flex; align-items: center; gap: 10px; margin-top: 9px; padding-top: 8px; border-top: 1px dashed var(--line-2); font-size: 11.5px; color: var(--text-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .c-foot b { color: var(--text); font-weight: 700; }
+  .c-foot .new { color: var(--lime); font-weight: 700; }
+  .c-foot .r { margin-left: auto; }
+  .more-row { display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 14px; border-radius: 9px; border: 1px dashed var(--line-2); color: var(--text-2); font-size: 12px; margin-top: 10px; }
+  .more-row b { color: var(--lime); }
+
+  .side { width: 318px; flex: none; border-left: 1px solid var(--line); background: var(--bg-2); padding: 14px 20px 14px; display: flex; flex-direction: column; gap: 12px; }
+  .side h4 { display: flex; justify-content: space-between; align-items: baseline; font-size: 12.5px; font-weight: 700; color: var(--text); }
+  .side h4 span { font-size: 11.5px; font-weight: 500; color: var(--text-3); }
+  .bars { margin-top: 9px; display: flex; flex-direction: column; gap: 6px; }
+  .bar { display: grid; grid-template-columns: 74px 1fr 26px; align-items: center; gap: 8px; font-size: 12px; color: var(--text-2); }
+  .bar i { height: 8px; border-radius: 4px; background: #233050; position: relative; overflow: hidden; }
+  .bar i::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: var(--w); border-radius: 4px; background: var(--lime); }
+  .bar.m i::after { background: rgb(163 230 53 / .55); }
+  .bar.l i::after { background: rgb(163 230 53 / .32); }
+  .bar b { text-align: right; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+  .sep { height: 1px; background: var(--line); }
+  .export { margin-top: auto; padding: 12px 14px 13px; border-radius: 12px; background: var(--card); border: 1px solid var(--line-2); }
+  .ex-file { display: flex; align-items: center; gap: 10px; }
+  .ex-file .xl { width: 34px; height: 34px; border-radius: 8px; background: rgb(163 230 53 / .14); color: var(--lime); display: grid; place-items: center; }
+  .ex-file b { display: block; font-size: 13px; font-weight: 700; }
+  .ex-file small { display: block; font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
+  .checks { margin: 10px 0 11px; display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--text-2); }
+  .checks span { display: flex; align-items: center; gap: 8px; }
+  .checks i { width: 15px; height: 15px; border-radius: 4px; background: var(--lime); display: grid; place-items: center; color: var(--lime-ink); }
+  .checks i svg { width: 11px; height: 11px; stroke-width: 3; }
+  .checks i.lock { background: #2A3550; color: var(--text-2); }
+  .checks em { margin-left: auto; font-style: normal; font-size: 11px; color: var(--text-3); }
+  .export .btn.pri { width: 100%; height: 38px; font-size: 13px; }
+
+  .status { height: 26px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 16px; background: #0A1120; border-top: 1px solid var(--line); color: var(--text-3); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+  .status .ok { color: var(--lime); font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .status .ok i { width: 7px; height: 7px; border-radius: 50%; background: var(--lime); }
+  .status .r { margin-left: auto; }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar">
+    <span class="win-icon"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="3.5" fill="#A3E635"/><path d="M4 10.5h1.6l1.2-4 1.6 6 1.4-4.2.8 2.2H12" fill="none" stroke="#0F172A" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <span class="win-title">채용시그널 1.6.0 — 화성시_제조업_채용</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <div class="head">
+      <div class="h-main">
+        <p><span class="live"><i></i>공고 수집 완료 09:12</span>경기 화성시 · 제조업 · 최근 7일 10.20(화) ~ 10.26(월)</p>
+        <h1>이번 주 새로 채용 공고를 낸 사업장<em>47<small>곳</small></em></h1>
+      </div>
+      <div class="week">
+        <div><span>16</span><i style="height:44px"></i><b>화</b></div>
+        <div><span>13</span><i style="height:36px"></i><b>수</b></div>
+        <div><span>8</span><i style="height:22px"></i><b>목</b></div>
+        <div><span>6</span><i style="height:17px"></i><b>금</b></div>
+        <div><span>1</span><i style="height:4px"></i><b>토</b></div>
+        <div><span>0</span><i style="height:2px;opacity:.5"></i><b>일</b></div>
+        <div class="today"><span>3</span><i style="height:9px"></i><b>월</b></div>
+      </div>
+      <span class="sp"></span>
+      <div class="stats">
+        <p>최근 30일 사업장<b>176<small>곳</small></b></p>
+        <p>중복 정리<b>38<small>곳</small></b></p>
+        <p>이번 주 공고<b>82<small>건</small></b></p>
+      </div>
+      <div class="btns">
+        <span class="btn"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>다시 수집</span>
+        <span class="btn pri"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>엑셀 저장</span>
+      </div>
+    </div>
+
+    <div class="filters">
+      <span class="f on"><span>시·도</span>경기도<i class="car"></i></span>
+      <span class="f on"><span>시·군·구</span>화성시<i class="car"></i></span>
+      <span class="f on"><span>업종</span>제조업<i class="car"></i></span>
+      <span class="f"><span>공고 기간</span>최근 30일<i class="car"></i></span>
+      <span class="f"><span>직무</span>전체<i class="car"></i></span>
+      <span class="tg on"><i></i>중복 사업장 한 줄로</span>
+      <span class="tg"><i></i>마감 공고 포함</span>
+      <span class="sp"></span>
+      <span class="sort">정렬 <b>신호 강도순</b></span>
+      <span class="view"><b class="on"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></b><b><svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M10 10v10"/></svg></b></span>
+    </div>
+
+    <div class="content">
+      <section class="feed">
+        <div class="day today">
+          <div class="dlab"><b>오늘</b><span>10.26 월</span><em>3곳</em></div><i class="node"></i>
+          <div class="cards">
+            <article class="card hl">
+              <div class="c-top"><span class="logo" style="background:#A3E635">대</span><div><h3>(주)대성정밀</h3><p>자동차 부품 · 향남읍</p></div><div class="sig"><span><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span><small>매우 강함</small></div></div>
+              <div class="jobs"><b>CNC 가공</b><b>품질관리</b><b>생산관리</b><b class="more">+1</b></div>
+              <div class="c-foot"><span>공고 <b>4건</b></span><span class="new">오늘 08:40 등록</span><span class="r">대표 031-3**-****</span></div>
+            </article>
+            <article class="card">
+              <div class="c-top"><span class="logo" style="background:#7DD3FC">한</span><div><h3>한울오토텍</h3><p>자동차 부품 · 팔탄면</p></div><div class="sig"><span><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span><small>강함</small></div></div>
+              <div class="jobs"><b>사출 성형</b><b>설비 보전</b></div>
+              <div class="c-foot"><span>공고 <b>2건</b></span><span class="new">재공고</span><span class="r">대표 031-8**-****</span></div>
+            </article>
+            <article class="card">
+              <div class="c-top"><span class="logo" style="background:#FCD34D">우</span><div><h3>우리푸드텍</h3><p>식품 · 우정읍</p></div><div class="sig"><span><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span><small class="m">보통</small></div></div>
+              <div class="jobs"><b>생산직</b><b>포장</b><b>위생관리</b></div>
+              <div class="c-foot"><span>공고 <b>1건</b></span><span>오늘 07:55</span><span class="r">대표 031-3**-****</span></div>
+            </article>
+          </div>
+        </div>
+
+        <div class="day">
+          <div class="dlab"><b>10.23</b><span>금요일</span><em>6곳</em></div><i class="node"></i>
+          <div class="cards">
+            <article class="card">
+              <div class="c-top"><span class="logo" style="background:#C4B5FD">세</span><div><h3>세진메탈(주)</h3><p>금속 가공 · 향남읍</p></div><div class="sig"><span><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span><small>강함</small></div></div>
+              <div class="jobs"><b>용접</b><b>프레스</b><b>지게차</b></div>
+              <div class="c-foot"><span>공고 <b>3건</b></span><span>30일 내 2회 게시</span><span class="r">대표 031-3**-****</span></div>
+            </article>
+            <article class="card">
+              <div class="c-top"><span class="logo" style="background:#86EFAC">누</span><div><h3>누리전자</h3><p>전자 부품 · 봉담읍</p></div><div class="sig"><span><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span><small>강함</small></div></div>
+              <div class="jobs"><b>SMT 오퍼레이터</b><b>검사</b></div>
+              <div class="c-foot"><span>공고 <b>2건</b></span><span>교대 근무</span><span class="r">대표 031-2**-****</span></div>
+            </article>
+            <article class="card">
+              <div class="c-top"><span class="logo" style="background:#FDA4AF">진</span><div><h3>진영케미칼</h3><p>화학 · 남양읍</p></div><div class="sig"><span><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span><small class="m">보통</small></div></div>
+              <div class="jobs"><b>배합</b><b>품질관리</b></div>
+              <div class="c-foot"><span>공고 <b>2건</b></span><span>경력 우대</span><span class="r">대표 031-3**-****</span></div>
+            </article>
+            <article class="card">
+              <div class="c-top"><span class="logo" style="background:#FDBA74">해</span><div><h3>해솔정공</h3><p>금속 가공 · 장안면</p></div><div class="sig"><span><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span><small class="m">보통</small></div></div>
+              <div class="jobs"><b>밀링</b><b>선반</b></div>
+              <div class="c-foot"><span>공고 <b>1건</b></span><span>신규 사업장</span><span class="r">대표 031-3**-****</span></div>
+            </article>
+            <article class="card">
+              <div class="c-top"><span class="logo" style="background:#7DD3FC">미</span><div><h3>미래플라텍</h3><p>자동차 부품 · 팔탄면</p></div><div class="sig"><span><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span><small class="m">약함</small></div></div>
+              <div class="jobs"><b>사출 보조</b></div>
+              <div class="c-foot"><span>공고 <b>1건</b></span><span>단기 채용</span><span class="r">대표 031-8**-****</span></div>
+            </article>
+            <article class="card">
+              <div class="c-top"><span class="logo" style="background:#A3E635">정</span><div><h3>정우산업</h3><p>전자 부품 · 향남읍</p></div><div class="sig"><span><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span><small class="m">보통</small></div></div>
+              <div class="jobs"><b>조립</b><b>자재 관리</b></div>
+              <div class="c-foot"><span>공고 <b>2건</b></span><span>야간 수당</span><span class="r">대표 031-3**-****</span></div>
+            </article>
+          </div>
+        </div>
+
+        <div class="day">
+          <div class="dlab"><b>10.22</b><span>목요일</span><em>8곳</em></div><i class="node"></i>
+          <div class="cards">
+            <article class="card">
+              <div class="c-top"><span class="logo" style="background:#C4B5FD">삼</span><div><h3>삼화금속</h3><p>금속 가공 · 우정읍</p></div><div class="sig"><span><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span><small>강함</small></div></div>
+              <div class="jobs"><b>열처리</b><b>도장</b><b>출하</b></div>
+              <div class="c-foot"><span>공고 <b>3건</b></span><span>30일 내 3회 게시</span><span class="r">대표 031-3**-****</span></div>
+            </article>
+            <article class="card">
+              <div class="c-top"><span class="logo" style="background:#86EFAC">한</span><div><h3>한빛기공</h3><p>자동차 부품 · 향남읍</p></div><div class="sig"><span><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span><small class="m">보통</small></div></div>
+              <div class="jobs"><b>금형 관리</b><b>CNC 가공</b></div>
+              <div class="c-foot"><span>공고 <b>2건</b></span><span>경력 3년 이상</span><span class="r">대표 031-3**-****</span></div>
+            </article>
+            <article class="card">
+              <div class="c-top"><span class="logo" style="background:#FCD34D">경</span><div><h3>경원이엔지</h3><p>기계 · 봉담읍</p></div><div class="sig"><span><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span><small class="m">약함</small></div></div>
+              <div class="jobs"><b>기계 조립</b><b>CAD</b></div>
+              <div class="c-foot"><span>공고 <b>1건</b></span><span>정규직</span><span class="r">대표 031-2**-****</span></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <aside class="side">
+        <div>
+          <h4>지역 분포<span>읍·면·동 · 47곳</span></h4>
+          <div class="bars">
+            <div class="bar"><span>향남읍</span><i style="--w:100%"></i><b>12</b></div>
+            <div class="bar"><span>팔탄면</span><i style="--w:75%"></i><b>9</b></div>
+            <div class="bar m"><span>우정읍</span><i style="--w:58%"></i><b>7</b></div>
+            <div class="bar m"><span>봉담읍</span><i style="--w:50%"></i><b>6</b></div>
+            <div class="bar m"><span>남양읍</span><i style="--w:42%"></i><b>5</b></div>
+            <div class="bar l"><span>장안면</span><i style="--w:33%"></i><b>4</b></div>
+            <div class="bar l"><span>기타</span><i style="--w:33%"></i><b>4</b></div>
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div>
+          <h4>업종 분포<span>47곳</span></h4>
+          <div class="bars">
+            <div class="bar"><span>자동차 부품</span><i style="--w:100%"></i><b>14</b></div>
+            <div class="bar"><span>금속 가공</span><i style="--w:79%"></i><b>11</b></div>
+            <div class="bar m"><span>전자 부품</span><i style="--w:64%"></i><b>9</b></div>
+            <div class="bar m"><span>식품</span><i style="--w:43%"></i><b>6</b></div>
+            <div class="bar l"><span>화학·플라스틱</span><i style="--w:29%"></i><b>4</b></div>
+            <div class="bar l"><span>기계·기타</span><i style="--w:21%"></i><b>3</b></div>
+          </div>
+        </div>
+        <div class="export">
+          <div class="ex-file"><span class="xl"><svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 12l6 6M15 12l-6 6"/></svg></span><div><b>화성시_제조업_채용.xlsx</b><small>사업장 47곳 · 이번 주 신규</small></div></div>
+          <div class="checks">
+            <span><i><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>모집 직종 · 공고일 함께 저장</span>
+            <span><i><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>공고 여러 개 낸 회사는 한 줄로</span>
+            <span><i class="lock"><svg class="i" viewBox="0 0 24 24" style="stroke-width:2.4"><rect x="6" y="11" width="12" height="9" rx="1.5"/><path d="M9 11V8a3 3 0 0 1 6 0v3"/></svg></i>개인 정보 자동 제외<em>항상 켜짐</em></span>
+          </div>
+          <span class="btn pri"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>47곳 엑셀로 내보내기</span>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="status">
+      <span class="ok"><i></i>수집 완료</span>
+      <span>고용24 공개 채용 공고 기준</span>
+      <span>최근 30일 214곳 수집 · 중복 38곳 정리 → 176곳</span>
+      <span>마지막 수집 10.26 09:12</span>
+      <span class="r">채용시그널 1.6.0</span>
+    </footer>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>파트너킷</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 파트너킷: 블로거가 밤에 글 쓰며 켜 두는 상품 추출기. 아연색 다크 + 따뜻한 오렌지, 상품 카드가 주인공. */
+  :root {
+    --bg: #18181b; --panel: #1f1f23; --panel-2: #27272a; --line: rgb(255 255 255 / .08); --line-2: rgb(255 255 255 / .14);
+    --text: #f4f4f5; --text-2: #b4b4bb; --text-3: #7c7c85;
+    --o: #fb923c; --o-2: #f97316; --o-soft: rgb(251 146 60 / .14);
+  }
+  body { font: 400 13px/1.45 'Pretendard Variable', sans-serif; color: var(--text); background: var(--bg); letter-spacing: -0.01em; }
+  .win { --bar: #111113; --bar-fg: #a1a1aa; background: var(--bg); }
+  .win-body { flex-direction: column; }
+  svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  .nav { height: 50px; flex: none; display: flex; align-items: center; gap: 4px; padding: 0 18px; border-bottom: 1px solid var(--line); background: #141416; }
+  .logo { display: flex; align-items: center; gap: 9px; margin-right: 22px; }
+  .logo b { font-size: 15.5px; font-weight: 800; letter-spacing: -0.03em; }
+  .nav a { height: 50px; display: flex; align-items: center; gap: 7px; padding: 0 13px; color: var(--text-3); font-weight: 600; border-bottom: 2px solid transparent; }
+  .nav a svg { width: 15px; height: 15px; }
+  .nav a.on { color: var(--text); border-bottom-color: var(--o); }
+  .nav .sp { flex: 1; }
+  .pid { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 11px; border-radius: 8px; background: var(--panel-2); font-size: 12px; color: var(--text-2); }
+  .pid b { font-family: 'JetBrains Mono', monospace; font-weight: 500; color: var(--text); font-size: 11.5px; }
+  .pid i { width: 16px; height: 16px; border-radius: 50%; background: #22c55e; display: grid; place-items: center; }
+  .pid i svg { width: 10px; height: 10px; stroke: #fff; stroke-width: 3; }
+
+  .bar { height: 70px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 18px; border-bottom: 1px solid var(--line); }
+  .q { width: 330px; height: 44px; display: flex; align-items: center; gap: 10px; padding: 0 14px; border-radius: 11px; background: #0f0f11; border: 1.5px solid var(--o); box-shadow: 0 0 0 4px rgb(251 146 60 / .12); }
+  .q svg { width: 18px; height: 18px; color: var(--o); }
+  .q b { flex: 1; font-size: 16px; font-weight: 700; }
+  .q .x { width: 18px; height: 18px; border-radius: 50%; background: #3f3f46; position: relative; }
+  .q .x::before, .q .x::after { content: ""; position: absolute; left: 50%; top: 50%; width: 8px; height: 1.5px; background: #d4d4d8; translate: -50% -50%; rotate: 45deg; }
+  .q .x::after { rotate: -45deg; }
+  .opt { height: 34px; display: flex; align-items: center; gap: 7px; padding: 0 11px; border-radius: 9px; border: 1px solid var(--line-2); color: var(--text-2); font-size: 12.5px; font-weight: 500; white-space: nowrap; }
+  .opt b { color: var(--text); font-weight: 600; }
+  .opt i.ck { width: 15px; height: 15px; border-radius: 4px; border: 1.5px solid #52525b; display: grid; place-items: center; }
+  .opt i.ck.on { background: var(--o); border-color: var(--o); }
+  .opt i.ck.on::after { content: ""; width: 7px; height: 4px; border-left: 1.8px solid #18181b; border-bottom: 1.8px solid #18181b; rotate: -45deg; translate: 0 -1px; }
+  .opt .dd { width: 6px; height: 6px; border-right: 1.5px solid var(--text-3); border-bottom: 1.5px solid var(--text-3); rotate: 45deg; translate: 0 -2px; margin-left: 2px; }
+  .bar .sp { flex: 1; }
+  .count { text-align: right; }
+  .count p { font-size: 11.5px; color: var(--text-3); }
+  .count strong { display: block; font-size: 26px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .count strong small { font-size: 13px; font-weight: 600; color: var(--text-2); margin-left: 2px; }
+  .run { height: 44px; display: flex; align-items: center; gap: 8px; padding: 0 18px; border-radius: 11px; background: var(--o); color: #1c1006; font-weight: 800; font-size: 14px; box-shadow: 0 10px 24px -10px rgb(251 146 60 / .8); }
+  .run svg { width: 16px; height: 16px; }
+
+  .body { flex: 1; min-height: 0; display: flex; }
+  .grid-w { flex: 1; min-width: 0; padding: 14px 16px 12px 18px; display: flex; flex-direction: column; }
+  .gh { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .gh h2 { font-size: 14px; font-weight: 700; }
+  .gh h2 small { font-size: 12px; font-weight: 500; color: var(--text-3); margin-left: 6px; }
+  .gh .sp { flex: 1; }
+  .gh .sel { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-2); }
+  .gh .sel i { width: 15px; height: 15px; border-radius: 4px; background: var(--o); display: grid; place-items: center; }
+  .gh .sel i::after { content: ""; width: 7px; height: 1.8px; background: #18181b; }
+  .view { display: flex; padding: 3px; border-radius: 8px; background: var(--panel-2); }
+  .view b { width: 28px; height: 24px; display: grid; place-items: center; border-radius: 6px; color: var(--text-3); }
+  .view b.on { background: #3f3f46; color: var(--text); }
+  .view svg { width: 14px; height: 14px; }
+
+  .grid { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr 1fr; gap: 12px; }
+  .pc { position: relative; display: flex; flex-direction: column; border-radius: 13px; background: var(--panel); border: 1px solid var(--line); overflow: hidden; }
+  .pc.on { border-color: var(--o); box-shadow: 0 0 0 1px var(--o), 0 14px 30px -16px rgb(251 146 60 / .6); }
+  .pic { height: 132px; flex: none; position: relative; display: grid; place-items: center; }
+  .pic svg { width: 112px; height: 112px; }
+  .pic .cb { position: absolute; left: 9px; top: 9px; width: 18px; height: 18px; border-radius: 5px; background: rgb(0 0 0 / .35); border: 1.5px solid rgb(255 255 255 / .45); }
+  .pc.chk .pic .cb { background: var(--o); border-color: var(--o); display: grid; place-items: center; }
+  .pc.chk .pic .cb::after { content: ""; width: 8px; height: 4px; border-left: 2px solid #18181b; border-bottom: 2px solid #18181b; rotate: -45deg; translate: 0 -1px; }
+  .pic .rk { position: absolute; right: 9px; top: 9px; font-size: 11px; font-weight: 700; color: var(--text-2); background: rgb(0 0 0 / .4); padding: 2px 7px; border-radius: 6px; }
+  .inf { flex: 1; padding: 10px 12px 11px; display: flex; flex-direction: column; }
+  .inf h3 { font-size: 12.5px; font-weight: 600; line-height: 1.38; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 34px; }
+  .pr { display: flex; align-items: baseline; gap: 6px; margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .pr b { font-size: 16px; font-weight: 800; letter-spacing: -0.02em; }
+  .pr b small { font-size: 12px; font-weight: 600; margin-left: 1px; }
+  .pr s { font-size: 11px; color: var(--text-3); }
+  .rt { display: flex; align-items: center; gap: 4px; margin-top: 3px; font-size: 11.5px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .rt .st { color: #fbbf24; letter-spacing: 1px; font-size: 11px; }
+  .rt b { color: var(--text-2); font-weight: 700; }
+  .cp { margin-top: auto; height: 30px; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; border: 1px solid rgb(251 146 60 / .45); color: var(--o); font-weight: 700; font-size: 12px; }
+  .cp svg { width: 14px; height: 14px; }
+  .pc.on .cp { background: var(--o); color: #1c1006; border-color: var(--o); }
+
+  /* 내보내기 미리보기 */
+  .ex { width: 392px; flex: none; border-left: 1px solid var(--line); background: #141416; display: flex; flex-direction: column; }
+  .ext { height: 46px; flex: none; display: flex; align-items: center; gap: 2px; padding: 0 14px; border-bottom: 1px solid var(--line); }
+  .ext h3 { font-size: 13.5px; font-weight: 700; margin-right: auto; }
+  .ext span { height: 28px; display: flex; align-items: center; padding: 0 10px; border-radius: 7px; font-size: 12px; font-weight: 600; color: var(--text-3); }
+  .ext span.on { background: var(--panel-2); color: var(--text); }
+  .exb { flex: 1; min-height: 0; padding: 12px 14px 12px; display: flex; flex-direction: column; gap: 10px; }
+  .blog { border-radius: 11px; background: #fbfaf8; color: #222; padding: 11px 12px; }
+  .blog .lab { display: flex; justify-content: space-between; font-size: 11px; color: #8a8580; margin-bottom: 7px; }
+  .blog .lab b { color: #c2410c; font-weight: 700; }
+  .bc { display: flex; gap: 11px; padding: 10px; border-radius: 9px; border: 1px solid #e7e2dc; background: #fff; }
+  .bc .bi { width: 66px; height: 66px; flex: none; border-radius: 7px; background: radial-gradient(circle at 50% 45%, #fff3d6, #f3e9da 70%); display: grid; place-items: center; }
+  .bc .bi svg { width: 58px; height: 58px; }
+  .bc b { display: block; font-size: 12.5px; font-weight: 700; line-height: 1.35; }
+  .bc .bp { font-size: 14px; font-weight: 800; color: #c2410c; margin-top: 3px; font-variant-numeric: tabular-nums; }
+  .bc .bs { font-size: 11px; color: #8a8580; margin-top: 1px; }
+  .bc .bb { display: inline-block; margin-top: 6px; font-size: 11px; font-weight: 700; color: #fff; background: #ea580c; padding: 4px 10px; border-radius: 6px; }
+  .blog .intro { font-size: 11.5px; line-height: 1.5; color: #4a4642; margin-top: 8px; }
+  .blog .intro mark { background: none; color: #8a8580; font-size: 11px; display: block; margin-bottom: 1px; }
+  .blog .disc { margin-top: 8px; padding: 7px 9px; border-radius: 7px; background: #fff4ea; border: 1px dashed #f6b98a; font-size: 11px; line-height: 1.5; color: #7c3a10; }
+
+  .tgs { border-radius: 11px; background: var(--panel); border: 1px solid var(--line); padding: 2px 12px; }
+  .tg { display: flex; align-items: center; gap: 10px; height: 44px; }
+  .tg + .tg { border-top: 1px solid var(--line); }
+  .tg span { flex: 1; font-size: 12.5px; font-weight: 600; }
+  .tg span small { display: block; font-size: 11px; font-weight: 500; color: var(--text-3); margin-top: -1px; }
+  .sw { width: 34px; height: 20px; border-radius: 10px; background: #3f3f46; position: relative; flex: none; }
+  .sw::after { content: ""; position: absolute; left: 3px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: #a1a1aa; }
+  .sw.on { background: var(--o); }
+  .sw.on::after { left: 17px; background: #fff; }
+  .tg.hl span { color: var(--o); }
+
+  .code { flex: 1; min-height: 0; border-radius: 11px; background: #0d0d0f; border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; }
+  .code .ch { height: 34px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 10px 0 12px; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--text-2); }
+  .code .ch b { color: var(--text); font-weight: 600; }
+  .code .ch .sp { flex: 1; }
+  .code .ch .c { display: flex; align-items: center; gap: 5px; height: 24px; padding: 0 9px; border-radius: 6px; background: var(--o-soft); color: var(--o); font-weight: 700; font-size: 11.5px; }
+  .code .ch .c svg { width: 12px; height: 12px; }
+  pre { padding: 9px 0; font: 400 11.5px/1.62 'JetBrains Mono', 'Consolas', monospace; color: #d4d4d8; letter-spacing: -0.02em; }
+  pre span.ln { display: inline-block; width: 30px; text-align: right; padding-right: 10px; color: #4b4b52; }
+  .t { color: #f87171; } .a { color: #fdba74; } .s { color: #86efac; } .c2 { color: #71717a; } .k { color: #e4e4e7; }
+  pre .hl { display: block; background: rgb(251 146 60 / .09); box-shadow: inset 2px 0 0 var(--o); }
+
+  .status { height: 26px; flex: none; display: flex; align-items: center; gap: 16px; padding: 0 16px; border-top: 1px solid var(--line); background: #111113; font-size: 11.5px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+  .status b { color: #4ade80; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .status b i { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; }
+  .status .r { margin-left: auto; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd27a" stop-opacity=".55"/><stop offset=".55" stop-color="#fb923c" stop-opacity=".14"/><stop offset="1" stop-color="#fb923c" stop-opacity="0"/></radialGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffcf7a"/><stop offset=".45" stop-color="#fff6d8"/><stop offset="1" stop-color="#ffb35c"/></linearGradient>
+    <linearGradient id="cool" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#cfe9ff"/><stop offset=".45" stop-color="#ffffff"/><stop offset="1" stop-color="#b8dcfb"/></linearGradient>
+    <linearGradient id="olive" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3d4a2c"/><stop offset=".5" stop-color="#5d6b45"/><stop offset="1" stop-color="#36412a"/></linearGradient>
+    <linearGradient id="red" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7f1d1d"/><stop offset=".5" stop-color="#b91c1c"/><stop offset="1" stop-color="#6b1717"/></linearGradient>
+    <linearGradient id="char" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#27272a"/><stop offset=".5" stop-color="#52525b"/><stop offset="1" stop-color="#202023"/></linearGradient>
+    <linearGradient id="sand" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a68a64"/><stop offset=".5" stop-color="#cbb08a"/><stop offset="1" stop-color="#94795a"/></linearGradient>
+    <linearGradient id="vio" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a78bfa"/><stop offset=".5" stop-color="#ede9fe"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient>
+    <radialGradient id="vglow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#c4b5fd" stop-opacity=".55"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></radialGradient>
+    <radialGradient id="wglow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#e0f2fe" stop-opacity=".6"/><stop offset="1" stop-color="#7dd3fc" stop-opacity="0"/></radialGradient>
+    <g id="lA"><circle cx="60" cy="62" r="50" fill="url(#glow)"/><path d="M45 31 Q60 12 75 31" fill="none" stroke="#a1a1aa" stroke-width="3.2" stroke-linecap="round"/><rect x="40" y="28" width="40" height="13" rx="4" fill="url(#olive)"/><rect x="43" y="41" width="34" height="40" rx="3" fill="url(#glass)"/><rect x="56" y="45" width="8" height="32" rx="2.5" fill="#fffdf2"/><g stroke="#3d4a2c" stroke-opacity=".35" stroke-width="1.4"><line x1="49" y1="41" x2="49" y2="81"/><line x1="71" y1="41" x2="71" y2="81"/></g><rect x="38" y="80" width="44" height="15" rx="5" fill="url(#olive)"/><circle cx="60" cy="87.5" r="3.2" fill="#fb923c"/></g>
+  </defs>
+</svg>
+<div class="win">
+  <header class="win-bar">
+    <span class="win-icon"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="4" fill="#fb923c"/><path d="M6.6 9.4 9.4 6.6M7.3 5.2l.9-.9a2 2 0 0 1 2.8 2.8l-.9.9M8.7 10.8l-.9.9a2 2 0 0 1-2.8-2.8l.9-.9" fill="none" stroke="#1c1006" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+    <span class="win-title">파트너킷 2.0.3 — 상품 추출</span>
+    <span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span>
+  </header>
+  <main class="win-body">
+    <nav class="nav">
+      <div class="logo"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="7" fill="#fb923c"/><path d="M10 14l4-4M11 7.6l1.2-1.2a3 3 0 0 1 4.3 4.3L15.3 12M13 16.4l-1.2 1.2a3 3 0 0 1-4.3-4.3L8.7 12" fill="none" stroke="#1c1006" stroke-width="2" stroke-linecap="round"/></svg><b>파트너킷</b></div>
+      <a class="on"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>상품 추출</a>
+      <a><svg class="i" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>내 링크</a>
+      <a><svg class="i" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg>문구 템플릿</a>
+      <a><svg class="i" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>내보내기 기록</a>
+      <span class="sp"></span>
+      <span class="pid"><i><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></i>파트너스 ID <b>AF●●●●●</b></span>
+    </nav>
+
+    <div class="bar">
+      <span class="q"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><b>캠핑 랜턴</b><i class="x"></i></span>
+      <span class="opt">정렬 <b>검색 결과 순</b><i class="dd"></i></span>
+      <span class="opt"><i class="ck on"></i>품절 제외</span>
+      <span class="opt"><i class="ck"></i>무료배송만</span>
+      <span class="opt">문구 <b>블로그 소개형</b><i class="dd"></i></span>
+      <span class="sp"></span>
+      <div class="count"><p>추출 완료 · 2분 14초</p><strong>312<small>개</small></strong></div>
+      <span class="run"><svg class="i" viewBox="0 0 24 24" style="fill:#1c1006;stroke:none"><path d="M7 5v14l11-7z"/></svg>다시 추출</span>
+    </div>
+
+    <div class="body">
+      <section class="grid-w">
+        <div class="gh"><h2>'캠핑 랜턴' 검색 결과<small>312개 중 1~8</small></h2><span class="sp"></span><span class="sel"><i></i>3개 선택 · 내보내기 대상</span>
+          <span class="view"><b class="on"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="6.5" height="6.5" rx="1.2"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.2"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.2"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.2"/></svg></b><b><svg class="i" viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></b></span></div>
+        <div class="grid">
+          <article class="pc on chk">
+            <div class="pic" style="background:radial-gradient(circle at 50% 55%, #3a2f22, #222018 75%)"><svg viewBox="0 0 120 120"><use href="#lA"/></svg><i class="cb"></i><span class="rk">1위</span></div>
+            <div class="inf"><h3>충전식 LED 캠핑 랜턴 3000mAh 밝기 3단 조절</h3><div class="pr"><b>24,900<small>원</small></b><s>32,000</s></div><div class="rt"><span class="st">★★★★★</span><b>4.7</b>(3,218)</div><span class="cp"><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg>링크 복사됨</span></div>
+          </article>
+          <article class="pc chk">
+            <div class="pic" style="background:radial-gradient(circle at 50% 55%, #3b2222, #221a1a 75%)"><svg viewBox="0 0 120 120"><circle cx="60" cy="64" r="50" fill="url(#glow)"/><circle cx="60" cy="16" r="6.5" fill="none" stroke="#a1a1aa" stroke-width="2.6"/><rect x="51" y="22" width="18" height="9" rx="2" fill="url(#red)"/><path d="M36 42 Q60 24 84 42 Z" fill="url(#red)"/><ellipse cx="60" cy="64" rx="20" ry="23" fill="url(#glass)"/><path d="M60 52c4 6 5 9 5 12a5 5 0 0 1-10 0c0-3 1-6 5-12z" fill="#fff8e1"/><g fill="none" stroke="#3f3f46" stroke-width="2"><path d="M40 42v44M80 42v44"/><path d="M40 64h40" stroke-opacity=".6"/></g><path d="M36 86h48l-4 12H40z" fill="url(#red)"/></svg><i class="cb"></i><span class="rk">2위</span></div>
+            <div class="inf"><h3>레트로 감성 캠핑 랜턴 밝기 조절 무드등</h3><div class="pr"><b>32,800<small>원</small></b></div><div class="rt"><span class="st">★★★★★</span><b>4.6</b>(1,054)</div><span class="cp"><svg class="i" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"/></svg>내 링크 복사</span></div>
+          </article>
+          <article class="pc">
+            <div class="pic" style="background:radial-gradient(circle at 50% 55%, #2b2f24, #1d1f1a 75%)"><svg viewBox="0 0 120 120"><circle cx="46" cy="66" r="34" fill="url(#glow)"/><circle cx="78" cy="70" r="30" fill="url(#glow)"/><g transform="translate(26 30)"><path d="M14 4 Q20 -2 26 4" fill="none" stroke="#a1a1aa" stroke-width="2.4"/><rect x="8" y="4" width="24" height="8" rx="3" fill="url(#sand)"/><rect x="10" y="12" width="20" height="30" rx="2" fill="url(#glass)"/><g stroke="#94795a" stroke-width="1.6" stroke-opacity=".7"><line x1="10" y1="20" x2="30" y2="20"/><line x1="10" y1="27" x2="30" y2="27"/><line x1="10" y1="34" x2="30" y2="34"/></g><rect x="7" y="42" width="26" height="9" rx="3" fill="url(#sand)"/></g><g transform="translate(60 44) scale(.82)"><path d="M14 4 Q20 -2 26 4" fill="none" stroke="#a1a1aa" stroke-width="2.6"/><rect x="8" y="4" width="24" height="8" rx="3" fill="url(#olive)"/><rect x="10" y="12" width="20" height="30" rx="2" fill="url(#glass)"/><g stroke="#3d4a2c" stroke-width="1.8" stroke-opacity=".5"><line x1="10" y1="20" x2="30" y2="20"/><line x1="10" y1="27" x2="30" y2="27"/><line x1="10" y1="34" x2="30" y2="34"/></g><rect x="7" y="42" width="26" height="9" rx="3" fill="url(#olive)"/></g></svg><i class="cb"></i><span class="rk">3위</span></div>
+            <div class="inf"><h3>접이식 미니 랜턴 휴대용 4개입 텐트 조명</h3><div class="pr"><b>15,900<small>원</small></b><s>19,900</s></div><div class="rt"><span class="st">★★★★☆</span><b>4.5</b>(2,391)</div><span class="cp"><svg class="i" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"/></svg>내 링크 복사</span></div>
+          </article>
+          <article class="pc">
+            <div class="pic" style="background:radial-gradient(circle at 50% 55%, #1f2c33, #191e22 75%)"><svg viewBox="0 0 120 120"><circle cx="60" cy="66" r="48" fill="url(#wglow)"/><path d="M34 30 L86 30 L80 20 L40 20 Z" fill="#1e3a5f"/><g stroke="#60a5fa" stroke-width="1" stroke-opacity=".7"><line x1="47" y1="20" x2="45" y2="30"/><line x1="60" y1="20" x2="60" y2="30"/><line x1="73" y1="20" x2="75" y2="30"/><line x1="37" y1="25" x2="83" y2="25"/></g><rect x="40" y="30" width="40" height="8" rx="2" fill="#e4e4e7"/><rect x="43" y="38" width="34" height="42" rx="4" fill="url(#cool)"/><g fill="#0ea5e9" fill-opacity=".25"><circle cx="52" cy="50" r="2.2"/><circle cx="60" cy="50" r="2.2"/><circle cx="68" cy="50" r="2.2"/><circle cx="52" cy="59" r="2.2"/><circle cx="60" cy="59" r="2.2"/><circle cx="68" cy="59" r="2.2"/><circle cx="52" cy="68" r="2.2"/><circle cx="60" cy="68" r="2.2"/><circle cx="68" cy="68" r="2.2"/></g><rect x="38" y="80" width="44" height="13" rx="5" fill="#e4e4e7"/><rect x="54" y="84" width="12" height="4" rx="2" fill="#22c55e"/></svg><i class="cb"></i><span class="rk">4위</span></div>
+            <div class="inf"><h3>태양광 충전 캠핑 랜턴 생활방수 비상등</h3><div class="pr"><b>19,800<small>원</small></b></div><div class="rt"><span class="st">★★★★☆</span><b>4.4</b>(876)</div><span class="cp"><svg class="i" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"/></svg>내 링크 복사</span></div>
+          </article>
+          <article class="pc chk">
+            <div class="pic" style="background:radial-gradient(circle at 50% 55%, #33291f, #201c18 75%)"><svg viewBox="0 0 120 120"><circle cx="60" cy="62" r="52" fill="url(#glow)"/><path d="M48 18 Q60 6 72 18" fill="none" stroke="#a1a1aa" stroke-width="3"/><rect x="44" y="16" width="32" height="8" rx="3" fill="url(#char)"/><g><rect x="46" y="24" width="28" height="20" rx="2" fill="url(#glass)"/><rect x="44" y="44" width="32" height="4" fill="url(#char)"/><rect x="46" y="48" width="28" height="20" rx="2" fill="url(#glass)"/><rect x="44" y="68" width="32" height="4" fill="url(#char)"/><rect x="46" y="72" width="28" height="18" rx="2" fill="url(#glass)"/></g><rect x="42" y="90" width="36" height="10" rx="4" fill="url(#char)"/><rect x="84" y="70" width="14" height="24" rx="4" fill="#3f3f46"/><circle cx="91" cy="77" r="2.6" fill="#fb923c"/><rect x="88" y="83" width="6" height="2" rx="1" fill="#a1a1aa"/><rect x="88" y="87" width="6" height="2" rx="1" fill="#a1a1aa"/></svg><i class="cb"></i><span class="rk">5위</span></div>
+            <div class="inf"><h3>4in1 분리형 캠핑 랜턴 리모컨 포함</h3><div class="pr"><b>45,900<small>원</small></b><s>59,000</s></div><div class="rt"><span class="st">★★★★★</span><b>4.8</b>(642)</div><span class="cp"><svg class="i" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"/></svg>내 링크 복사</span></div>
+          </article>
+          <article class="pc">
+            <div class="pic" style="background:radial-gradient(circle at 50% 55%, #2c2c30, #1c1c1f 75%)"><svg viewBox="0 0 120 120"><circle cx="60" cy="62" r="52" fill="url(#wglow)"/><rect x="50" y="18" width="20" height="6" rx="3" fill="none" stroke="#a1a1aa" stroke-width="2.6"/><rect x="36" y="24" width="48" height="10" rx="3" fill="url(#char)"/><rect x="39" y="34" width="42" height="46" rx="3" fill="url(#cool)"/><g stroke="#3f3f46" stroke-width="1.6" stroke-opacity=".55"><line x1="46" y1="34" x2="46" y2="80"/><line x1="53" y1="34" x2="53" y2="80"/><line x1="60" y1="34" x2="60" y2="80"/><line x1="67" y1="34" x2="67" y2="80"/><line x1="74" y1="34" x2="74" y2="80"/></g><rect x="34" y="80" width="52" height="14" rx="4" fill="url(#char)"/><circle cx="74" cy="87" r="3" fill="#38bdf8"/><g fill="#a1a1aa"><rect x="42" y="85.5" width="16" height="3" rx="1.5"/></g></svg><i class="cb"></i><span class="rk">6위</span></div>
+            <div class="inf"><h3>고휘도 1200루멘 캠핑등 대용량 배터리</h3><div class="pr"><b>38,500<small>원</small></b></div><div class="rt"><span class="st">★★★★★</span><b>4.6</b>(1,587)</div><span class="cp"><svg class="i" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"/></svg>내 링크 복사</span></div>
+          </article>
+          <article class="pc">
+            <div class="pic" style="background:radial-gradient(circle at 50% 55%, #33261c, #1f1a16 75%)"><svg viewBox="0 0 120 120"><circle cx="58" cy="58" r="44" fill="url(#glow)"/><path d="M44 24 Q56 12 68 24" fill="none" stroke="#a1a1aa" stroke-width="2.8"/><rect x="40" y="22" width="32" height="9" rx="3" fill="url(#sand)"/><rect x="43" y="31" width="26" height="34" rx="3" fill="url(#glass)"/><rect x="40" y="65" width="32" height="10" rx="3" fill="url(#sand)"/><path d="M72 70 C96 66 104 86 84 94 C66 101 40 98 26 92 C14 87 16 78 26 76" fill="none" stroke="#71717a" stroke-width="1.6"/><g fill="#ffe7a3"><circle cx="86" cy="70" r="3"/><circle cx="98" cy="80" r="3"/><circle cx="90" cy="92" r="3"/><circle cx="74" cy="97" r="3"/><circle cx="56" cy="98" r="3"/><circle cx="38" cy="95" r="3"/><circle cx="22" cy="86" r="3"/></g></svg><i class="cb"></i><span class="rk">7위</span></div>
+            <div class="inf"><h3>줄조명 겸용 감성 랜턴 USB 충전 5m</h3><div class="pr"><b>21,900<small>원</small></b></div><div class="rt"><span class="st">★★★★☆</span><b>4.5</b>(433)</div><span class="cp"><svg class="i" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"/></svg>내 링크 복사</span></div>
+          </article>
+          <article class="pc">
+            <div class="pic" style="background:radial-gradient(circle at 50% 55%, #2a2238, #1d1a24 75%)"><svg viewBox="0 0 120 120"><circle cx="60" cy="62" r="50" fill="url(#vglow)"/><path d="M47 26 Q60 12 73 26" fill="none" stroke="#a1a1aa" stroke-width="3"/><path d="M40 34 Q60 20 80 34 Z" fill="#3f3f46"/><rect x="42" y="34" width="36" height="44" rx="4" fill="url(#vio)"/><g stroke="#4c1d95" stroke-width="1.2" stroke-opacity=".55"><line x1="42" y1="42" x2="78" y2="42"/><line x1="42" y1="49" x2="78" y2="49"/><line x1="42" y1="56" x2="78" y2="56"/><line x1="42" y1="63" x2="78" y2="63"/><line x1="42" y1="70" x2="78" y2="70"/><line x1="51" y1="34" x2="51" y2="78"/><line x1="60" y1="34" x2="60" y2="78"/><line x1="69" y1="34" x2="69" y2="78"/></g><path d="M38 78h44l-3 14H41z" fill="#3f3f46"/></svg><i class="cb"></i><span class="rk">8위</span></div>
+            <div class="inf"><h3>모기 퇴치 겸용 LED 랜턴 캠핑 테라스</h3><div class="pr"><b>27,500<small>원</small></b></div><div class="rt"><span class="st">★★★★☆</span><b>4.3</b>(1,120)</div><span class="cp"><svg class="i" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"/></svg>내 링크 복사</span></div>
+          </article>
+        </div>
+      </section>
+
+      <aside class="ex">
+        <div class="ext"><h3>내보내기 미리보기</h3><span class="on">블로그 카드</span><span>엑셀</span><span>텍스트</span></div>
+        <div class="exb">
+          <div class="blog">
+            <div class="lab"><span>블로그 글에 붙여 넣은 모습</span><b>3개 중 1번째</b></div>
+            <div class="bc"><span class="bi"><svg viewBox="0 0 120 120"><use href="#lA"/></svg></span><div><b>충전식 LED 캠핑 랜턴 3000mAh 밝기 3단 조절</b><div class="bp">24,900원</div><div class="bs">★ 4.7 · 리뷰 3,218</div><span class="bb">상품 보러 가기</span></div></div>
+            <p class="intro"><mark>소개 문구 초안 · 내 말투로 다듬어 쓰세요</mark>밝기 3단 조절, 한 번 충전으로 텐트에서 밤새 켜 두는 랜턴.</p>
+            <p class="disc">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</p>
+          </div>
+          <div class="tgs">
+            <div class="tg hl"><span>파트너스 활동 고지 문구 자동 삽입<small>모든 카드 아래에 대가성 문구를 넣습니다</small></span><i class="sw on"></i></div>
+          </div>
+          <div class="code">
+            <div class="ch"><b>HTML 코드</b><span>· card_01.html</span><span class="sp"></span><span class="c"><svg class="i" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"/></svg>코드 복사</span></div>
+<pre><span class="ln">1</span><span class="t">&lt;div</span> <span class="a">class</span>=<span class="s">"pk-card"</span><span class="t">&gt;</span>
+<span class="ln">2</span>  <span class="t">&lt;a</span> <span class="a">href</span>=<span class="s">"https://link.coupang.com/a/●●●●"</span>
+<span class="ln">3</span>     <span class="a">rel</span>=<span class="s">"sponsored"</span><span class="t">&gt;</span>
+<span class="ln">4</span>    <span class="t">&lt;img</span> <span class="a">src</span>=<span class="s">"img/lantern_01.jpg"</span><span class="t">&gt;</span>
+<span class="ln">5</span>    <span class="t">&lt;strong&gt;</span><span class="k">충전식 LED 캠핑 랜턴…</span><span class="t">&lt;/strong&gt;</span>
+<span class="ln">6</span>  <span class="t">&lt;/a&gt;</span>
+<span class="hl"><span class="ln">7</span>  <span class="t">&lt;p</span> <span class="a">class</span>=<span class="s">"pk-notice"</span><span class="t">&gt;</span><span class="k">이 포스팅은 쿠팡 파트너스</span></span><span class="hl"><span class="ln">8</span><span class="k">    활동의 일환으로, … 제공받습니다.</span><span class="t">&lt;/p&gt;</span></span><span class="ln">9</span><span class="t">&lt;/div&gt;</span></pre>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="status"><b><i></i>완료</b><span>추출 312개</span><span>링크 생성 312개</span><span>이미지 312장 저장</span><span>품절 제외 18개</span><span class="r">저장 폴더 · 바탕화면\파트너킷\캠핑 랜턴</span></footer>
+  </main>
+</div>
+</body>
+</html>

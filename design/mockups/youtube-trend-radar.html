@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>떡상레이더</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2.0.5/fonts/variable/woff2/SUIT-Variable.css">
+<link rel="stylesheet" href="_kit.css">
+<style>
+  /* 떡상레이더: 밝은 분석 도구. 버블 차트가 주인공이고 오른쪽에 떡상 영상 카드와 AI 댓글 요약. 핑크레드 강조. */
+  :root {
+    --a: #E11D48; --a-2: #BE123C; --a-soft: #FFF1F3; --a-line: #FECDD6;
+    --bg: #F7F7F9; --card: #fff; --line: #EBEBF0; --line-2: #F2F2F5;
+    --t1: #17171C; --t2: #4F5160; --t3: #8B8D9A;
+  }
+  body { font: 400 13px/1.4 'SUIT Variable', sans-serif; color: var(--t1); background: #fff; letter-spacing: -0.005em; font-variant-numeric: tabular-nums; }
+  .win { --bar: #fff; --bar-fg: #33343D; background: var(--bg); }
+  .win-bar { border-bottom: 1px solid var(--line-2); }
+  .win-body { flex-direction: column; }
+
+  .top { height: 64px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 18px; background: #fff; border-bottom: 1px solid var(--line); }
+  .logo { display: flex; align-items: center; gap: 9px; margin-right: 8px; }
+  .logo i { width: 32px; height: 32px; border-radius: 10px; background: var(--a); display: grid; place-items: center; }
+  .logo i svg { width: 19px; height: 19px; fill: none; stroke: #fff; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; }
+  .logo b { font-size: 16px; font-weight: 800; letter-spacing: -0.03em; }
+  .q { width: 290px; height: 40px; display: flex; align-items: center; gap: 9px; padding: 0 12px; border-radius: 10px; border: 1.5px solid var(--a); box-shadow: 0 0 0 4px rgb(225 29 72 / .08); }
+  .q > svg { width: 17px; height: 17px; fill: none; stroke: var(--a); stroke-width: 2.2; stroke-linecap: round; }
+  .q b { flex: 1; font-size: 15px; font-weight: 700; }
+  .q span { width: 18px; height: 18px; border-radius: 50%; background: #E7E7EC; display: grid; place-items: center; }
+  .q span svg { width: 10px; height: 10px; fill: none; stroke: #6A6C78; stroke-width: 3; stroke-linecap: round; }
+  .sel { height: 36px; display: flex; align-items: center; gap: 6px; padding: 0 11px; border-radius: 9px; border: 1px solid var(--line); font-size: 12.5px; color: var(--t3); white-space: nowrap; }
+  .sel b { color: var(--t1); font-weight: 700; }
+  .sel svg { width: 12px; height: 12px; fill: none; stroke: var(--t3); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .seg { display: flex; padding: 3px; border-radius: 9px; background: #F0F0F4; }
+  .seg b { height: 30px; display: grid; place-items: center; padding: 0 12px; border-radius: 7px; font-size: 12.5px; font-weight: 700; color: var(--t3); }
+  .seg b.on { background: #fff; color: var(--t1); box-shadow: 0 1px 3px rgb(0 0 0 / .1); }
+  .top .sp { flex: 1; }
+  .btn { height: 36px; display: flex; align-items: center; gap: 6px; padding: 0 13px; border-radius: 9px; border: 1px solid var(--line); background: #fff; font-weight: 700; font-size: 12.5px; color: var(--t2); white-space: nowrap; }
+  .btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .btn.pri { background: var(--a); border-color: var(--a); color: #fff; }
+
+  .main { flex: 1; min-height: 0; display: flex; gap: 14px; padding: 14px 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+  .chart { flex: 1; min-width: 0; padding: 14px 16px 6px; display: flex; flex-direction: column; }
+  .ch-h { display: flex; align-items: flex-start; gap: 18px; }
+  .ch-h h2 { font-size: 16px; font-weight: 800; letter-spacing: -0.03em; }
+  .ch-h h2 small { display: block; font-size: 12px; font-weight: 500; color: var(--t3); margin-top: 2px; letter-spacing: 0; }
+  .kp { margin-left: auto; display: flex; gap: 8px; }
+  .kp div { padding: 6px 11px; border-radius: 9px; background: #F7F7FA; min-width: 84px; }
+  .kp p { font-size: 11px; color: var(--t3); font-weight: 600; }
+  .kp b { display: block; font-size: 17px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.25; }
+  .kp b small { font-size: 11.5px; font-weight: 600; color: var(--t2); margin-left: 1px; }
+  .kp .hl { background: var(--a-soft); }
+  .kp .hl b { color: var(--a); }
+  .plot { position: relative; margin-top: 6px; }
+  .plot svg text { font-family: 'SUIT Variable'; font-size: 11px; fill: #8B8D9A; font-variant-numeric: tabular-nums; }
+  .lg { position: absolute; right: 22px; bottom: 54px; display: flex; flex-direction: column; gap: 6px; padding: 9px 12px; border-radius: 10px; background: rgb(255 255 255 / .94); border: 1px solid var(--line); font-size: 11.5px; color: var(--t2); }
+  .lg p { font-weight: 700; color: var(--t1); font-size: 11.5px; }
+  .lg span { display: flex; align-items: center; gap: 6px; }
+  .lg i { width: 10px; height: 10px; border-radius: 50%; }
+
+  .side { width: 372px; flex: none; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+  .list { padding: 12px 10px 8px; }
+  .list-h { display: flex; align-items: center; justify-content: space-between; padding: 0 6px 6px; }
+  .list-h h3 { font-size: 14px; font-weight: 800; }
+  .list-h span { font-size: 12px; color: var(--t3); }
+  .vc { display: flex; gap: 11px; padding: 8px; border-radius: 11px; position: relative; }
+  .vc + .vc { margin-top: 2px; }
+  .vc.on { background: var(--a-soft); box-shadow: inset 0 0 0 1.5px var(--a-line); }
+  .vt { width: 50px; height: 80px; border-radius: 8px; overflow: hidden; flex: none; position: relative; }
+  .vt svg { width: 100%; height: 100%; }
+  .vt em { position: absolute; left: 4px; bottom: 4px; font-style: normal; font-size: 10px; font-weight: 800; color: #fff; background: rgb(0 0 0 / .55); border-radius: 3px; padding: 0 3px; line-height: 1.4; }
+  .vi { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .vi > b { font-size: 13.5px; font-weight: 700; line-height: 1.35; padding-right: 58px; }
+  .vi small { font-size: 11.5px; color: var(--t3); margin-top: 2px; }
+  .vi .nums { margin-top: auto; display: flex; gap: 12px; font-size: 12px; color: var(--t3); }
+  .vi .nums b { font-size: 13px; font-weight: 800; color: var(--t1); margin-left: 3px; }
+  .x { position: absolute; right: 8px; top: 8px; height: 26px; padding: 0 9px; border-radius: 7px; display: flex; align-items: center; font-size: 13px; font-weight: 800; background: var(--a); color: #fff; letter-spacing: -0.02em; }
+
+  .ai { flex: 1; min-height: 0; padding: 13px 16px; display: flex; flex-direction: column; }
+  .ai-h { display: flex; align-items: center; gap: 8px; }
+  .ai-h i { width: 24px; height: 24px; border-radius: 7px; background: linear-gradient(135deg, #FB7185, #E11D48); display: grid; place-items: center; }
+  .ai-h i svg { width: 14px; height: 14px; fill: none; stroke: #fff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .ai-h b { font-size: 14px; font-weight: 800; }
+  .ai-h span { margin-left: auto; font-size: 11.5px; color: var(--t3); }
+  .ai p.sub { font-size: 12px; color: var(--t3); margin-top: 5px; }
+  .ai ol { margin-top: 9px; display: flex; flex-direction: column; gap: 7px; }
+  .ai li { display: grid; grid-template-columns: 20px 1fr; gap: 8px; font-size: 12.5px; line-height: 1.45; color: var(--t2); }
+  .ai li i { width: 20px; height: 20px; border-radius: 6px; background: var(--a-soft); color: var(--a); font-style: normal; font-weight: 800; font-size: 11.5px; display: grid; place-items: center; }
+  .ai li b { color: var(--t1); font-weight: 700; }
+
+  .status { height: 26px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 16px; background: #fff; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--t3); }
+  .status b { color: #0F9D6B; font-weight: 700; }
+  .status .r { margin-left: auto; }
+</style>
+</head>
+<body>
+<div class="win">
+  <header class="win-bar"><span class="win-icon"><svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="4" fill="#E11D48"/><path d="M4.5 11.5 7 8l2 2 2.8-4.5" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="win-title">떡상레이더 1.8.2 — 키워드 분석</span><span class="win-ctrls"><i class="min"></i><i class="max"></i><i class="close"></i></span></header>
+  <main class="win-body">
+    <div class="top">
+      <div class="logo"><i><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><path d="M12 12 18.5 5.5"/><circle cx="16" cy="9" r="1" fill="#fff"/></svg></i><b>떡상레이더</b></div>
+      <div class="q"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><b>자취 요리</b><span><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></span></div>
+      <span class="sel">국가 <b>대한민국</b><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></span>
+      <span class="sel">기간 <b>최근 30일</b><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></span>
+      <div class="seg"><b class="on">숏폼</b><b>롱폼</b></div>
+      <span class="sel">조회수 상위 <b>50개</b><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></span>
+      <span class="sp"></span>
+      <span class="btn"><svg viewBox="0 0 24 24"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="m9 15 2 2 4-4"/></svg>엑셀 저장</span>
+      <span class="btn pri"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>분석 시작</span>
+    </div>
+
+    <div class="main">
+      <section class="card chart">
+        <div class="ch-h">
+          <h2>구독자 대비 조회수<small>'자취 요리' 숏폼 50개 · 버블이 클수록 구독자보다 많이 본 영상</small></h2>
+          <div class="kp">
+            <div><p>분석 영상</p><b>50<small>개</small></b></div>
+            <div><p>10배 이상</p><b>9<small>개</small></b></div>
+            <div><p>중앙값</p><b>3.3<small>배</small></b></div>
+            <div class="hl"><p>최고 떡상지수</p><b>575<small>배</small></b></div>
+          </div>
+        </div>
+        <div class="plot">
+          <svg width="826" height="562" viewBox="0 0 826 562">
+            <path d="M60,520L806,16L60,16Z" fill="#FFF1F3"/>
+            <line x1="60.0" y1="16" x2="60.0" y2="520" stroke="#EEEEF2"/>
+            <line x1="308.7" y1="16" x2="308.7" y2="520" stroke="#EEEEF2"/>
+            <line x1="557.3" y1="16" x2="557.3" y2="520" stroke="#EEEEF2"/>
+            <line x1="806.0" y1="16" x2="806.0" y2="520" stroke="#EEEEF2"/>
+            <line x1="60" y1="520.0" x2="806" y2="520.0" stroke="#EEEEF2"/>
+            <line x1="60" y1="352.0" x2="806" y2="352.0" stroke="#EEEEF2"/>
+            <line x1="60" y1="184.0" x2="806" y2="184.0" stroke="#EEEEF2"/>
+            <line x1="60" y1="16.0" x2="806" y2="16.0" stroke="#EEEEF2"/>
+            <line x1="308.7" y1="520.0" x2="806.0" y2="184.0" stroke="#B9BBC6" stroke-width="1.2" stroke-dasharray="4 4"/>
+            <line x1="60.0" y1="520.0" x2="806.0" y2="16.0" stroke="#E11D48" stroke-width="1.2" stroke-dasharray="5 4"/>
+            <line x1="60.0" y1="352.0" x2="557.3" y2="16.0" stroke="#E11D48" stroke-width="1.2" stroke-dasharray="2 4"/>
+            <circle cx="185.6" cy="139.5" r="21.7" fill="#E11D48" fill-opacity="0.9" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="291.1" cy="249.1" r="14.8" fill="#E11D48" fill-opacity="0.9" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="328.4" cy="237.6" r="14.3" fill="#E11D48" fill-opacity="0.9" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="388.8" cy="208.0" r="13.9" fill="#E11D48" fill-opacity="0.9" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="258.8" cy="353.5" r="11.9" fill="#FB7185" fill-opacity="0.75" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="419.9" cy="252.7" r="11.5" fill="#FB7185" fill-opacity="0.75" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="378.0" cy="291.2" r="11.1" fill="#FB7185" fill-opacity="0.75" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="548.3" cy="175.7" r="11.1" fill="#FB7185" fill-opacity="0.75" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="490.8" cy="218.9" r="10.9" fill="#FB7185" fill-opacity="0.75" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="471.1" cy="249.1" r="10.4" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="513.2" cy="230.0" r="10.1" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="707.9" cy="104.5" r="9.9" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="577.0" cy="193.3" r="9.8" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="196.4" cy="459.6" r="9.6" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="294.9" cy="401.4" r="9.3" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="147.0" cy="506.6" r="9.2" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="298.0" cy="416.1" r="8.8" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="355.8" cy="380.3" r="8.7" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="500.5" cy="281.6" r="8.7" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="384.2" cy="361.0" r="8.7" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="550.9" cy="246.9" r="8.7" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="180.2" cy="497.8" r="8.7" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="365.2" cy="385.3" r="8.4" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="280.5" cy="447.5" r="8.2" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="491.3" cy="310.1" r="8.1" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="732.4" cy="145.9" r="8.1" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="722.6" cy="154.6" r="8" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="694.3" cy="184.3" r="7.7" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="505.5" cy="320.3" r="7.5" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="595.9" cy="265.7" r="7.3" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="580.7" cy="284.4" r="7.1" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="357.9" cy="436.0" r="7.1" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="306.3" cy="471.6" r="7.1" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="474.4" cy="359.6" r="7" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="617.0" cy="266.9" r="6.9" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="356.7" cy="459.5" r="6.5" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="742.8" cy="201.8" r="6.4" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="383.1" cy="452.3" r="6.3" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <circle cx="418.7" cy="432.3" r="6.2" fill="#A5A9B8" fill-opacity="0.45" stroke="#fff" stroke-width="1.2"/>
+            <text x="74" y="38" style="font-size:12px;font-weight:800;fill:#E11D48">떡상 구간</text>
+            <text x="74" y="54" style="font-size:11px;fill:#C2506A">구독자 수의 10배 이상 조회</text>
+            <text x="742" y="72" style="font-weight:700;fill:#E11D48">10배</text>
+            <text x="506" y="66" style="font-weight:700;fill:#E11D48">100배</text>
+            <text x="766" y="230" style="font-weight:700;fill:#9A9CA8">1배</text>
+            <g text-anchor="end"><text x="52" y="524">1만</text><text x="52" y="356">10만</text><text x="52" y="188">100만</text><text x="52" y="20">1000만</text></g>
+            <g text-anchor="middle"><text x="64" y="540">1천</text><text x="178.6" y="540">3천</text><text x="308.7" y="540">1만</text><text x="427.3" y="540">3만</text><text x="557.3" y="540">10만</text><text x="676" y="540">30만</text><text x="796" y="540">100만</text></g>
+            <text x="806" y="558" text-anchor="end" style="font-weight:700;fill:#4F5160">채널 구독자 수 (로그 눈금)</text>
+            <text x="12" y="282" transform="rotate(-90 12 282)" text-anchor="middle" style="font-weight:700;fill:#4F5160">조회수 (로그 눈금)</text>
+            <circle cx="185.6" cy="139.5" r="27" fill="none" stroke="#E11D48" stroke-width="1.2" stroke-dasharray="3 3"/>
+            <g transform="translate(218 112)"><rect width="196" height="40" rx="9" fill="#17171C"/><text x="12" y="17" style="fill:#fff;font-size:12px;font-weight:800">575배 · 자취 요리 5분 컷 계란밥</text><text x="12" y="32" style="fill:#B9BBC6;font-size:11px">구독자 3,200 · 조회수 184만</text></g>
+            <circle cx="328.4" cy="237.6" r="19" fill="none" stroke="#17171C" stroke-width="2"/>
+            <path d="M342 226 L416 152" stroke="#17171C" stroke-width="1.3"/>
+            <g transform="translate(416 112)"><rect width="206" height="44" rx="9" fill="#fff" stroke="#17171C" stroke-width="1.5"/><text x="12" y="18" style="fill:#17171C;font-size:12px;font-weight:800">원룸 자취생 일주일 식비 3만 원</text><text x="12" y="34" style="fill:#4F5160;font-size:11px">구독자 1.2만 · 조회수 48만 · <tspan style="fill:#E11D48;font-weight:800">40배</tspan></text></g>
+            <text x="270" y="275" text-anchor="end" style="font-size:11.5px;font-weight:800;fill:#BE123C">48배</text>
+            <text x="406" y="196" style="font-size:11.5px;font-weight:800;fill:#BE123C">34배</text>
+          </svg>
+          <div class="lg"><p>떡상지수 (조회수 ÷ 구독자)</p><span><i style="background:#E11D48"></i>30배 이상 · 4개</span><span><i style="background:#FB7185;opacity:.8"></i>10~30배 · 5개</span><span><i style="background:#A5A9B8;opacity:.55"></i>10배 미만 · 41개</span></div>
+        </div>
+      </section>
+
+      <aside class="side">
+        <section class="card list">
+          <div class="list-h"><h3>떡상 영상</h3><span>떡상지수 순 · 상위 4</span></div>
+          <article class="vc">
+            <span class="vt"><svg viewBox="0 0 50 80" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="t1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFD166"/><stop offset="1" stop-color="#F77F3B"/></linearGradient></defs><rect width="50" height="80" fill="url(#t1)"/><path d="M8 46h34c0 10-7 16-17 16S8 56 8 46z" fill="#fff"/><ellipse cx="25" cy="46" rx="17" ry="4.5" fill="#F7F2E8"/><circle cx="25" cy="44" r="7" fill="#fff" stroke="#F2E2C2"/><circle cx="25" cy="44" r="3.4" fill="#FFB020"/><rect x="7" y="12" width="36" height="12" rx="3" fill="#17171C" opacity=".82"/><rect x="11" y="16" width="20" height="2.4" rx="1.2" fill="#fff"/><rect x="11" y="20" width="12" height="1.8" rx=".9" fill="#FFD166"/></svg><em>0:41</em></span>
+            <div class="vi"><b>자취 요리 5분 컷 계란밥</b><small>혼밥연구소 · 12일 전</small><div class="nums"><span>구독자<b>3,200</b></span><span>조회수<b>184만</b></span></div></div>
+            <span class="x">575배</span>
+          </article>
+          <article class="vc">
+            <span class="vt"><svg viewBox="0 0 50 80" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="t2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8EE3C8"/><stop offset="1" stop-color="#1F9E86"/></linearGradient></defs><rect width="50" height="80" fill="url(#t2)"/><ellipse cx="25" cy="50" rx="19" ry="12" fill="#fff"/><g fill="none" stroke="#F2C063" stroke-width="2.2" stroke-linecap="round"><path d="M14 50c4-6 10 6 14 0s8 6 8 0"/><path d="M16 45c4-5 9 5 13 0s7 5 7 0"/><path d="M17 55c4-4 8 4 12 0s6 4 6 0"/></g><circle cx="22" cy="48" r="2" fill="#E2553A"/><circle cx="30" cy="53" r="1.8" fill="#E2553A"/><rect x="31" y="10" width="13" height="20" rx="2" fill="#fff" opacity=".9"/><rect x="33" y="13" width="9" height="5" rx="1" fill="#1F9E86"/></svg><em>0:58</em></span>
+            <div class="vi"><b>편의점 재료로 만드는 자취 파스타</b><small>편의점셰프 · 9일 전</small><div class="nums"><span>구독자<b>8,500</b></span><span>조회수<b>41만</b></span></div></div>
+            <span class="x">48배</span>
+          </article>
+          <article class="vc on">
+            <span class="vt"><svg viewBox="0 0 50 80" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="t3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB4A2"/><stop offset="1" stop-color="#E5486B"/></linearGradient></defs><rect width="50" height="80" fill="url(#t3)"/><path d="M10 34h22l-2 30H12z" fill="#F6E7D3"/><path d="M14 34c0-6 3-9 7-9s7 3 7 9" fill="none" stroke="#C99A6B" stroke-width="2"/><rect x="18" y="38" width="5" height="16" rx="2" fill="#7BC27A"/><circle cx="26" cy="41" r="4" fill="#E2553A"/><path d="M30 18h12v34l-2-2-2 2-2-2-2 2-2-2-2 2z" fill="#fff"/><g fill="#C7C9D3"><rect x="32" y="22" width="8" height="1.6" rx=".8"/><rect x="32" y="26" width="6" height="1.6" rx=".8"/><rect x="32" y="30" width="8" height="1.6" rx=".8"/><rect x="32" y="34" width="5" height="1.6" rx=".8"/></g><rect x="32" y="40" width="8" height="3" rx="1" fill="#E11D48"/></svg><em>0:52</em></span>
+            <div class="vi"><b>원룸 자취생 일주일 식비 3만 원</b><small>원룸살이 기록 · 6일 전</small><div class="nums"><span>구독자<b>1.2만</b></span><span>조회수<b>48만</b></span></div></div>
+            <span class="x">40배</span>
+          </article>
+          <article class="vc">
+            <span class="vt"><svg viewBox="0 0 50 80" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="t4" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A9C3FF"/><stop offset="1" stop-color="#4C6FE0"/></linearGradient></defs><rect width="50" height="80" fill="url(#t4)"/><rect x="6" y="32" width="38" height="26" rx="4" fill="#F4F5F8"/><rect x="9" y="35" width="24" height="20" rx="2" fill="#2B2F3A"/><circle cx="21" cy="47" r="5" fill="#F2B544" opacity=".9"/><g fill="#9AA0AE"><circle cx="38.5" cy="39" r="1.6"/><circle cx="38.5" cy="44" r="1.6"/><rect x="36" y="49" width="5" height="4" rx="1"/></g><path d="M17 26c1-3-1-4 0-7M24 26c1-3-1-4 0-7" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".8"/></svg><em>0:47</em></span>
+            <div class="vi"><b>전자레인지 하나로 자취 요리 3가지</b><small>자취생 밥상 · 17일 전</small><div class="nums"><span>구독자<b>2.1만</b></span><span>조회수<b>72만</b></span></div></div>
+            <span class="x">34배</span>
+          </article>
+        </section>
+
+        <section class="card ai">
+          <div class="ai-h"><i><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4z"/><path d="M18 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg></i><b>AI 댓글 요약</b><span>댓글 1,284개 · 09:41</span></div>
+          <p class="sub">선택: 원룸 자취생 일주일 식비 3만 원</p>
+          <ol>
+            <li><i>1</i><span>장보기 영수증을 그대로 보여 준 구성에 <b>"현실적이다"</b>는 반응이 가장 많음</span></li>
+            <li><i>2</i><span>재료 하나를 세 끼에 돌려 쓰는 방식에 <b>따라 해 본 인증 댓글</b>이 이어짐</span></li>
+            <li><i>3</i><span>1인분 보관법·소분 질문이 많아 <b>후속 영상 소재</b>로 유력</span></li>
+          </ol>
+        </section>
+      </aside>
+    </div>
+
+    <div class="status"><b>● 분석 완료</b><span>'자취 요리' 숏폼 50개</span><span>유튜브 API 할당량 18%</span><span>구독자 비공개 채널 3개 제외</span><span class="r">떡상레이더 1.8.2 · 공식 API 공개 정보만 조회</span></div>
+  </main>
+</div>
+</body>
+</html>
